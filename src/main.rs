@@ -13,13 +13,13 @@ use std::fs;
 const VERTEX_SHADER_PATH: &str = "src/graphics/vertex_shader.vert";
 const COLOR_SHADER_PATH: &str = "src/graphics/color_shader.vert";
 const TRANSFORM_MATRIX: [[f32; 4]; 4] = [
-    [1., 0., 0., 0.],
-    [0., 1., 0., 0.],
+    [130., 0., 0., 0.],
+    [0., 130., 0., 0.],
     [0., 0., 1., 0.],
     [0., 0., 0., 1.],
 ];
-const OFFSET_X: f32 = -45.;
-const OFFSET_Y: f32 = -52.;
+const OFFSET_X: f32 = -45.395;
+const OFFSET_Y: f32 = -52.293;
 
 
 struct App {
@@ -76,7 +76,7 @@ impl App {
             buildings.push(build.geometry.coordinates[0][0].clone());
         }
         
-        println!("{:?}", buildings);
+        // println!("{:?}", buildings);
         // let buildings = vec![vec![vec![0.2, 0.2], vec![0.2, 0.4], vec![0.4, 0.4], vec![0.4, 0.6], vec![0.6, 0.6],
             // vec![0.6, 0.4], vec![0.8, 0.4], vec![0.8, 0.2]], vec![vec![45.2, 52.2], vec![45.2, 52.7], vec![45.7, 52.7], vec![45.7, 52.2]]];
         let indices = Self::get_indices(&buildings);
