@@ -20,6 +20,10 @@ const TRANSFORM_MATRIX: [[f32; 4]; 4] = [
 ];
 const OFFSET_X: f32 = -45.395;
 const OFFSET_Y: f32 = -52.293;
+const BACKGROUND_R: f32 = 0.8;
+const BACKGROUND_G: f32 = 0.98;
+const BACKGROUND_B: f32 = 0.988;
+const NOT_TRANSPARENT: f32 = 1.;
 
 
 struct App {
@@ -76,9 +80,6 @@ impl App {
             buildings.push(build.geometry.coordinates[0][0].clone());
         }
         
-        // println!("{:?}", buildings);
-        // let buildings = vec![vec![vec![0.2, 0.2], vec![0.2, 0.4], vec![0.4, 0.4], vec![0.4, 0.6], vec![0.6, 0.6],
-            // vec![0.6, 0.4], vec![0.8, 0.4], vec![0.8, 0.2]], vec![vec![45.2, 52.2], vec![45.2, 52.7], vec![45.7, 52.7], vec![45.7, 52.2]]];
         let indices = Self::get_indices(&buildings);
         let event_loop = winit::event_loop::EventLoopBuilder::new()
             .build()?;
@@ -105,7 +106,7 @@ impl App {
             None
         )?;
         let mut target = display.draw();
-        target.clear_color(0.8, 0.98, 0.988, 1.0);
+        target.clear_color(BACKGROUND_R, BACKGROUND_G, BACKGROUND_B, NOT_TRANSPARENT);
         let uniforms = uniform! { matrix: TRANSFORM_MATRIX, x_off: OFFSET_X, y_off: OFFSET_Y };
         target.draw(&positions, &indices, &program, &uniforms,&Default::default())?;
         target.finish()?;
@@ -121,12 +122,12 @@ impl App {
                     },
                     winit::event::WindowEvent::Focused(_) => {
                         let mut target = display.draw();
-                        target.clear_color(0.8, 0.98, 0.988, 1.0);
+                        target.clear_color(BACKGROUND_R, BACKGROUND_G, BACKGROUND_B, NOT_TRANSPARENT);
                         target.draw(&positions, &indices, &program, &uniforms,&Default::default())
                             .expect("Ошибка! Не удалось отрисовать кадр!");
                         target.finish()
                             .expect("Ошибка! Не удалось закончить отрисовку кадра!");
-                    }
+                    },
                     _ => {},
                 },
                 winit::event::Event::AboutToWait => {
