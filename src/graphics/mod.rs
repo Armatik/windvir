@@ -16,6 +16,38 @@ pub const ASPECT_RATIO_WIDTH: f32 = 16.;
 pub const ASPECT_RATIO_HEIGHT: f32 = 9.;
 
 
+pub struct Camera {
+    pub scale: f32,
+    pub offset_x: f32,
+    pub offset_y: f32,
+    pub theta: f32,
+    pub transform_matrix: [[f32; 4]; 4],
+    pub display_type: DisplayType,
+}
+
+
+impl Default for Camera {
+    fn default() -> Self {
+        const SCALE: f32 = 200.;
+        const THETA: f32 = 0.;
+
+        Self {
+            scale: SCALE,
+            offset_x: OFFSET_X,
+            offset_y: OFFSET_Y,
+            theta: THETA,
+            transform_matrix: [
+                [f32::cos(THETA) * SCALE * ASPECT_RATIO_HEIGHT / ASPECT_RATIO_WIDTH, -f32::sin(THETA), 0., 0.],
+                [f32::sin(THETA), f32::cos(THETA) * SCALE, 0., 0.],
+                [0., 0., 1., 0.],
+                [0., 0., 0., 1.],
+            ],
+            display_type: DisplayType::Triangles,
+        }
+    }
+}
+
+
 pub enum TransformAction {
     Increase,
     Reduce,

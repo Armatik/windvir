@@ -18,33 +18,15 @@ use std::fs;
 
 struct App {
     p: json::Persistent,
-    scale: f32,
-    offset_x: f32,
-    offset_y: f32,
-    theta: f32,
-    transform_matrix: [[f32; 4]; 4],
-    display_type: graphics::DisplayType,
+    cam: graphics::Camera
 }
 
 
 impl App {
     pub fn new(_p: json::Persistent) -> Self {
-        const SCALE: f32 = 200.;
-        const THETA: f32 = 0.;
-
         Self {
             p: _p,
-            scale: SCALE,
-            offset_x: graphics::OFFSET_X,
-            offset_y: graphics::OFFSET_Y,
-            theta: THETA,
-            transform_matrix: [
-                [f32::cos(THETA) * SCALE * graphics::ASPECT_RATIO_HEIGHT / graphics::ASPECT_RATIO_WIDTH, -f32::sin(THETA), 0., 0.],
-                [f32::sin(THETA), f32::cos(THETA) * SCALE, 0., 0.],
-                [0., 0., 1., 0.],
-                [0., 0., 0., 1.],
-            ],
-            display_type: graphics::DisplayType::Triangles,
+            cam: graphics::Camera::default(),
         }
     }
 
@@ -58,34 +40,45 @@ impl App {
             mat[0][1] = -f32::sin(theta) * scale;
             mat[1][0] = f32::sin(theta) * scale;
             mat[1][1] = f32::cos(theta) * scale;
-        };
-        
+        };        
         match action {
             graphics::TransformAction::Increase => {
-                self.scale += OFFSET_SCALE;
-                transform(&mut self.transform_matrix, self.theta, self.scale);
+                self.cam.scale += OFFSET_SCALE;
+                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
             graphics::TransformAction::Reduce => {
-                if self.scale - OFFSET_SCALE < 0. {
+                if self.cam.scale - OFFSET_SCALE < 0. {
                     return;
                 }
 
-                self.scale -= OFFSET_SCALE;
-                transform(&mut self.transform_matrix, self.theta, self.scale);
+                self.cam.scale -= OFFSET_SCALE;
+                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
-            graphics::TransformAction::MoveUp => self.offset_y -= OFFSET_Y,
-            graphics::TransformAction::MoveDown => self.offset_y += OFFSET_Y,
-            graphics::TransformAction::MoveLeft => self.offset_x += OFFSET_X,
-            graphics::TransformAction::MoveRight => self.offset_x -= OFFSET_X,
+            graphics::TransformAction::MoveUp => {
+                if self.cam.theta > 1.5 {
+                    self.cam.offset_x -= OFFSET_X;
+                } else if self.cam.theta < -1.5 {
+                    self.cam.offset_x += OFFSET_X;
+                } else if self.cam.theta > 3. || self.cam.theta < -3. {
+                    self.cam.offset_y += OFFSET_Y;
+                } else {
+                    self.cam.offset_y -= OFFSET_Y;
+                }
+            },
+            graphics::TransformAction::MoveDown => self.cam.offset_y += OFFSET_Y,
+            graphics::TransformAction::MoveLeft => self.cam.offset_x += OFFSET_X,
+            graphics::TransformAction::MoveRight => self.cam.offset_x -= OFFSET_X,
             graphics::TransformAction::RotateLeft => {
-                self.theta += OFFSET_THETA;
-                transform(&mut self.transform_matrix, self.theta, self.scale);
+                self.cam.theta += OFFSET_THETA;
+                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
             graphics::TransformAction::RotateRight => {
-                self.theta -= OFFSET_THETA;
-                transform(&mut self.transform_matrix, self.theta, self.scale);
+                self.cam.theta -= OFFSET_THETA;
+                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
         }
+
+        println!("{}", self.cam.theta);
     }
 
     fn render_frame(
@@ -95,16 +88,20 @@ impl App {
         indices: (&IndexBuffer<u16>, &IndexBuffer<u16>),
         program: &glium::Program,
     ) {
-        let uniforms = uniform! { matrix: self.transform_matrix, x_off: self.offset_x, y_off: self.offset_y };
+        let uniforms = uniform! {
+            matrix: self.cam.transform_matrix,
+            x_off: self.cam.offset_x,
+            y_off: self.cam.offset_y,
+        };
         let mut target = display.draw();
         target.clear_color(
             graphics::BACKGROUND_R,
             graphics::BACKGROUND_G,
             graphics::BACKGROUND_B,
-            graphics::NOT_TRANSPARENT
+            graphics::NOT_TRANSPARENT,
         );
 
-        match self.display_type {
+        match self.cam.display_type {
             graphics::DisplayType::Triangles => {
                 let params = glium::DrawParameters {
                     polygon_mode: glium::draw_parameters::PolygonMode::Fill,
@@ -152,7 +149,6 @@ impl App {
         
         let indices_triangle = graphics::get_triangle_indices(&buildings);
         let indices_line = graphics::get_line_indices(&buildings);
-        println!("{:?}", indices_line);
         let event_loop = winit::event_loop::EventLoopBuilder::new()
             .build()?;
         let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
@@ -231,7 +227,7 @@ impl App {
                                     winit::keyboard::KeyCode::KeyQ => self.transform_map(graphics::TransformAction::RotateLeft),
                                     winit::keyboard::KeyCode::KeyE => self.transform_map(graphics::TransformAction::RotateRight),
                                     winit::keyboard::KeyCode::KeyV => if event.state == winit::event::ElementState::Released {
-                                        self.display_type.switch();
+                                        self.cam.display_type.switch();
                                     },
                                     _ => return,
                                 }
