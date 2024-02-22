@@ -172,8 +172,6 @@ impl App {
             None,
         )?;
         self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
-
-        let mut counter = 0;
         
         event_loop.run(move |ev, window_target| {
             match ev {
