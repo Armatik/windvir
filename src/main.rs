@@ -40,8 +40,8 @@ impl App {
             theta: THETA,
             transform_matrix: [
                 [f32::cos(THETA) * SCALE * graphics::ASPECT_RATIO_HEIGHT / graphics::ASPECT_RATIO_WIDTH, -f32::sin(THETA), 0., 0.],
-                [f32::sin(THETA), f32::cos(THETA) * SCALE, -f32::sin(THETA), 0.],
-                [0., f32::sin(THETA), f32::cos(THETA), 0.],
+                [f32::sin(THETA), f32::cos(THETA) * SCALE, 0., 0.],
+                [0., 0., 1., 0.],
                 [0., 0., 0., 1.],
             ],
             display_type: graphics::DisplayType::Triangles,
@@ -175,7 +175,7 @@ impl App {
         )?;
         let indices_line = glium::IndexBuffer::new(
             &display,
-            glium::index::PrimitiveType::LineLoop,
+            glium::index::PrimitiveType::LinesList,
             &indices_line,
         )?;
         let vertex_shader_src = fs::read_to_string(graphics::VERTEX_SHADER_PATH)?;
@@ -220,13 +220,17 @@ impl App {
                                 match key {
                                     winit::keyboard::KeyCode::KeyZ => self.transform_map(graphics::TransformAction::Increase),
                                     winit::keyboard::KeyCode::KeyX => self.transform_map(graphics::TransformAction::Reduce),
-                                    winit::keyboard::KeyCode::KeyW => self.transform_map(graphics::TransformAction::MoveUp),
-                                    winit::keyboard::KeyCode::KeyS => self.transform_map(graphics::TransformAction::MoveDown),
-                                    winit::keyboard::KeyCode::KeyA => self.transform_map(graphics::TransformAction::MoveLeft),
-                                    winit::keyboard::KeyCode::KeyD => self.transform_map(graphics::TransformAction::MoveRight),
+                                    winit::keyboard::KeyCode::KeyW | winit::keyboard::KeyCode::ArrowUp => 
+                                        self.transform_map(graphics::TransformAction::MoveUp),
+                                    winit::keyboard::KeyCode::KeyS | winit::keyboard::KeyCode::ArrowDown =>
+                                        self.transform_map(graphics::TransformAction::MoveDown),
+                                    winit::keyboard::KeyCode::KeyA | winit::keyboard::KeyCode::ArrowLeft => 
+                                        self.transform_map(graphics::TransformAction::MoveLeft),
+                                    winit::keyboard::KeyCode::KeyD | winit::keyboard::KeyCode::ArrowRight => 
+                                        self.transform_map(graphics::TransformAction::MoveRight),
                                     winit::keyboard::KeyCode::KeyQ => self.transform_map(graphics::TransformAction::RotateLeft),
                                     winit::keyboard::KeyCode::KeyE => self.transform_map(graphics::TransformAction::RotateRight),
-                                    winit::keyboard::KeyCode::KeyC => if event.state == winit::event::ElementState::Released {
+                                    winit::keyboard::KeyCode::KeyV => if event.state == winit::event::ElementState::Released {
                                         self.display_type.switch();
                                     },
                                     _ => return,

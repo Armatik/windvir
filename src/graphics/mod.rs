@@ -88,14 +88,24 @@ pub fn get_line_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
 
     for building in buildings {
         let init_index = index;
+        let last_iter = building.len() - 1;
+        let penultimate_iter = building.len() - 2;
 
-        for _ in building {
+        'point_loop: for i in 0..building.len() {
+            if i == last_iter {
+                index += 1;
+                indices.append(&mut vec![index, init_index]);
+                index += 1;
+
+                continue 'point_loop;
+            }
+
             indices.append(&mut vec![index, index + 1]);
-            index += 1;
+            
+            if i != penultimate_iter {
+                index += 1;
+            }
         }
-
-        indices.append(&mut vec![index, init_index]);
-        index += 1;
     }
 
     indices
