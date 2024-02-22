@@ -13,7 +13,7 @@ use glium::{
     VertexBuffer
 };
 use graphics::Vertex;
-use std::fs;
+use std::{fs, env};
 
 
 struct App {
@@ -140,7 +140,7 @@ impl App {
         let indices_line = graphics::get_line_indices(&buildings);
         let event_loop = winit::event_loop::EventLoopBuilder::new()
             .build()?;
-        let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
+        let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
             .with_title(&self.p.name)
             .build(&event_loop);        
         implement_vertex!(Vertex, position);
@@ -238,6 +238,29 @@ impl App {
 
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = env::args();
+    let args_len = args.len();
+    let mut is_first_arg = true;
+
+    for arg in args {
+        if args_len > 1 {
+            if is_first_arg {
+                is_first_arg = false;
+
+                continue;
+            }
+
+            if &arg == "--help" || &arg == "-h" {
+                println!("wtf");
+
+                return Ok(());
+            } else {
+                panic!("Неизвестный аргумент {}", arg);
+            }
+        }
+        
+    }
+
     let p = json::Persistent::default();
     
     let mut app = App::new(p);
