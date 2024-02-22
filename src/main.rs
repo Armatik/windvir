@@ -108,43 +108,6 @@ impl App {
                 transform(&mut self.transform_matrix, self.theta, self.scale);
             },
         }
-
-        
-    }
-
-    fn get_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
-        let mut indices = Vec::<u16>::new();
-        let mut index = 0;
-
-        for building in buildings {
-            let last_iter = building.len() - 1;
-            let penultimate_iter = building.len() - 2;
-            let init_index = index;
-
-            'point_loop: for i in 0..building.len() {
-                if i == last_iter {
-                    indices.append(&mut vec![index, init_index, init_index + 1]);
-                    index += 1;
-
-                    continue 'point_loop;
-                }
-
-                if i == penultimate_iter {
-                    indices.append(&mut vec![index, index + 1, init_index]);
-                    index += 1;
-
-                    continue 'point_loop;
-                }
-
-                for j in i..building.len() {
-                    indices.append(&mut vec![index, index + 1, init_index + j as u16]);
-                }
-
-                index += 1;
-            }
-        }
-
-        indices
     }
 
     fn render_frame(
@@ -171,7 +134,7 @@ impl App {
             buildings.push(build.geometry.coordinates[0][0].clone());
         }
         
-        let indices = Self::get_indices(&buildings);
+        let indices = graphics::get_triangle_indices(&buildings);
         let event_loop = winit::event_loop::EventLoopBuilder::new()
             .build()?;
         let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
