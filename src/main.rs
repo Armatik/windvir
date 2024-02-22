@@ -40,7 +40,8 @@ impl App {
             mat[0][1] = -f32::sin(theta) * scale;
             mat[1][0] = f32::sin(theta) * scale;
             mat[1][1] = f32::cos(theta) * scale;
-        };        
+        };
+
         match action {
             graphics::TransformAction::Increase => {
                 self.cam.scale += OFFSET_SCALE;
@@ -54,17 +55,7 @@ impl App {
                 self.cam.scale -= OFFSET_SCALE;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
-            graphics::TransformAction::MoveUp => {
-                if self.cam.theta > 1.5 {
-                    self.cam.offset_x -= OFFSET_X;
-                } else if self.cam.theta < -1.5 {
-                    self.cam.offset_x += OFFSET_X;
-                } else if self.cam.theta > 3. || self.cam.theta < -3. {
-                    self.cam.offset_y += OFFSET_Y;
-                } else {
-                    self.cam.offset_y -= OFFSET_Y;
-                }
-            },
+            graphics::TransformAction::MoveUp => self.cam.offset_y -= OFFSET_Y,
             graphics::TransformAction::MoveDown => self.cam.offset_y += OFFSET_Y,
             graphics::TransformAction::MoveLeft => self.cam.offset_x += OFFSET_X,
             graphics::TransformAction::MoveRight => self.cam.offset_x -= OFFSET_X,
@@ -77,8 +68,6 @@ impl App {
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
         }
-
-        println!("{}", self.cam.theta);
     }
 
     fn render_frame(
@@ -184,6 +173,8 @@ impl App {
         )?;
         self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
 
+        let mut counter = 0;
+        
         event_loop.run(move |ev, window_target| {
             match ev {
                 winit::event::Event::WindowEvent { event, .. } => match event {
@@ -238,9 +229,6 @@ impl App {
                         }
                     }
                     _ => {},
-                },
-                winit::event::Event::AboutToWait => {
-                    window.request_redraw();
                 },
                 _ => {},
             }
