@@ -37,8 +37,8 @@ impl Default for Camera {
             offset_y: OFFSET_Y,
             theta: THETA,
             transform_matrix: [
-                [f32::cos(THETA) * SCALE * ASPECT_RATIO_HEIGHT / ASPECT_RATIO_WIDTH, -f32::sin(THETA), 0., 0.],
-                [f32::sin(THETA), f32::cos(THETA) * SCALE, 0., 0.],
+                [f32::cos(THETA) * SCALE * ASPECT_RATIO_HEIGHT / ASPECT_RATIO_WIDTH, -f32::sin(THETA) * SCALE , 0., 0.],
+                [f32::sin(THETA) * SCALE * ASPECT_RATIO_HEIGHT / ASPECT_RATIO_WIDTH, f32::cos(THETA) * SCALE, 0., 0.],
                 [0., 0., 1., 0.],
                 [0., 0., 0., 1.],
             ],

@@ -38,7 +38,7 @@ impl App {
         let transform = |mat: &mut [[f32; 4]; 4], theta: f32, scale: f32| {
             mat[0][0] = f32::cos(theta) * scale * graphics::ASPECT_RATIO_HEIGHT / graphics::ASPECT_RATIO_WIDTH;
             mat[0][1] = -f32::sin(theta) * scale;
-            mat[1][0] = f32::sin(theta) * scale;
+            mat[1][0] = f32::sin(theta) * scale * graphics::ASPECT_RATIO_HEIGHT / graphics::ASPECT_RATIO_WIDTH;
             mat[1][1] = f32::cos(theta) * scale;
         };
 
