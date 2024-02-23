@@ -13,6 +13,7 @@ use glium::{
     VertexBuffer
 };
 use graphics::Vertex;
+use winit::event_loop::EventLoop;
 use std::{fs, env};
 
 
@@ -129,50 +130,15 @@ impl App {
             .expect("Ошибка! Не удалось закончить отрисовку кадра!");
     }
 
-    pub fn start_app(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(self.p.features.len());
-
-        for building in &self.p.features {
-            buildings.push(building.geometry.coordinates[0][0].clone());
-        }
-        
-        let indices_triangle = graphics::get_triangle_indices(&buildings);
-        let indices_line = graphics::get_line_indices(&buildings);
-        let event_loop = winit::event_loop::EventLoopBuilder::new()
-            .build()?;
-        let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
-            .with_title(&self.p.name)
-            .build(&event_loop);        
-        implement_vertex!(Vertex, position);
-        let mut shape = Vec::<Vertex>::with_capacity(buildings.len());
-
-        for build in buildings {
-            for point in build {
-                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(point) })
-            }
-        }
-
-        let positions = glium::VertexBuffer::new(&display, &shape)?;
-        let indices_triangle = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::TrianglesList,
-            &indices_triangle,
-        )?;
-        let indices_line = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::LinesList,
-            &indices_line,
-        )?;
-        let vertex_shader_src = fs::read_to_string(graphics::VERTEX_SHADER_PATH)?;
-        let color_shader_src = fs::read_to_string(graphics::COLOR_SHADER_PATH)?;
-        let program = glium::Program::from_source(
-            &display,
-            &vertex_shader_src,
-            &color_shader_src,
-            None,
-        )?;
-        self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
-        
+    fn window_loop(
+        &mut self,
+        event_loop: EventLoop<()>,
+        display: Display<WindowSurface>,
+        positions: VertexBuffer<Vertex>,
+        program: glium::Program,
+        indices_triangle: IndexBuffer<u16>,
+        indices_line: IndexBuffer<u16>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         event_loop.run(move |ev, window_target| {
             match ev {
                 winit::event::Event::WindowEvent { event, .. } => match event {
@@ -233,6 +199,53 @@ impl App {
         })?;
 
         Ok(())
+    }
+
+    pub fn start_app(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(self.p.features.len());
+
+        for building in &self.p.features {
+            buildings.push(building.geometry.coordinates[0][0].clone());
+        }
+        
+        let indices_triangle = graphics::get_triangle_indices(&buildings);
+        let indices_line = graphics::get_line_indices(&buildings);
+        let event_loop = winit::event_loop::EventLoopBuilder::new()
+            .build()?;
+        let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
+            .with_title(&self.p.name)
+            .build(&event_loop);        
+        implement_vertex!(Vertex, position);
+        let mut shape = Vec::<Vertex>::with_capacity(buildings.len());
+
+        for build in buildings {
+            for point in build {
+                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(point) })
+            }
+        }
+
+        let positions = glium::VertexBuffer::new(&display, &shape)?;
+        let indices_triangle = glium::IndexBuffer::new(
+            &display,
+            glium::index::PrimitiveType::TrianglesList,
+            &indices_triangle,
+        )?;
+        let indices_line = glium::IndexBuffer::new(
+            &display,
+            glium::index::PrimitiveType::LinesList,
+            &indices_line,
+        )?;
+        let vertex_shader_src = fs::read_to_string(graphics::VERTEX_SHADER_PATH)?;
+        let color_shader_src = fs::read_to_string(graphics::COLOR_SHADER_PATH)?;
+        let program = glium::Program::from_source(
+            &display,
+            &vertex_shader_src,
+            &color_shader_src,
+            None,
+        )?;
+        self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
+
+        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line)
     }
 }
 
