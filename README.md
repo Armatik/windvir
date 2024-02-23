@@ -5,18 +5,18 @@ For compile and run project you must use command
 cargo run --release
 ```
 ## Controls
-W | ArrowUp - move up
+`W | ArrowUp` - move up
 
-A | ArrowLeft - move left
+`A | ArrowLeft` - move left
 
-S | ArrowDown - move down
+`S | ArrowDown` - move down
 
-D | ArrowRight - move right
+`D | ArrowRight` - move right
 
-Z - zoom map
+`Z` - zoom map
 
-X - redo zoom
+`X` - redo zoom
 
-Q | E - rotate map
+`Q | E` - rotate map
 
-V - change vision
+`V` - change vision
