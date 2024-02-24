@@ -19,8 +19,8 @@ pub const BACKGROUND_R: f32 = 0.8;
 pub const BACKGROUND_G: f32 = 0.98;
 pub const BACKGROUND_B: f32 = 0.988;
 pub const NOT_TRANSPARENT: f32 = 1.;
-pub const DEFAULT_WIDTH: u32 = 960;
-pub const DEFAULT_HEIGHT: u32 = 540;
+pub const DEFAULT_WIDTH: u32 = 1024;
+pub const DEFAULT_HEIGHT: u32 = 768;
 
 
 pub struct Camera {
@@ -35,7 +35,7 @@ pub struct Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        const SCALE: f32 = 230.;
+        const SCALE: f32 = 180.;
         const THETA: f32 = 0.;
 
         Self {
