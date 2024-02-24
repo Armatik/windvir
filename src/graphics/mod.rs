@@ -14,6 +14,8 @@ pub const BACKGROUND_B: f32 = 0.988;
 pub const NOT_TRANSPARENT: f32 = 1.;
 pub const ASPECT_RATIO_WIDTH: f32 = 16.;
 pub const ASPECT_RATIO_HEIGHT: f32 = 9.;
+pub const DEFAULT_WIDTH: u32 = 800;
+pub const DEFAULT_HEIGHT: u32 = 600;
 
 
 pub struct Camera {

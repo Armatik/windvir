@@ -6,14 +6,14 @@ mod json;
 mod etc;
 
 use glium::{
-    glutin::surface::WindowSurface,
+    glutin::{self, event_loop::ControlFlow},
     Display,
     IndexBuffer,
     Surface,
     VertexBuffer
 };
 use graphics::Vertex;
-use winit::event_loop::EventLoop;
+// use winit::event_loop::EventLoop;
 use std::{fs, env};
 
 
@@ -73,7 +73,7 @@ impl App {
 
     fn render_frame(
         &self,
-        display: &Display<WindowSurface>,
+        display: &Display,
         positions: &VertexBuffer<Vertex>,
         indices: (&IndexBuffer<u16>, &IndexBuffer<u16>),
         program: &glium::Program,
@@ -131,77 +131,87 @@ impl App {
     }
 
     fn window_loop(
-        &mut self,
-        event_loop: EventLoop<()>,
-        display: Display<WindowSurface>,
+        mut self,
+        event_loop: glutin::event_loop::EventLoop<()>,
+        display: Display,
         positions: VertexBuffer<Vertex>,
         program: glium::Program,
         indices_triangle: IndexBuffer<u16>,
         indices_line: IndexBuffer<u16>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        event_loop.run(move |ev, window_target| {
+    ) -> ! {
+        event_loop.run(move |ev, _, control_flow| {
             match ev {
-                winit::event::Event::WindowEvent { event, .. } => match event {
-                    winit::event::WindowEvent::CloseRequested => {
-                        window_target.exit();
-                    },
-                    winit::event::WindowEvent::Resized(window_size) => {
-                        self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
-                        display.resize(window_size.into());
-                    },
-                    winit::event::WindowEvent::Focused(_) => self.render_frame(
-                        &display,
-                        &positions,
-                        (&indices_triangle, &indices_line),
-                        &program,
-                    ),
-                    winit::event::WindowEvent::Moved(_) => self.render_frame(
-                        &display,
-                        &positions,
-                        (&indices_triangle, &indices_line),
-                        &program,
-                    ),
-                    winit::event::WindowEvent::KeyboardInput { event, is_synthetic, .. } => {
-                        if is_synthetic {
-                            return;
-                        }
+                glutin::event::Event::WindowEvent { event, .. } => {
+                    match event {
+                        glutin::event::WindowEvent::CloseRequested | glutin::event::WindowEvent::Destroyed => {
+                            *control_flow = ControlFlow::Exit;
 
-                        match event.physical_key {
-                            winit::keyboard::PhysicalKey::Code(key) => {
-                                match key {
-                                    winit::keyboard::KeyCode::KeyZ => self.transform_map(graphics::TransformAction::Increase),
-                                    winit::keyboard::KeyCode::KeyX => self.transform_map(graphics::TransformAction::Reduce),
-                                    winit::keyboard::KeyCode::KeyW | winit::keyboard::KeyCode::ArrowUp => 
-                                        self.transform_map(graphics::TransformAction::MoveUp),
-                                    winit::keyboard::KeyCode::KeyS | winit::keyboard::KeyCode::ArrowDown =>
-                                        self.transform_map(graphics::TransformAction::MoveDown),
-                                    winit::keyboard::KeyCode::KeyA | winit::keyboard::KeyCode::ArrowLeft => 
-                                        self.transform_map(graphics::TransformAction::MoveLeft),
-                                    winit::keyboard::KeyCode::KeyD | winit::keyboard::KeyCode::ArrowRight => 
-                                        self.transform_map(graphics::TransformAction::MoveRight),
-                                    winit::keyboard::KeyCode::KeyQ => self.transform_map(graphics::TransformAction::RotateLeft),
-                                    winit::keyboard::KeyCode::KeyE => self.transform_map(graphics::TransformAction::RotateRight),
-                                    winit::keyboard::KeyCode::KeyV => if event.state == winit::event::ElementState::Released {
+                            return;
+                        },
+                        glutin::event::WindowEvent::Resized(_) => self.render_frame(
+                            &display,
+                            &positions,
+                            (&indices_triangle, &indices_line),
+                            &program,
+                        ),
+                        glutin::event::WindowEvent::Moved(_) => self.render_frame(
+                            &display,
+                            &positions,
+                            (&indices_triangle, &indices_line),
+                            &program
+                        ),
+                        _ => {},
+                    }
+                },
+                glutin::event::Event::NewEvents(cause) => {
+                    match cause {
+                        glutin::event::StartCause::Init => {
+                            self.render_frame(
+                                &display,
+                                &positions,
+                            (&indices_triangle, &indices_line),
+                                &program,
+                            );
+                        },
+                        _ => {},
+                    }
+                },
+                glutin::event::Event::DeviceEvent { event, .. } => {
+                    match event {
+                        glutin::event::DeviceEvent::Key(key) => {
+                            println!("{:?}", key);
+                            match key.virtual_keycode {
+                                Some(cap) => match cap {
+                                    glutin::event::VirtualKeyCode::V => if key.state == glutin::event::ElementState::Released {
                                         self.cam.display_type.switch();
                                     },
-                                    _ => return,
-                                }
+                                    glutin::event::VirtualKeyCode::W | glutin::event::VirtualKeyCode::Up => self.transform_map(graphics::TransformAction::MoveUp),
+                                    glutin::event::VirtualKeyCode::A | glutin::event::VirtualKeyCode::Left =>
+                                        self.transform_map(graphics::TransformAction::MoveLeft),
+                                    glutin::event::VirtualKeyCode::S | glutin::event::VirtualKeyCode::Down =>
+                                        self.transform_map(graphics::TransformAction::MoveDown),
+                                    glutin::event::VirtualKeyCode::D | glutin::event::VirtualKeyCode::Right =>
+                                        self.transform_map(graphics::TransformAction::MoveRight),
+                                    glutin::event::VirtualKeyCode::Q => self.transform_map(graphics::TransformAction::RotateLeft),
+                                    glutin::event::VirtualKeyCode::E => self.transform_map(graphics::TransformAction::RotateRight),
+                                    glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
+                                    glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
+                                    _ => {},
+                                },
+                                None => return,
+                            }
 
-                                self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
-                            },
-                            winit::keyboard::PhysicalKey::Unidentified(_) => return,
-                        }
+                            self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
+                        },
+                        _ => {},
                     }
-                    _ => {},
                 },
                 _ => {},
             }
-        })?;
-
-        Ok(())
+        });
     }
 
-    pub fn start_app(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
         let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(self.p.features.len());
 
         for building in &self.p.features {
@@ -210,11 +220,14 @@ impl App {
         
         let indices_triangle = graphics::get_triangle_indices(&buildings);
         let indices_line = graphics::get_line_indices(&buildings);
-        let event_loop = winit::event_loop::EventLoopBuilder::new()
-            .build()?;
-        let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
+        let event_loop = glutin::event_loop::EventLoop::new();
+        let window = glutin::window::WindowBuilder::new()
             .with_title(&self.p.name)
-            .build(&event_loop);        
+            .with_inner_size(glutin::dpi::LogicalSize::new(graphics::DEFAULT_WIDTH, graphics::DEFAULT_HEIGHT));
+        let context = glutin::ContextBuilder::new()
+            .with_vsync(true)
+            .with_multisampling(8);
+        let display = glium::Display::new(window, context, &event_loop)?;
         implement_vertex!(Vertex, position);
         let mut shape = Vec::<Vertex>::with_capacity(buildings.len());
 
@@ -243,9 +256,10 @@ impl App {
             &color_shader_src,
             None,
         )?;
-        self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
 
-        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line)
+        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line);
+
+        Ok(())
     }
 }
 
@@ -276,7 +290,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let p = json::Persistent::default();
     
-    let mut app = App::new(p);
+    let app = App::new(p);
     app.start_app()?;
     
     Ok(())
