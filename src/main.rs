@@ -13,6 +13,7 @@ use glium::{
 };
 use graphics::Vertex;
 use std::{fs, env};
+use json::{geojson, default_json};
 
 
 type WindowWidth = f32;
@@ -20,26 +21,24 @@ type WindowHeight = f32;
 
 
 struct App {    
-    p: json::Persistent,
+    p_g: geojson::PersistentG,
+    p_j: default_json::PersistentJ,
     cam: graphics::Camera,
     window_size: (WindowWidth, WindowHeight),
 }
 
 
 impl App {
-    pub fn new(_p: json::Persistent) -> Self {
+    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ) -> Self {
         Self {
-            p: _p,
+            p_g: _p_g,
+            p_j: _p_j,
             cam: graphics::Camera::default(),
-            window_size: (graphics::DEFAULT_WIDTH as f32, graphics::DEFAULT_HEIGHT as f32),
+            window_size: (_p_j.resolution.width as f32, _p_j.resolution.height as f32),
         }
     }
 
     fn transform_map(&mut self, action: graphics::TransformAction) {
-        const OFFSET_SCALE: f32 = 7.;
-        const OFFSET_X: f32 = 0.0001;
-        const OFFSET_Y: f32 = 0.00007;
-        const OFFSET_THETA: f32 = 0.04;
         let transform = |mat: &mut [[f32; 4]; 4], theta: f32, scale: f32| {
             mat[0][0] = f32::cos(theta) * scale * self.window_size.1 / self.window_size.0;
             mat[0][1] = -f32::sin(theta) * scale;
@@ -49,27 +48,27 @@ impl App {
 
         match action {
             graphics::TransformAction::Increase => {
-                self.cam.scale += OFFSET_SCALE;
+                self.cam.scale += self.p_j.movement.scale;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
             graphics::TransformAction::Reduce => {
-                if self.cam.scale - OFFSET_SCALE < 0. {
+                if self.cam.scale - self.p_j.movement.scale < 0. {
                     return;
                 }
 
-                self.cam.scale -= OFFSET_SCALE;
+                self.cam.scale -= self.p_j.movement.scale;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
-            graphics::TransformAction::MoveUp => self.cam.offset_y -= OFFSET_Y,
-            graphics::TransformAction::MoveDown => self.cam.offset_y += OFFSET_Y,
-            graphics::TransformAction::MoveLeft => self.cam.offset_x += OFFSET_X,
-            graphics::TransformAction::MoveRight => self.cam.offset_x -= OFFSET_X,
+            graphics::TransformAction::MoveUp => self.cam.offset_y -= self.p_j.movement.y,
+            graphics::TransformAction::MoveDown => self.cam.offset_y += self.p_j.movement.y,
+            graphics::TransformAction::MoveLeft => self.cam.offset_x += self.p_j.movement.x,
+            graphics::TransformAction::MoveRight => self.cam.offset_x -= self.p_j.movement.x,
             graphics::TransformAction::RotateLeft => {
-                self.cam.theta += OFFSET_THETA;
+                self.cam.theta += self.p_j.movement.theta;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
             graphics::TransformAction::RotateRight => {
-                self.cam.theta -= OFFSET_THETA;
+                self.cam.theta -= self.p_j.movement.theta;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
         }
@@ -89,10 +88,10 @@ impl App {
         };
         let mut target = display.draw();
         target.clear_color(
-            graphics::BACKGROUND_R,
-            graphics::BACKGROUND_G,
-            graphics::BACKGROUND_B,
-            graphics::NOT_TRANSPARENT,
+            self.p_j.background_color.r,
+            self.p_j.background_color.g,
+            self.p_j.background_color.b,
+            self.p_j.background_color.a,
         );
 
         match self.cam.display_type {
@@ -219,9 +218,9 @@ impl App {
     }
 
     pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(self.p.features.len());
+        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(self.p_g.features.len());
 
-        for building in &self.p.features {
+        for building in &self.p_g.features {
             buildings.push(building.geometry.coordinates[0][0].clone());
         }
         
@@ -229,8 +228,8 @@ impl App {
         let indices_line = graphics::get_line_indices(&buildings);
         let event_loop = glutin::event_loop::EventLoop::new();
         let window = glutin::window::WindowBuilder::new()
-            .with_title(&self.p.name)
-            .with_inner_size(glutin::dpi::LogicalSize::new(graphics::DEFAULT_WIDTH, graphics::DEFAULT_HEIGHT));
+            .with_title(&self.p_g.name)
+            .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
         let context = glutin::ContextBuilder::new()
             .with_vsync(true)
             ;// .with_multisampling(8);
@@ -263,6 +262,7 @@ impl App {
             &color_shader_src,
             None,
         )?;
+        log::info!("Все здания успешно просчитаны и заданы!");
 
         self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line);
 
@@ -295,9 +295,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         
     }
 
-    let p = json::Persistent::default();
+    let p_g = geojson::PersistentG::default();
+    let p_j = default_json::PersistentJ::default();
     
-    let app = App::new(p);
+    let app = App::new(p_g, p_j);
     app.start_app()?;
     
     Ok(())

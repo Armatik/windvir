@@ -1,4 +1,5 @@
 use glium::IndexBuffer;
+use super::default_json;
 
 
 #[derive(Copy, Clone)]
@@ -13,14 +14,6 @@ pub type IndciesLines = IndexBuffer<u16>;
 
 pub const VERTEX_SHADER_PATH: &str = "src/graphics/vertex_shader.vert";
 pub const COLOR_SHADER_PATH: &str = "src/graphics/color_shader.vert";
-pub const OFFSET_X: f32 = -45.395;
-pub const OFFSET_Y: f32 = -52.293;
-pub const BACKGROUND_R: f32 = 0.8;
-pub const BACKGROUND_G: f32 = 0.98;
-pub const BACKGROUND_B: f32 = 0.988;
-pub const NOT_TRANSPARENT: f32 = 1.;
-pub const DEFAULT_WIDTH: u32 = 1024;
-pub const DEFAULT_HEIGHT: u32 = 768;
 
 
 pub struct Camera {
@@ -35,17 +28,16 @@ pub struct Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        const SCALE: f32 = 180.;
-        const THETA: f32 = 0.;
+        let p_j = default_json::PersistentJ::default();
 
         Self {
-            scale: SCALE,
-            offset_x: OFFSET_X,
-            offset_y: OFFSET_Y,
-            theta: THETA,
+            scale: p_j.scale,
+            offset_x: p_j.map_offset.x,
+            offset_y: p_j.map_offset.y,
+            theta: p_j.theta,
             transform_matrix: [
-                [f32::cos(THETA) * SCALE * DEFAULT_HEIGHT as f32 / DEFAULT_WIDTH as f32, -f32::sin(THETA) * SCALE , 0., 0.],
-                [f32::sin(THETA) * SCALE * DEFAULT_HEIGHT as f32 / DEFAULT_WIDTH as f32, f32::cos(THETA) * SCALE, 0., 0.],
+                [f32::cos(p_j.theta) * p_j.scale * p_j.resolution.height as f32 / p_j.resolution.width as f32, -f32::sin(p_j.theta) * p_j.scale , 0., 0.],
+                [f32::sin(p_j.theta) * p_j.scale * p_j.resolution.height as f32 / p_j.resolution.width as f32, f32::cos(p_j.theta) * p_j.scale, 0., 0.],
                 [0., 0., 1., 0.],
                 [0., 0., 0., 1.],
             ],
