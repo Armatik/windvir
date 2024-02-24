@@ -13,7 +13,6 @@ use glium::{
     VertexBuffer
 };
 use graphics::Vertex;
-// use winit::event_loop::EventLoop;
 use std::{fs, env};
 
 
