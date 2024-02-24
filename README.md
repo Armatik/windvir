@@ -20,3 +20,5 @@ cargo run --release
 `Q | E` - rotate map
 
 `V` - change vision
+## Settings
+You can change default settings in file `default_settings.json`
