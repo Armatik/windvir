@@ -8,7 +8,6 @@ mod etc;
 use glium::{
     glutin::{self, event_loop::ControlFlow},
     Display,
-    IndexBuffer,
     Surface,
     VertexBuffer
 };
@@ -16,9 +15,14 @@ use graphics::Vertex;
 use std::{fs, env};
 
 
-struct App {
+type WindowWidth = f32;
+type WindowHeight = f32;
+
+
+struct App {    
     p: json::Persistent,
-    cam: graphics::Camera
+    cam: graphics::Camera,
+    window_size: (WindowWidth, WindowHeight),
 }
 
 
@@ -27,6 +31,7 @@ impl App {
         Self {
             p: _p,
             cam: graphics::Camera::default(),
+            window_size: (graphics::DEFAULT_WIDTH as f32, graphics::DEFAULT_HEIGHT as f32),
         }
     }
 
@@ -36,9 +41,9 @@ impl App {
         const OFFSET_Y: f32 = 0.00007;
         const OFFSET_THETA: f32 = 0.04;
         let transform = |mat: &mut [[f32; 4]; 4], theta: f32, scale: f32| {
-            mat[0][0] = f32::cos(theta) * scale * graphics::ASPECT_RATIO_HEIGHT / graphics::ASPECT_RATIO_WIDTH;
+            mat[0][0] = f32::cos(theta) * scale * self.window_size.1 / self.window_size.0;
             mat[0][1] = -f32::sin(theta) * scale;
-            mat[1][0] = f32::sin(theta) * scale * graphics::ASPECT_RATIO_HEIGHT / graphics::ASPECT_RATIO_WIDTH;
+            mat[1][0] = f32::sin(theta) * scale * self.window_size.1 / self.window_size.0;
             mat[1][1] = f32::cos(theta) * scale;
         };
 
@@ -74,7 +79,7 @@ impl App {
         &self,
         display: &Display,
         positions: &VertexBuffer<Vertex>,
-        indices: (&IndexBuffer<u16>, &IndexBuffer<u16>),
+        indices: (&graphics::IndciesTriangles, &graphics::IndciesLines),
         program: &glium::Program,
     ) {
         let uniforms = uniform! {
@@ -135,8 +140,8 @@ impl App {
         display: Display,
         positions: VertexBuffer<Vertex>,
         program: glium::Program,
-        indices_triangle: IndexBuffer<u16>,
-        indices_line: IndexBuffer<u16>,
+        indices_triangle: graphics::IndciesTriangles,
+        indices_line: graphics::IndciesLines,
     ) -> ! {
         event_loop.run(move |ev, _, control_flow| {
             match ev {
@@ -147,12 +152,16 @@ impl App {
 
                             return;
                         },
-                        glutin::event::WindowEvent::Resized(_) => self.render_frame(
-                            &display,
-                            &positions,
-                            (&indices_triangle, &indices_line),
-                            &program,
-                        ),
+                        glutin::event::WindowEvent::Resized(size) => {
+                            self.window_size.0 = size.width as f32;
+                            self.window_size.1 = size.height as f32;
+                            self.render_frame(
+                                &display,
+                                &positions,
+                                (&indices_triangle, &indices_line),
+                                &program,
+                            );
+                        },
                         glutin::event::WindowEvent::Moved(_) => self.render_frame(
                             &display,
                             &positions,
@@ -178,7 +187,6 @@ impl App {
                 glutin::event::Event::DeviceEvent { event, .. } => {
                     match event {
                         glutin::event::DeviceEvent::Key(key) => {
-                            println!("{:?}", key);
                             match key.virtual_keycode {
                                 Some(cap) => match cap {
                                     glutin::event::VirtualKeyCode::V => if key.state == glutin::event::ElementState::Released {
@@ -225,7 +233,7 @@ impl App {
             .with_inner_size(glutin::dpi::LogicalSize::new(graphics::DEFAULT_WIDTH, graphics::DEFAULT_HEIGHT));
         let context = glutin::ContextBuilder::new()
             .with_vsync(true)
-            .with_multisampling(8);
+            ;// .with_multisampling(8);
         let display = glium::Display::new(window, context, &event_loop)?;
         implement_vertex!(Vertex, position);
         let mut shape = Vec::<Vertex>::with_capacity(buildings.len());

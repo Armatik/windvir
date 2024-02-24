@@ -1,7 +1,14 @@
+use glium::IndexBuffer;
+
+
 #[derive(Copy, Clone)]
 pub struct Vertex {
     pub position: [f64; 2],
 }
+
+
+pub type IndciesTriangles = IndexBuffer<u16>;
+pub type IndciesLines = IndexBuffer<u16>;
 
 
 pub const VERTEX_SHADER_PATH: &str = "src/graphics/vertex_shader.vert";
@@ -12,8 +19,6 @@ pub const BACKGROUND_R: f32 = 0.8;
 pub const BACKGROUND_G: f32 = 0.98;
 pub const BACKGROUND_B: f32 = 0.988;
 pub const NOT_TRANSPARENT: f32 = 1.;
-pub const ASPECT_RATIO_WIDTH: f32 = 16.;
-pub const ASPECT_RATIO_HEIGHT: f32 = 9.;
 pub const DEFAULT_WIDTH: u32 = 800;
 pub const DEFAULT_HEIGHT: u32 = 600;
 
@@ -39,8 +44,8 @@ impl Default for Camera {
             offset_y: OFFSET_Y,
             theta: THETA,
             transform_matrix: [
-                [f32::cos(THETA) * SCALE * ASPECT_RATIO_HEIGHT / ASPECT_RATIO_WIDTH, -f32::sin(THETA) * SCALE , 0., 0.],
-                [f32::sin(THETA) * SCALE * ASPECT_RATIO_HEIGHT / ASPECT_RATIO_WIDTH, f32::cos(THETA) * SCALE, 0., 0.],
+                [f32::cos(THETA) * SCALE * DEFAULT_HEIGHT as f32 / DEFAULT_WIDTH as f32, -f32::sin(THETA) * SCALE , 0., 0.],
+                [f32::sin(THETA) * SCALE * DEFAULT_HEIGHT as f32 / DEFAULT_WIDTH as f32, f32::cos(THETA) * SCALE, 0., 0.],
                 [0., 0., 1., 0.],
                 [0., 0., 0., 1.],
             ],
