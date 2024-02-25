@@ -149,7 +149,7 @@ impl App {
                         glutin::event::WindowEvent::CloseRequested | glutin::event::WindowEvent::Destroyed => {
                             *control_flow = ControlFlow::Exit;
 
-                            return;
+                            std::process::exit(0);
                         },
                         glutin::event::WindowEvent::Resized(size) => {
                             self.window_size.0 = size.width as f32;
