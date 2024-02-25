@@ -20,5 +20,6 @@
         "theta": 0.04
     },
     "scale": 180.0,
-    "theta": 0.0
+    "theta": 0.0,
+    "multisampling": 8
 }

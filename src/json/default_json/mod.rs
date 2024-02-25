@@ -44,6 +44,7 @@ pub struct PersistentJ {
     pub movement: Movement,
     pub scale: f32,
     pub theta: f32,
+    pub multisampling: u16,
 }
 
 
@@ -118,11 +119,13 @@ impl Default for PersistentJ {
                 movement: data.movement,
                 scale: data.scale,
                 theta: data.theta,
+                multisampling: data.multisampling,
             }
         } else {
             Self {
                 scale: 180.,
                 theta: 0.,
+                multisampling: 8,
                 ..Default::default()
             }
         }
