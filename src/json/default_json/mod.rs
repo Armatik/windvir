@@ -45,6 +45,7 @@ pub struct PersistentJ {
     pub scale: f32,
     pub theta: f32,
     pub multisampling: u16,
+    pub depth_buffer: u8,
 }
 
 
@@ -120,12 +121,14 @@ impl Default for PersistentJ {
                 scale: data.scale,
                 theta: data.theta,
                 multisampling: data.multisampling,
+                depth_buffer: data.depth_buffer,
             }
         } else {
             Self {
                 scale: 180.,
                 theta: 0.,
                 multisampling: 8,
+                depth_buffer: 24,
                 ..Default::default()
             }
         }

@@ -232,6 +232,7 @@ impl App {
             .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
         let context = glutin::ContextBuilder::new()
             .with_vsync(true)
+            .with_depth_buffer(self.p_j.depth_buffer)
             .with_multisampling(self.p_j.multisampling);
         let display = glium::Display::new(window, context, &event_loop)?;
         implement_vertex!(Vertex, position);

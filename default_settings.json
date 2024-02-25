@@ -21,5 +21,6 @@
     },
     "scale": 180.0,
     "theta": 0.0,
-    "multisampling": 8
+    "multisampling": 16,
+    "depth_buffer": 24
 }
