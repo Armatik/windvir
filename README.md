@@ -22,3 +22,5 @@ cargo run --release
 `V` - change vision
 ## Settings
 You can change default settings in file `default_settings.json`
+
+In the graphics column you can enable certain settings. If `multisampling` or  `depth buffering` is disabled, the corresponding parameters will not work
