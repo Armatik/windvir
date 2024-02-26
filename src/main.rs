@@ -233,14 +233,25 @@ impl App {
             .with_title(&self.p_g.name)
             .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
         let context = if self.p_j.graphics.multisampling_on {
-            glutin::ContextBuilder::new()
-                .with_vsync(self.p_j.graphics.vsync_on)
-                .with_depth_buffer(self.p_j.graphics.depth_buffer)
-                .with_multisampling(self.p_j.graphics.multisampling)
+            if self.p_j.graphics.depth_buffering_on {
+                glutin::ContextBuilder::new()
+                    .with_vsync(self.p_j.graphics.vsync_on)
+                    .with_depth_buffer(self.p_j.graphics.depth_buffer)
+                    .with_multisampling(self.p_j.graphics.multisampling)
+            } else {
+                glutin::ContextBuilder::new()
+                    .with_vsync(self.p_j.graphics.vsync_on)
+                    .with_multisampling(self.p_j.graphics.multisampling)
+            }
         } else {
-            glutin::ContextBuilder::new()
-                .with_vsync(self.p_j.graphics.vsync_on)
-                .with_depth_buffer(self.p_j.graphics.depth_buffer)
+            if self.p_j.graphics.depth_buffering_on {
+                glutin::ContextBuilder::new()
+                    .with_vsync(self.p_j.graphics.vsync_on)
+                    .with_depth_buffer(self.p_j.graphics.depth_buffer)
+            } else {
+                glutin::ContextBuilder::new()
+                   .with_vsync(self.p_j.graphics.vsync_on)
+            }
         };
         let display = glium::Display::new(window, context, &event_loop)?;
         implement_vertex!(Vertex, position);
