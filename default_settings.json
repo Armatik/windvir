@@ -19,8 +19,14 @@
         "scale": 7.0,
         "theta": 0.04
     },
+    "graphics": {
+        "multisampling_on": false,
+        "depth_buffering_on": true,
+        "vsync_on": true,
+        "dithering_on": true,
+        "multisampling": 16,
+        "depth_buffer": 24
+    },
     "scale": 180.0,
-    "theta": 0.0,
-    "multisampling": 16,
-    "depth_buffer": 24
+    "theta": 0.0
 }

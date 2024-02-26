@@ -93,13 +93,15 @@ impl App {
             self.p_j.background_color.b,
             self.p_j.background_color.a,
         );
+        let multisampling_on = self.p_j.graphics.multisampling_on;
+        let dithering_on = self.p_j.graphics.dithering_on;
 
         match self.cam.display_type {
             graphics::DisplayType::Triangles => {
                 let params = glium::DrawParameters {
                     polygon_mode: glium::draw_parameters::PolygonMode::Fill,
-                    multisampling: true,
-                    dithering: true,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
@@ -109,8 +111,8 @@ impl App {
             graphics::DisplayType::TrianglesLines => {
                 let params = glium::DrawParameters {
                     polygon_mode: glium::draw_parameters::PolygonMode::Line,
-                    multisampling: true,
-                    dithering: true,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
@@ -119,8 +121,8 @@ impl App {
             },
             graphics::DisplayType::Lines => {
                 let params = glium::DrawParameters {
-                    multisampling: true,
-                    dithering: true,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
@@ -230,10 +232,16 @@ impl App {
         let window = glutin::window::WindowBuilder::new()
             .with_title(&self.p_g.name)
             .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
-        let context = glutin::ContextBuilder::new()
-            .with_vsync(true)
-            .with_depth_buffer(self.p_j.depth_buffer)
-            .with_multisampling(self.p_j.multisampling);
+        let context = if self.p_j.graphics.multisampling_on {
+            glutin::ContextBuilder::new()
+                .with_vsync(self.p_j.graphics.vsync_on)
+                .with_depth_buffer(self.p_j.graphics.depth_buffer)
+                .with_multisampling(self.p_j.graphics.multisampling)
+        } else {
+            glutin::ContextBuilder::new()
+                .with_vsync(self.p_j.graphics.vsync_on)
+                .with_depth_buffer(self.p_j.graphics.depth_buffer)
+        };
         let display = glium::Display::new(window, context, &event_loop)?;
         implement_vertex!(Vertex, position);
         let mut shape = Vec::<Vertex>::with_capacity(buildings.len());

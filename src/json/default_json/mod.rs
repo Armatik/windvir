@@ -37,15 +37,25 @@ pub struct Movement {
 
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
+pub struct Graphics {
+    pub multisampling_on: bool,
+    pub depth_buffering_on: bool,
+    pub vsync_on: bool,
+    pub dithering_on: bool,
+    pub multisampling: u16,
+    pub depth_buffer: u8,
+}
+
+
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct PersistentJ {
     pub resolution: Resolution,
     pub map_offset: MapOffset,
     pub background_color: BackgroundColor,
     pub movement: Movement,
+    pub graphics: Graphics,
     pub scale: f32,
     pub theta: f32,
-    pub multisampling: u16,
-    pub depth_buffer: u8,
 }
 
 
@@ -93,6 +103,20 @@ impl Default for Movement {
 }
 
 
+impl Default for Graphics {
+    fn default() -> Self {
+        Self {
+            multisampling_on: true,
+            depth_buffering_on: true,
+            vsync_on: true,
+            dithering_on: true,
+            multisampling: 8,
+            depth_buffer: 24,
+        }
+    }
+}
+
+
 impl Default for PersistentJ {
     fn default() -> Self {
         let path = match fs::canonicalize(FILE_PATH) {
@@ -118,17 +142,14 @@ impl Default for PersistentJ {
                 map_offset: data.map_offset,
                 background_color: data.background_color,
                 movement: data.movement,
+                graphics: data.graphics,
                 scale: data.scale,
                 theta: data.theta,
-                multisampling: data.multisampling,
-                depth_buffer: data.depth_buffer,
             }
         } else {
             Self {
                 scale: 180.,
                 theta: 0.,
-                multisampling: 8,
-                depth_buffer: 24,
                 ..Default::default()
             }
         }
