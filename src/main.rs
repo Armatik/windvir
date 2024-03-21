@@ -4,6 +4,7 @@ extern crate glium;
 mod graphics;
 mod json;
 mod etc;
+mod ffi;
 
 use glium::{
     glutin::{self, event_loop::ControlFlow},
@@ -250,7 +251,7 @@ impl App {
                     .with_depth_buffer(self.p_j.graphics.depth_buffer)
             } else {
                 glutin::ContextBuilder::new()
-                   .with_vsync(self.p_j.graphics.vsync_on)
+                    .with_vsync(self.p_j.graphics.vsync_on)
             }
         };
         let display = glium::Display::new(window, context, &event_loop)?;
@@ -284,14 +285,14 @@ impl App {
         )?;
         log::info!("Все здания успешно просчитаны и заданы!");
 
-        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line);
-
-        Ok(())
+        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line)
     }
 }
 
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+    unsafe { ffi::call_hello(); };
+
     let args = env::args();
     let args_len = args.len();
     let mut is_first_arg = true;

@@ -6,3 +6,5 @@
 /test
 Cargo.lock
 .vscode
+/lib
+/rust_from_c/target
