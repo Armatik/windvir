@@ -4,7 +4,8 @@ extern crate glium;
 mod graphics;
 mod json;
 mod etc;
-mod ffi;
+pub mod ffi;
+pub mod test;
 
 use glium::{
     glutin::{self, event_loop::ControlFlow},
@@ -21,7 +22,7 @@ type WindowWidth = f32;
 type WindowHeight = f32;
 
 
-struct App {    
+pub struct App {    
     p_g: geojson::PersistentG,
     p_j: default_json::PersistentJ,
     cam: graphics::Camera,
@@ -170,6 +171,33 @@ impl App {
                             (&indices_triangle, &indices_line),
                             &program
                         ),
+                        #[cfg(unix)]
+                        #[cfg(feature = "wayland")]
+                        glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
+                            if !is_synthetic {
+                                if let Some(key) = input.virtual_keycode {
+                                    match key {
+                                        glutin::event::VirtualKeyCode::V => if input.state == glutin::event::ElementState::Released {
+                                            self.cam.display_type.switch();
+                                        },
+                                        glutin::event::VirtualKeyCode::W | glutin::event::VirtualKeyCode::Up => self.transform_map(graphics::TransformAction::MoveUp),
+                                        glutin::event::VirtualKeyCode::A | glutin::event::VirtualKeyCode::Left =>
+                                            self.transform_map(graphics::TransformAction::MoveLeft),
+                                        glutin::event::VirtualKeyCode::S | glutin::event::VirtualKeyCode::Down =>
+                                            self.transform_map(graphics::TransformAction::MoveDown),
+                                        glutin::event::VirtualKeyCode::D | glutin::event::VirtualKeyCode::Right =>
+                                            self.transform_map(graphics::TransformAction::MoveRight),
+                                        glutin::event::VirtualKeyCode::Q => self.transform_map(graphics::TransformAction::RotateLeft),
+                                        glutin::event::VirtualKeyCode::E => self.transform_map(graphics::TransformAction::RotateRight),
+                                        glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
+                                        glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
+                                        _ => {},
+                                    }
+                                }
+                            }
+
+                            self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
+                        }
                         _ => {},
                     }
                 },
@@ -291,8 +319,6 @@ impl App {
 
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    unsafe { ffi::call_hello(); };
-
     let args = env::args();
     let args_len = args.len();
     let mut is_first_arg = true;
