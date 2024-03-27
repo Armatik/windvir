@@ -1,15 +1,27 @@
 #include <stdio.h>
+#include <stdint.h>
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
-extern void hello_rust();
+typedef struct
+{
+	double **data;
+	uint64_t lenVertex;  // Кол-во вершин в векторе. Вершина указывает на x и y
+} Building;
 
 
-void
-call_hello(void);
+typedef struct
+{
+	Building *data;
+  uint64_t lenBuildings;  // Кол-во зданий в векторе
+} Data;
+
+
+Data
+c_func_test(Data data);
 
 #ifdef __cplusplus
 }

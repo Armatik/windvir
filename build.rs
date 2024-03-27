@@ -9,13 +9,10 @@ fn main() {
     let mut cfg = cc::Build::new();
     cfg.cuda(false);
     cfg.include("./include")
-        .flag("-L")
-        .flag("./libwindvir/target/release")
-        .flag("-llibwindvir")
         .file("./src/ffi/trans.c")
         .out_dir(dst.join("lib"))
         .flag("-O3")
-        .compile("libwindvir_c.a");
+        .compile("libwindvir.a");
 
     println!("cargo:root={}", dst.display());
     println!("cargo:include={}", dst.join("include").display());

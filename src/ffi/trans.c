@@ -1,9 +1,8 @@
 #include <trans.h>
 
 
-void
-call_hello(void)
+Data
+c_func_test(Data data)
 {
-	hello_rust();
-	printf("Hello Rust!\n");
+	return data;
 }

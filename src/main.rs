@@ -4,8 +4,7 @@ extern crate glium;
 mod graphics;
 mod json;
 mod etc;
-pub mod ffi;
-pub mod test;
+mod ffi;
 
 use glium::{
     glutin::{self, event_loop::ControlFlow},
@@ -27,17 +26,34 @@ pub struct App {
     p_j: default_json::PersistentJ,
     cam: graphics::Camera,
     window_size: (WindowWidth, WindowHeight),
+    buildings: Vec<Vec<Vec<f64>>>,
 }
 
 
 impl App {
-    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ) -> Self {
+    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ, def_buildings: Option<Vec<Vec<Vec<f64>>>>) -> Self {
+        let _buildings = match def_buildings {
+            Some(data) => data,
+            None => Self::trans_persistent(&_p_g),
+        };
+
         Self {
             p_g: _p_g,
             p_j: _p_j,
             cam: graphics::Camera::default(),
             window_size: (_p_j.resolution.width as f32, _p_j.resolution.height as f32),
+            buildings: _buildings,
         }
+    }
+
+    pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<Vec<Vec<f64>>> {
+        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
+
+        for building in &p_g.features {
+            buildings.push(building.geometry.coordinates[0][0].clone());
+        }
+
+        buildings
     }
 
     fn transform_map(&mut self, action: graphics::TransformAction) {
@@ -153,7 +169,10 @@ impl App {
                         glutin::event::WindowEvent::CloseRequested | glutin::event::WindowEvent::Destroyed => {
                             *control_flow = ControlFlow::Exit;
 
-                            std::process::exit(0);
+                            #[cfg(windows)]
+                            {
+                                std::process::exit(0);
+                            }
                         },
                         glutin::event::WindowEvent::Resized(size) => {
                             self.window_size.0 = size.width as f32;
@@ -249,14 +268,8 @@ impl App {
     }
 
     pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(self.p_g.features.len());
-
-        for building in &self.p_g.features {
-            buildings.push(building.geometry.coordinates[0][0].clone());
-        }
-        
-        let indices_triangle = graphics::get_triangle_indices(&buildings);
-        let indices_line = graphics::get_line_indices(&buildings);
+        let indices_triangle = graphics::get_triangle_indices(&self.buildings);
+        let indices_line = graphics::get_line_indices(&self.buildings);
         let event_loop = glutin::event_loop::EventLoop::new();
         let window = glutin::window::WindowBuilder::new()
             .with_title(&self.p_g.name)
@@ -284,11 +297,11 @@ impl App {
         };
         let display = glium::Display::new(window, context, &event_loop)?;
         implement_vertex!(Vertex, position);
-        let mut shape = Vec::<Vertex>::with_capacity(buildings.len());
+        let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
-        for build in buildings {
+        for build in &self.buildings {
             for point in build {
-                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(point) })
+                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(point.clone()) })
             }
         }
 
@@ -335,6 +348,39 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("wtf");
 
                 return Ok(());
+            } else if &arg == "--c" {
+                let p_g = geojson::PersistentG::default();
+                let p_j = default_json::PersistentJ::default();
+                let data = App::trans_persistent(&p_g);
+                let data = ffi::Data::new(data);
+
+                let out = unsafe { ffi::c_func_test(data) };
+
+                let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
+                let mut counter = 0;
+
+                for i in 1..=out.len_buildings as isize {
+                    let mut build_vertex = Vec::<Vec<f64>>::new();
+                    let build = unsafe { out.data.offset(i) };
+
+                    counter += 1;
+                    // for j in 1..=build.len_vertex as isize {
+                    //     let vertex = unsafe { *build.data.offset(j) };
+                    //     println!("{vertex:?}");
+                    //     let x = unsafe { *vertex.offset(1) };
+                    //     let y = unsafe { *vertex.offset(2) };
+                    //     let point = vec![x, y];
+                    //     println!("{point:?}");
+                    //     // build_vertex.push(point);
+                    // }
+
+                    buildings.push(build_vertex);
+                }
+
+                let app = App::new(p_g, p_j, Some(buildings));
+                app.start_app().unwrap();
+
+                return Ok(());
             } else {
                 panic!("Неизвестный аргумент {}", arg);
             }
@@ -345,7 +391,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let p_g = geojson::PersistentG::default();
     let p_j = default_json::PersistentJ::default();
     
-    let app = App::new(p_g, p_j);
+    let app = App::new(p_g, p_j, None);
     app.start_app()?;
     
     Ok(())
