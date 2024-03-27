@@ -4,6 +4,14 @@ For compile and run project you must use command
 ```
 cargo run --release
 ```
+If you want to run project using `Wayland` compositor, then you need compile with command
+```
+cargo run --release --features wayland
+```
+If you want to use `FFI` protocol, then you need compile with command
+```
+cargo run --release -- --c
+```
 ## Controls
 `W | ArrowUp` - move up
 
