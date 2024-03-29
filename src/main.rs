@@ -10,7 +10,7 @@ use glium::{
     glutin::{self, event_loop::ControlFlow},
     Display,
     Surface,
-    VertexBuffer
+    VertexBuffer,
 };
 use graphics::Vertex;
 use std::{fs, env};
@@ -377,7 +377,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("wtf");
 
                 return Ok(());
-            } else if &arg == "--c" {
+            } else if &arg == "-c" {
                 let p_g = geojson::PersistentG::default();
                 let p_j = default_json::PersistentJ::default();
                 let data = App::trans_persistent(&p_g);
