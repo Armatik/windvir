@@ -96,7 +96,7 @@ impl App {
         &self,
         display: &Display,
         positions: &VertexBuffer<Vertex>,
-        indices: (&graphics::IndciesTriangles, &graphics::IndciesLines),
+        indices: (&graphics::IndciesTriangles, &graphics::IndciesLines, &graphics::IndciesLines),
         program: &glium::Program,
     ) {
         let uniforms = uniform! {
@@ -115,6 +115,28 @@ impl App {
         let dithering_on = self.p_j.graphics.dithering_on;
 
         match self.cam.display_type {
+            graphics::DisplayType::TrianglesFill => {
+                let params = glium::DrawParameters {
+                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
+                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
+                    ..Default::default()
+                };
+                target.draw(&*positions, &*indices.2, &program, &uniforms, &params)
+                    .expect("Ошибка! Не удалось отрисовать кадр!");
+            },
+            graphics::DisplayType::TrianglesFillLines => {
+                let params = glium::DrawParameters {
+                    polygon_mode: glium::draw_parameters::PolygonMode::Line,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
+                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
+                    ..Default::default()
+                };
+                target.draw(&*positions, &*indices.2, &program, &uniforms, &params)
+                    .expect("Ошибка! Не удалось отрисовать кадр!");
+            },
             graphics::DisplayType::Triangles => {
                 let params = glium::DrawParameters {
                     polygon_mode: glium::draw_parameters::PolygonMode::Fill,
@@ -161,6 +183,7 @@ impl App {
         program: glium::Program,
         indices_triangle: graphics::IndciesTriangles,
         indices_line: graphics::IndciesLines,
+        indices_triangulate: graphics::IndciesTriangles
     ) -> ! {
         event_loop.run(move |ev, _, control_flow| {
             match ev {
@@ -180,18 +203,17 @@ impl App {
                             self.render_frame(
                                 &display,
                                 &positions,
-                                (&indices_triangle, &indices_line),
+                                (&indices_triangle, &indices_line, &indices_triangulate),
                                 &program,
                             );
                         },
                         glutin::event::WindowEvent::Moved(_) => self.render_frame(
                             &display,
                             &positions,
-                            (&indices_triangle, &indices_line),
+                            (&indices_triangle, &indices_line, &indices_triangulate),
                             &program
                         ),
                         #[cfg(unix)]
-                        #[cfg(feature = "wayland")]
                         glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
                             if !is_synthetic {
                                 if let Some(key) = input.virtual_keycode {
@@ -215,8 +237,8 @@ impl App {
                                 }
                             }
 
-                            self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
-                        }
+                            self.render_frame(&display, &positions, (&indices_triangle, &indices_line, &indices_triangulate), &program);
+                        },
                         _ => {},
                     }
                 },
@@ -226,13 +248,14 @@ impl App {
                             self.render_frame(
                                 &display,
                                 &positions,
-                            (&indices_triangle, &indices_line),
+                            (&indices_triangle, &indices_line, &indices_triangulate),
                                 &program,
                             );
                         },
                         _ => {},
                     }
                 },
+                #[cfg(windows)]
                 glutin::event::Event::DeviceEvent { event, .. } => {
                     match event {
                         glutin::event::DeviceEvent::Key(key) => {
@@ -270,6 +293,7 @@ impl App {
     pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
         let indices_triangle = graphics::get_triangle_indices(&self.buildings);
         let indices_line = graphics::get_line_indices(&self.buildings);
+        let indices_triangulate = graphics::get_triangulation_indices(&self.buildings);
         let event_loop = glutin::event_loop::EventLoop::new();
         let window = glutin::window::WindowBuilder::new()
             .with_title(&self.p_g.name)
@@ -316,6 +340,11 @@ impl App {
             glium::index::PrimitiveType::LinesList,
             &indices_line,
         )?;
+        let indices_triangulate = glium::IndexBuffer::new(
+            &display,
+            glium::index::PrimitiveType::TrianglesList,
+            &indices_triangulate,
+        )?;
         let vertex_shader_src = fs::read_to_string(graphics::VERTEX_SHADER_PATH)?;
         let color_shader_src = fs::read_to_string(graphics::COLOR_SHADER_PATH)?;
         let program = glium::Program::from_source(
@@ -326,7 +355,7 @@ impl App {
         )?;
         log::info!("Все здания успешно просчитаны и заданы!");
 
-        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line)
+        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line, indices_triangulate)
     }
 }
 

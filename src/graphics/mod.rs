@@ -41,7 +41,7 @@ impl Default for Camera {
                 [0., 0., 1., 0.],
                 [0., 0., 0., 1.],
             ],
-            display_type: DisplayType::Triangles,
+            display_type: DisplayType::TrianglesFill,
         }
     }
 }
@@ -60,6 +60,8 @@ pub enum TransformAction {
 
 
 pub enum DisplayType {
+    TrianglesFill,
+    TrianglesFillLines,
     Triangles,
     TrianglesLines,
     Lines,
@@ -69,9 +71,11 @@ pub enum DisplayType {
 impl DisplayType {
     pub fn switch(&mut self) {
         *self = match self {
+            Self::TrianglesFill => Self::TrianglesFillLines,
+            Self::TrianglesFillLines => Self::Triangles,
             Self::Triangles => Self::TrianglesLines,
             Self::TrianglesLines => Self::Lines,
-            Self::Lines => Self::Triangles,
+            Self::Lines => Self::TrianglesFill,
         }
     }
 }
@@ -135,4 +139,15 @@ pub fn get_line_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
     }
 
     indices
+}
+
+
+pub fn get_triangulation_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
+    let (vertices, holes, dimensions) = earcutr::flatten(&buildings);
+    let triangles = earcutr::earcut(&vertices, &holes, dimensions).unwrap();
+
+    println!("{:?}", triangles);
+
+
+    triangles.iter().map(|x| *x as u16).collect()
 }
