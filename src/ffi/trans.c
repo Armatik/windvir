@@ -21,5 +21,5 @@ freeBuildings(BuildingsVec data)
 		}		
 	}
 
-	// free((void *)data.buildings);
+	free((void *)data.buildings);
 }
