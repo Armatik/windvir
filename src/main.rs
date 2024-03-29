@@ -355,30 +355,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let data = unsafe { ffi::BuildingsVec::new(data) };
 
                 let out = unsafe { ffi::changeVertex(data) };
-
-                // let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
-
-                // for i in 0..out.len_buildings as isize {
-                //     let mut build_vertex = Vec::<Vec<f64>>::new();
-                //     let build = unsafe { *out.data.offset(i) };
-                //     println!("{build:?}");
-
-                //     for j in 0..build.len_vertex as isize {
-                //         let vertex = unsafe { *build.data.offset(j) };
-                //         let x = unsafe { *vertex.offset(0) };
-                //         let y = unsafe { *vertex.offset(1) };
-                //         let point = vec![x, y];
-                //         build_vertex.push(point);
-                //     }
-
-                //     buildings.push(build_vertex);
-                // }
                 
                 let mut norm_buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
                 let buildings = unsafe { Vec::from_raw_parts(out.data, out.len_buildings as usize, out.len_buildings as usize) };
                 
-                println!("{}", buildings.len());
-
                 for building in buildings {
                     let mut norm_vertex = Vec::<Vec<f64>>::with_capacity(2);
                     let building = unsafe { Vec::from_raw_parts(building.data, building.len_vertex as usize, building.len_vertex as usize) };
