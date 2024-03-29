@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdint.h>
 
 
@@ -16,12 +15,16 @@ typedef struct
 typedef struct
 {
 	Building *data;
-  uint64_t lenBuildings;  // Кол-во зданий в векторе
-} Data;
+	uint64_t lenBuildings;  // Кол-во зданий в векторе
+} BuildingsVec;
 
 
-Data
-c_func_test(Data data);
+BuildingsVec
+changeVertex(BuildingsVec data);
+
+
+void
+freeBuildings(BuildingsVec data);
 
 #ifdef __cplusplus
 }

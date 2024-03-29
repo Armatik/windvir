@@ -352,33 +352,49 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let p_g = geojson::PersistentG::default();
                 let p_j = default_json::PersistentJ::default();
                 let data = App::trans_persistent(&p_g);
-                let data = ffi::Data::new(data);
+                let data = unsafe { ffi::BuildingsVec::new(data) };
 
-                let out = unsafe { ffi::c_func_test(data) };
+                let out = unsafe { ffi::changeVertex(data) };
 
-                let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
-                let mut counter = 0;
+                // let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
 
-                for i in 1..=out.len_buildings as isize {
-                    let mut build_vertex = Vec::<Vec<f64>>::new();
-                    let build = unsafe { out.data.offset(i) };
+                // for i in 0..out.len_buildings as isize {
+                //     let mut build_vertex = Vec::<Vec<f64>>::new();
+                //     let build = unsafe { *out.data.offset(i) };
+                //     println!("{build:?}");
 
-                    counter += 1;
-                    // for j in 1..=build.len_vertex as isize {
-                    //     let vertex = unsafe { *build.data.offset(j) };
-                    //     println!("{vertex:?}");
-                    //     let x = unsafe { *vertex.offset(1) };
-                    //     let y = unsafe { *vertex.offset(2) };
-                    //     let point = vec![x, y];
-                    //     println!("{point:?}");
-                    //     // build_vertex.push(point);
-                    // }
+                //     for j in 0..build.len_vertex as isize {
+                //         let vertex = unsafe { *build.data.offset(j) };
+                //         let x = unsafe { *vertex.offset(0) };
+                //         let y = unsafe { *vertex.offset(1) };
+                //         let point = vec![x, y];
+                //         build_vertex.push(point);
+                //     }
 
-                    buildings.push(build_vertex);
+                //     buildings.push(build_vertex);
+                // }
+                
+                let mut norm_buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
+                let buildings = unsafe { Vec::from_raw_parts(out.data, out.len_buildings as usize, out.len_buildings as usize) };
+                
+                println!("{}", buildings.len());
+
+                for building in buildings {
+                    let mut norm_vertex = Vec::<Vec<f64>>::with_capacity(2);
+                    let building = unsafe { Vec::from_raw_parts(building.data, building.len_vertex as usize, building.len_vertex as usize) };
+
+                    for vertex in building {
+                        let vertex = unsafe { Vec::from_raw_parts(vertex, 2, 2) };
+                        norm_vertex.push(vertex);
+                    }
+
+                    norm_buildings.push(norm_vertex);
                 }
+                
+                let app = App::new(p_g, p_j, Some(norm_buildings));
+                app.start_app()?;
 
-                let app = App::new(p_g, p_j, Some(buildings));
-                app.start_app().unwrap();
+                unsafe { ffi::freeBuildings(out); };
 
                 return Ok(());
             } else {
