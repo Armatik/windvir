@@ -143,39 +143,33 @@ pub fn get_line_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
 
 
 pub fn get_triangulation_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
-    let mut indices = Vec::<u16>::new();
-    let mut sum = 0_usize;
-
+    let mut result = Vec::<u16>::new();
+    let mut sum = 0;
+    
     for building in buildings {
         let mut points = Vec::<f64>::new();
-
+        let mut min = usize::MAX;
+        let mut max = usize::MIN;
+        
         for vertex in building {
             points.append(&mut vec![vertex[0], vertex[1]]);
         }
 
-        let mut triangles = earcutr::earcut(&points, &[], 2).unwrap().iter().map(|x| (*x + sum) as u16).collect::<Vec<u16>>();
-        println!("{triangles:?}");
-        sum += triangles.len() - 1;
-        indices.append(&mut triangles);
+        let mut result_building = earcutr::earcut(&points, &[], 2).unwrap().iter().map(|x| {
+                if *x < min {
+                    min = *x;
+                }
+
+                if *x > max {
+                    max = *x;
+                }
+
+                (*x + sum) as u16
+            }).collect::<Vec<u16>>();
+        result.append(&mut result_building);
+
+        sum += max - min + 2;
     }
-    // let mut result = Vec::<u16>::new();
-    // for building in buildings {
-    //     let mut points = Vec::<Point>::new();
 
-    //     for vertex in building {
-    //         points.push(Point { x: vertex[0], y: vertex[1] });
-    //     }
-
-    //     let mut result_building = triangulate(&points).triangles.iter().map(|x| *x as u16).collect::<Vec<u16>>();
-    //     result.append(&mut result_building);
-    // }
-
-    // let (vertices, holes, dimensions) = earcutr::flatten(&buildings);
-    // println!("{vertices:?}");
-    // let triangles = earcutr::earcut(&points, &[], 2).unwrap();
-
-    // println!("{:?}", triangles);
-    // println!("{result:?}");
-
-    indices
+    result
 }

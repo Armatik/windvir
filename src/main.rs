@@ -280,7 +280,7 @@ impl App {
                                 None => return,
                             }
 
-                            self.render_frame(&display, &positions, (&indices_triangle, &indices_line), &program);
+                            self.render_frame(&display, &positions, (&indices_triangle, &indices_line, &indices_triangulate), &program);
                         },
                         _ => {},
                     }
@@ -361,6 +361,8 @@ impl App {
 
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+    simple_logger::init_with_env().unwrap();
+
     let args = env::args();
     let args_len = args.len();
     let mut is_first_arg = true;
@@ -378,6 +380,8 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 return Ok(());
             } else if &arg == "-c" {
+                log::info!("Приложение запущено с FFI режимом");
+
                 let p_g = geojson::PersistentG::default();
                 let p_j = default_json::PersistentJ::default();
                 let data = App::trans_persistent(&p_g);
