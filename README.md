@@ -2,11 +2,11 @@
 The simplest 2D simulation of wind currents
 For compile and run project you must use command
 ```
-cargo run --release
+RUST_LOG=windvir cargo run --release
 ```
 If you want to use `FFI` protocol, then you need compile with command
 ```
-cargo run --release -- -c
+RUST_LOG=windvir cargo run --release -- -c
 ```
 ## Controls
 `W | ArrowUp` - move up
