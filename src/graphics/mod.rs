@@ -1,5 +1,6 @@
 use glium::IndexBuffer;
-use super::default_json;
+use crate::json::default_json;
+use crate::ffi;
 
 
 #[derive(Copy, Clone)]
@@ -47,6 +48,69 @@ impl Default for Camera {
 }
 
 
+#[derive(Clone, Debug)]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+
+impl Point {
+    pub fn new(_x: f64, _y: f64) -> Self {
+        Self {
+            x: _x,
+            y: _y,
+        }
+    }
+
+    pub fn repr_rust(point: ffi::PointC) -> Self {
+        Self {
+            x: point.x,
+            y: point.y,
+        }
+    }
+}
+
+
+#[derive(Debug)]
+pub struct Building {
+    pub center: Point,
+    pub radius: f64,
+    pub points: Vec<Point>,
+}
+
+
+impl Building {
+    pub fn new(build: Vec<Vec<f64>>) -> Self {
+        log::warn!("Центры и радиусы для отдельных зданий пока что не задаются. Нуждается в исправлении!");
+        let vertex = build.iter().map(|x| Point::new(x[0], x[1])).collect::<Vec<Point>>();
+        
+        Self {
+            center: Point::new(0., 0.),
+            radius: 0.,
+            points: vertex,
+        }
+    }
+
+    pub fn repr_rust(building: ffi::BuildingC) -> Self {
+        let mut buildings_vertex = Vec::<Point>::with_capacity(building.len_vertex as usize);
+        let building_vertex = unsafe { Vec::from_raw_parts(
+            building.points, building.len_vertex as usize, building.len_vertex as usize
+        ) };
+
+        for vertex in building_vertex {
+            buildings_vertex.push(Point::repr_rust(vertex));
+        }
+
+        Self {
+            center: Point::new(building.center.x, building.center.y),
+            radius: building.radius,
+            points: buildings_vertex,
+        }
+    }
+}
+
+
 pub enum TransformAction {
     Increase,
     Reduce,
@@ -81,16 +145,16 @@ impl DisplayType {
 }
 
 
-pub fn get_triangle_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
+pub fn get_triangle_indices(buildings: &Vec<Building>) -> Vec<u16> {
     let mut indices = Vec::<u16>::new();
     let mut index = 0;
 
     for building in buildings {
-        let last_iter = building.len() - 1;
-        let penultimate_iter = building.len() - 2;
+        let last_iter = building.points.len() - 1;
+        let penultimate_iter = building.points.len() - 2;
         let init_index = index;
 
-        'point_loop: for i in 0..building.len() {
+        'point_loop: for i in 0..building.points.len() {
             if i == last_iter {
                 indices.append(&mut vec![index, init_index, init_index + 1]);
                 index += 1;
@@ -105,7 +169,7 @@ pub fn get_triangle_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
                 continue 'point_loop;
             }
 
-            for j in i..building.len() {
+            for j in i..building.points.len() {
                 indices.append(&mut vec![index, index + 1, init_index + j as u16]);
             }
 
@@ -117,15 +181,15 @@ pub fn get_triangle_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
 }
 
 
-pub fn get_line_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
+pub fn get_line_indices(buildings: &Vec<Building>) -> Vec<u16> {
     let mut indices = Vec::<u16>::new();
     let mut index = 0;
 
     for building in buildings {
         let init_index = index;
-        let last_iter = building.len() - 1;
+        let last_iter = building.points.len() - 1;
 
-        'point_loop: for i in 0..building.len() {
+        'point_loop: for i in 0..building.points.len() {
             if i == last_iter {
                 indices.append(&mut vec![index, init_index]);
                 index += 1;
@@ -142,7 +206,7 @@ pub fn get_line_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
 }
 
 
-pub fn get_triangulation_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
+pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
     let mut result = Vec::<u16>::new();
     let mut sum = 0;
     
@@ -151,8 +215,8 @@ pub fn get_triangulation_indices(buildings: &Vec<Vec<Vec<f64>>>) -> Vec<u16> {
         let mut min = usize::MAX;
         let mut max = usize::MIN;
         
-        for vertex in building {
-            points.append(&mut vec![vertex[0], vertex[1]]);
+        for vertex in &building.points {
+            points.append(&mut vec![vertex.x, vertex.y]);
         }
 
         let mut result_building = earcutr::earcut(&points, &[], 2).unwrap().iter().map(|x| {

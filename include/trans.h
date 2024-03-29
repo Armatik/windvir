@@ -5,16 +5,25 @@
 extern "C" {
 #endif  // __cplusplus
 
+
 typedef struct
 {
-	double **data;
+	double x;
+	double y;
+} PointC;
+
+typedef struct
+{
+	PointC center;
+	double radius;
+	PointC *points;
 	uint64_t lenVertex;  // Кол-во вершин в векторе. Вершина указывает на x и y
-} Building;
+} BuildingC;
 
 
 typedef struct
 {
-	Building *data;
+	BuildingC *buildings;
 	uint64_t lenBuildings;  // Кол-во зданий в векторе
 } BuildingsVec;
 

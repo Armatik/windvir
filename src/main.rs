@@ -26,12 +26,12 @@ pub struct App {
     p_j: default_json::PersistentJ,
     cam: graphics::Camera,
     window_size: (WindowWidth, WindowHeight),
-    buildings: Vec<Vec<Vec<f64>>>,
+    buildings: Vec<graphics::Building>,
 }
 
 
 impl App {
-    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ, def_buildings: Option<Vec<Vec<Vec<f64>>>>) -> Self {
+    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ, def_buildings: Option<Vec<graphics::Building>>) -> Self {
         let _buildings = match def_buildings {
             Some(data) => data,
             None => Self::trans_persistent(&_p_g),
@@ -46,11 +46,11 @@ impl App {
         }
     }
 
-    pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<Vec<Vec<f64>>> {
-        let mut buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
+    pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<graphics::Building> {
+        let mut buildings = Vec::<graphics::Building>::with_capacity(p_g.features.len());
 
         for building in &p_g.features {
-            buildings.push(building.geometry.coordinates[0][0].clone());
+            buildings.push(graphics::Building::new(building.geometry.coordinates[0][0].clone()));
         }
 
         buildings
@@ -324,8 +324,8 @@ impl App {
         let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
         for build in &self.buildings {
-            for point in build {
-                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(point.clone()) })
+            for point in &build.points {
+                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![point.x, point.y]) })
             }
         }
 
@@ -382,32 +382,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else if &arg == "-c" {
                 log::info!("Приложение запущено с FFI режимом");
 
-                let p_g = geojson::PersistentG::default();
-                let p_j = default_json::PersistentJ::default();
-                let data = App::trans_persistent(&p_g);
-                let data = unsafe { ffi::BuildingsVec::new(data) };
-
-                let out = unsafe { ffi::changeVertex(data) };
-                
-                let mut norm_buildings = Vec::<Vec<Vec<f64>>>::with_capacity(p_g.features.len());
-                let buildings = unsafe { Vec::from_raw_parts(out.data, out.len_buildings as usize, out.len_buildings as usize) };
-                
-                for building in buildings {
-                    let mut norm_vertex = Vec::<Vec<f64>>::with_capacity(2);
-                    let building = unsafe { Vec::from_raw_parts(building.data, building.len_vertex as usize, building.len_vertex as usize) };
-
-                    for vertex in building {
-                        let vertex = unsafe { Vec::from_raw_parts(vertex, 2, 2) };
-                        norm_vertex.push(vertex);
-                    }
-
-                    norm_buildings.push(norm_vertex);
-                }
-                
-                let app = App::new(p_g, p_j, Some(norm_buildings));
-                app.start_app()?;
-
-                unsafe { ffi::freeBuildings(out); };
+                ffi::ffi_loop()?;
 
                 return Ok(());
             } else {

@@ -13,11 +13,13 @@ changeVertex(BuildingsVec data)
 void
 freeBuildings(BuildingsVec data)
 {
-	for (unsigned i = 0; i < data.data->lenVertex; i++)
+	for (unsigned i = 0; i < data.lenBuildings; i++)
 	{
-		free((void *)data.data->data[i]);
+		for (unsigned j = 0; j < data.buildings[i].lenVertex; j++)
+		{
+			free((void *)data.buildings[i].points);
+		}		
 	}
 
-	free((void *)data.data->data);
-	free((void *)data.data);
+	// free((void *)data.buildings);
 }
