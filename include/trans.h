@@ -5,7 +5,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-
 typedef struct
 {
 	double x;

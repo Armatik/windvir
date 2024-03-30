@@ -90,6 +90,7 @@ impl App {
                 self.cam.theta -= self.p_j.movement.theta;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
+            graphics::TransformAction::Resize => transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale),
         }
     }
 
@@ -201,6 +202,7 @@ impl App {
                         glutin::event::WindowEvent::Resized(size) => {
                             self.window_size.0 = size.width as f32;
                             self.window_size.1 = size.height as f32;
+                            self.transform_map(graphics::TransformAction::Resize);
                             self.render_frame(
                                 &display,
                                 &positions,

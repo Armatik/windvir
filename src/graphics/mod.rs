@@ -56,6 +56,7 @@ pub enum TransformAction {
     MoveRight,
     RotateRight,
     RotateLeft,
+    Resize,
 }
 
 
