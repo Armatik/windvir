@@ -59,23 +59,6 @@ impl BuildingC {
             len_vertex: data.points.len() as u64,
         }
     }
-
-    pub fn repr_rust(building: Self) -> defs::Building {
-        let mut buildings_vertex = Vec::<defs::Point>::with_capacity(building.len_vertex as usize);
-        let building_vertex = unsafe { Vec::from_raw_parts(
-            building.points, building.len_vertex as usize, building.len_vertex as usize
-        ) };
-    
-        for vertex in building_vertex {
-            buildings_vertex.push(PointC::repr_rust(vertex));
-        }
-    
-        defs::Building {
-            center: defs::Point::new(building.center.x, building.center.y),
-            leftmost_point_index: building.leftmost_point_index,
-            points: buildings_vertex,
-        }
-    }
 }
 
 
