@@ -1,6 +1,6 @@
 use std::alloc::{alloc, Layout};
 use crate::json::{default_json, geojson};
-use crate::graphics;
+use crate::defs;
 
 
 #[repr(C)]
@@ -12,10 +12,17 @@ pub struct PointC {
 
 
 impl PointC {
-    fn new(_x: f64, _y: f64) -> Self {
+    fn new(x: f64, y: f64) -> Self {
         Self {
-            x: _x,
-            y: _y,
+            x,
+            y,
+        }
+    }
+
+    pub fn repr_rust(point: Self) -> defs::Point {
+        defs::Point {
+            x: point.x,
+            y: point.y,
         }
     }
 }
@@ -25,14 +32,14 @@ impl PointC {
 #[derive(Clone, Copy, Debug)]
 pub struct BuildingC {
     pub center: PointC,
-    pub radius: f64,
+    pub leftmost_point_index: u64,
     pub points: *mut PointC,
     pub len_vertex: u64,
 }
 
 
 impl BuildingC {
-    unsafe fn new(data: &mut graphics::Building) -> Self {
+    unsafe fn new(data: &mut defs::Building) -> Self {
         let layout = Layout::array::<PointC>(data.points.len()).expect("Выделено неверное кол-во памяти");
         let out_data = unsafe { alloc(layout).cast::<PointC>() };
 
@@ -47,9 +54,26 @@ impl BuildingC {
 
         Self {
             center: PointC::new(data.center.x, data.center.y),
-            radius: data.radius,
+            leftmost_point_index: data.leftmost_point_index,
             points: out_data,
             len_vertex: data.points.len() as u64,
+        }
+    }
+
+    pub fn repr_rust(building: Self) -> defs::Building {
+        let mut buildings_vertex = Vec::<defs::Point>::with_capacity(building.len_vertex as usize);
+        let building_vertex = unsafe { Vec::from_raw_parts(
+            building.points, building.len_vertex as usize, building.len_vertex as usize
+        ) };
+    
+        for vertex in building_vertex {
+            buildings_vertex.push(PointC::repr_rust(vertex));
+        }
+    
+        defs::Building {
+            center: defs::Point::new(building.center.x, building.center.y),
+            leftmost_point_index: building.leftmost_point_index,
+            points: buildings_vertex,
         }
     }
 }
@@ -64,7 +88,7 @@ struct BuildingsVec {
 
 
 impl BuildingsVec {
-    pub unsafe fn new(mut data: Vec<graphics::Building>) -> Self {
+    pub unsafe fn new(mut data: Vec<defs::Building>) -> Self {
         let layout = Layout::array::<BuildingC>(data.len()).expect("Выделено неверное кол-во памяти");
         let out_data = unsafe { alloc(layout).cast::<BuildingC>() };
 
@@ -92,22 +116,22 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
 
     let out = unsafe { changeVertex(data) };
     
-    let mut norm_buildings = Vec::<graphics::Building>::with_capacity(p_g.features.len());
+    let mut norm_buildings = Vec::<defs::Building>::with_capacity(p_g.features.len());
     let buildings = unsafe { Vec::from_raw_parts(out.buildings, out.len_buildings as usize, out.len_buildings as usize) };
     
     for building in buildings {
-        let mut buildings_vertex = Vec::<graphics::Point>::with_capacity(building.len_vertex as usize);
+        let mut buildings_vertex = Vec::<defs::Point>::with_capacity(building.len_vertex as usize);
         let building_points = unsafe { Vec::from_raw_parts(
             building.points, building.len_vertex as usize, building.len_vertex as usize
         ) };
 
         for vertex in building_points {
-            buildings_vertex.push(graphics::Point::repr_rust(vertex));
+            buildings_vertex.push(PointC::repr_rust(vertex));
         }
 
-        norm_buildings.push(graphics::Building {
-            center: graphics::Point::new(building.center.x, building.center.y),
-            radius: building.radius,
+        norm_buildings.push(defs::Building {
+            center: defs::Point::new(building.center.x, building.center.y),
+            leftmost_point_index: building.leftmost_point_index,
             points: buildings_vertex,
         })
     }

@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate glium;
 
+mod defs;
 mod graphics;
 mod json;
 mod etc;
@@ -26,12 +27,12 @@ pub struct App {
     p_j: default_json::PersistentJ,
     cam: graphics::Camera,
     window_size: (WindowWidth, WindowHeight),
-    buildings: Vec<graphics::Building>,
+    buildings: Vec<defs::Building>,
 }
 
 
 impl App {
-    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ, def_buildings: Option<Vec<graphics::Building>>) -> Self {
+    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ, def_buildings: Option<Vec<defs::Building>>) -> Self {
         let _buildings = match def_buildings {
             Some(data) => data,
             None => Self::trans_persistent(&_p_g),
@@ -46,11 +47,11 @@ impl App {
         }
     }
 
-    pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<graphics::Building> {
-        let mut buildings = Vec::<graphics::Building>::with_capacity(p_g.features.len());
+    pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<defs::Building> {
+        let mut buildings = Vec::<defs::Building>::with_capacity(p_g.features.len());
 
         for building in &p_g.features {
-            buildings.push(graphics::Building::new(building.geometry.coordinates[0][0].clone()));
+            buildings.push(defs::Building::new(building.geometry.coordinates[0][0].clone()));
         }
 
         buildings

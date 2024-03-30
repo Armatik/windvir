@@ -1,6 +1,6 @@
 use glium::IndexBuffer;
 use crate::json::default_json;
-use crate::ffi;
+use crate::defs::Building;
 
 
 #[derive(Copy, Clone)]
@@ -46,70 +46,6 @@ impl Default for Camera {
         }
     }
 }
-
-
-#[derive(Clone, Debug)]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
-}
-
-
-impl Point {
-    pub fn new(_x: f64, _y: f64) -> Self {
-        Self {
-            x: _x,
-            y: _y,
-        }
-    }
-
-    pub fn repr_rust(point: ffi::PointC) -> Self {
-        Self {
-            x: point.x,
-            y: point.y,
-        }
-    }
-}
-
-
-#[derive(Debug)]
-pub struct Building {
-    pub center: Point,
-    pub radius: f64,
-    pub points: Vec<Point>,
-}
-
-
-impl Building {
-    pub fn new(build: Vec<Vec<f64>>) -> Self {
-        log::warn!("Центры и радиусы для отдельных зданий пока что не задаются. Нуждается в исправлении!");
-        let vertex = build.iter().map(|x| Point::new(x[0], x[1])).collect::<Vec<Point>>();
-        
-        Self {
-            center: Point::new(0., 0.),
-            radius: 0.,
-            points: vertex,
-        }
-    }
-
-    pub fn repr_rust(building: ffi::BuildingC) -> Self {
-        let mut buildings_vertex = Vec::<Point>::with_capacity(building.len_vertex as usize);
-        let building_vertex = unsafe { Vec::from_raw_parts(
-            building.points, building.len_vertex as usize, building.len_vertex as usize
-        ) };
-
-        for vertex in building_vertex {
-            buildings_vertex.push(Point::repr_rust(vertex));
-        }
-
-        Self {
-            center: Point::new(building.center.x, building.center.y),
-            radius: building.radius,
-            points: buildings_vertex,
-        }
-    }
-}
-
 
 pub enum TransformAction {
     Increase,
@@ -222,7 +158,9 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
         let mut result_building = earcutr::earcut(&points, &[], 2).unwrap().iter().map(|x| {
                 if *x < min {
                     min = *x;
-                } else if *x > max {
+                }
+
+                if *x > max {
                     max = *x;
                 }
 
