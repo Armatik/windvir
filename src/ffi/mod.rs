@@ -19,10 +19,10 @@ impl PointC {
         }
     }
 
-    pub fn repr_rust(point: Self) -> defs::Point {
+    pub fn repr_rust(self) -> defs::Point {
         defs::Point {
-            x: point.x,
-            y: point.y,
+            x: self.x,
+            y: self.y,
         }
     }
 }
@@ -109,7 +109,7 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
         ) };
 
         for vertex in building_points {
-            buildings_vertex.push(PointC::repr_rust(vertex));
+            buildings_vertex.push(vertex.repr_rust());
         }
 
         norm_buildings.push(defs::Building {
