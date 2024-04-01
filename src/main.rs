@@ -6,6 +6,7 @@ mod graphics;
 mod json;
 mod etc;
 mod ffi;
+mod collisions;
 
 use glium::{
     glutin::{self, event_loop::ControlFlow},

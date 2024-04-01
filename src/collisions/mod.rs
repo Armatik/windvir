@@ -1,21 +1,26 @@
-use crate::defs::{Vector, Point};
+use crate::defs::Vector;
 
-fn detect_vector_intersection(first: &mut Vector, second: &mut Vector) -> bool {
-	first += second;
+fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
+	let s1 = get_segment_division_parameter(first, second);
+	let s2 = get_segment_division_parameter(second, first);
+	s1*s1 < s1 && s2*s2 < s2
 }
 
 #[inline]
-fn get_segment_parameter(first: &Vector, second: &Vector) -> f64 {
-	let S = ((first.x1 - second.x1)*second.dy - second.dx*(first.y1 - second.y1))
-		/(second.dx*first.dy - first.dx*second.dy);
-	// let x = first.x1 + S*first.dx;
-	// let	y = first.y1 + S*first.dy;
-	// let S = ((second.x1 - first.x1)*first.dy - first.dx*(second.y1 - first.y1))
-	// 	/(first.dx*second.dy - second.dx*first.dy);
-	// let x = second.x1 + S*second.dx;
-	// let y = second.y1 + S*second.dy;
+fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
+	((first.x - second.x)*second.dy - second.dx*(first.y - second.y))/Vector::cross_product(first,second)
 }
 
+
+
+// let difference_vector = first - second;
+// PositionVector::cross_product(&difference_vector,&second.offset)/Vector::cross_product(first,second)
+// let x = first.x1 + S*first.dx;
+// let	y = first.y1 + S*first.dy;
+// let S = ((second.x1 - first.x1)*first.dy - first.dx*(second.y1 - first.y1))
+// 	/(first.dx*second.dy - second.dx*first.dy);
+// let x = second.x1 + S*second.dx;
+// let y = second.y1 + S*second.dy;
 
 // function getS(segment,line){
 
