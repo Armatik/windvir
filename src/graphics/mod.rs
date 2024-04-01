@@ -60,12 +60,14 @@ pub enum TransformAction {
 }
 
 
+#[derive(PartialEq)]
 pub enum DisplayType {
     TrianglesFill,
     TrianglesFillLines,
     Triangles,
     TrianglesLines,
     Lines,
+    ObjectSpawn,
 }
 
 
@@ -76,7 +78,8 @@ impl DisplayType {
             Self::TrianglesFillLines => Self::Triangles,
             Self::Triangles => Self::TrianglesLines,
             Self::TrianglesLines => Self::Lines,
-            Self::Lines => Self::TrianglesFill,
+            Self::Lines => Self::ObjectSpawn,
+            Self::ObjectSpawn => Self::TrianglesFill,
         }
     }
 }

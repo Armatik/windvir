@@ -28,22 +28,24 @@ pub struct App {
     cam: graphics::Camera,
     window_size: (WindowWidth, WindowHeight),
     buildings: Vec<defs::Building>,
+    synthetic_data: Vec<(Box<dyn defs::SyntheticData>, String)>,
 }
 
 
 impl App {
-    pub fn new(_p_g: geojson::PersistentG, _p_j: default_json::PersistentJ, def_buildings: Option<Vec<defs::Building>>) -> Self {
-        let _buildings = match def_buildings {
+    pub fn new(p_g: geojson::PersistentG, p_j: default_json::PersistentJ, def_buildings: Option<Vec<defs::Building>>) -> Self {
+        let buildings = match def_buildings {
             Some(data) => data,
-            None => Self::trans_persistent(&_p_g),
+            None => Self::trans_persistent(&p_g),
         };
 
         Self {
-            p_g: _p_g,
-            p_j: _p_j,
+            p_g,
+            p_j,
             cam: graphics::Camera::default(),
-            window_size: (_p_j.resolution.width as f32, _p_j.resolution.height as f32),
-            buildings: _buildings,
+            window_size: (p_j.resolution.width as f32, p_j.resolution.height as f32),
+            buildings,
+            synthetic_data: Vec::new(),
         }
     }
 
@@ -171,6 +173,9 @@ impl App {
                 target.draw(&*positions, &*indices.1, &program, &uniforms, &params)
                     .expect("Ошибка! Не удалось отрисовать кадр!");
             },
+            graphics::DisplayType::ObjectSpawn => {
+                
+            },
         }
 
         target.finish()
@@ -235,6 +240,19 @@ impl App {
                                         glutin::event::VirtualKeyCode::E => self.transform_map(graphics::TransformAction::RotateRight),
                                         glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
                                         glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
+                                        glutin::event::VirtualKeyCode::P => if input.state == glutin::event::ElementState::Released {
+                                            self.cam.display_type.switch();
+                                        },
+                                        glutin::event::VirtualKeyCode::C => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                            self.synthetic_data.push((Box::new(defs::Circle::new(0.5)), String::new()));
+                                        },
+                                        glutin::event::VirtualKeyCode::R => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+
+                                        },
+                                        glutin::event::VirtualKeyCode::L => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+
+                                        },
+                                        glutin::event::VirtualKeyCode::Key0 
                                         _ => {},
                                     }
                                 }
@@ -278,6 +296,9 @@ impl App {
                                     glutin::event::VirtualKeyCode::E => self.transform_map(graphics::TransformAction::RotateRight),
                                     glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
                                     glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
+                                    glutin::event::VirtualKeyCode::P => if input.state == glutin::event::ElementState::Released {
+                                        self.cam.display_type.switch();
+                                    },
                                     _ => {},
                                 },
                                 None => return,

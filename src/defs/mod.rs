@@ -35,3 +35,79 @@ impl Building {
         }
     }
 }
+
+
+pub trait SyntheticData {
+    fn get_data(&self) -> Vec<f64>;
+}
+
+
+pub struct Circle {
+    radius: f64,
+}
+
+
+impl Circle {
+    pub fn new(radius: f64) -> Self {
+        Self {
+            radius,
+        }
+    }
+}
+
+
+impl SyntheticData for Circle {
+    fn get_data(&self) -> Vec<f64> {
+        vec![self.radius]
+    }
+}
+
+
+pub struct Rectangle {
+    width: f64,
+    height: f64,
+}
+
+
+impl Rectangle {
+    pub fn new(width: f64, height: f64) -> Self {
+        Self {
+            width,
+            height,
+        }
+    }
+}
+
+
+impl SyntheticData for Rectangle {
+    fn get_data(&self) -> Vec<f64> {
+        vec![self.width, self.height]
+    }
+}
+
+
+pub struct Segment {
+    x0: f64,
+    x1: f64,
+    y0: f64,
+    y1: f64,
+}
+
+
+impl Segment {
+    pub fn new(x0: f64, y0: f64, x1: f64, y1: f64) -> Self {
+        Self {
+            x0,
+            x1,
+            y0,
+            y1,
+        }
+    }
+}
+
+
+impl SyntheticData for Segment {
+    fn get_data(&self) -> Vec<f64> {
+        vec![self.x0, self.y0, self.x1, self.y1]
+    }
+}
