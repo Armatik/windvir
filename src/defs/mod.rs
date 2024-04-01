@@ -42,6 +42,7 @@ pub trait SyntheticData {
 }
 
 
+#[derive(Default)]
 pub struct Circle {
     radius: f64,
 }
@@ -63,6 +64,7 @@ impl SyntheticData for Circle {
 }
 
 
+#[derive(Default)]
 pub struct Rectangle {
     width: f64,
     height: f64,
@@ -86,6 +88,7 @@ impl SyntheticData for Rectangle {
 }
 
 
+#[derive(Default)]
 pub struct Segment {
     x0: f64,
     x1: f64,

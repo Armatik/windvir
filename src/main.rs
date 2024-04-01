@@ -244,7 +244,9 @@ impl App {
                                             self.cam.display_type.switch();
                                         },
                                         glutin::event::VirtualKeyCode::C => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                            self.synthetic_data.push((Box::new(defs::Circle::new(0.5)), String::new()));
+                                            if !self.synthetic_data[self.synthetic_data.len() - 1].1.is_empty() {
+                                                self.synthetic_data.push((Box::new(defs::Circle::default()), String::new()));
+                                            }
                                         },
                                         glutin::event::VirtualKeyCode::R => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
 
@@ -252,7 +254,9 @@ impl App {
                                         glutin::event::VirtualKeyCode::L => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
 
                                         },
-                                        glutin::event::VirtualKeyCode::Key0 
+                                        glutin::event::VirtualKeyCode::Key1 => {
+                                            'a'.to_digit(10).unwrap();
+                                        },
                                         _ => {},
                                     }
                                 }
