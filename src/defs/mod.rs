@@ -21,7 +21,7 @@ impl Point {
 pub struct Building {
 	pub start_point: Point,
 	pub end_point: Point,
-	pub points: Vec<Vector>,
+	pub sides: Vec<Vector>,
 }
 
 

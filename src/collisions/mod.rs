@@ -11,6 +11,7 @@ fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
 	(&first.offset - &second.offset).cross_product(&second.offset)/Vector::cross_product(first,second)
 }
 
+#[inline]
 fn check_bounding_box_intersection(first: &Building, second: &Building) -> bool {
 	(first.start_point.x - second.end_point.x)*(first.end_point.x - second.start_point.x) < 0.0f64
 	&&
@@ -44,5 +45,18 @@ l1.x*r1.x - l2.x*l1.x - r2.x*r1.x + l2.x*r2.x
 */
 
 fn check_building_intersection(first: &Building, second: &Building) -> bool {
+	if check_bounding_box_intersection(first, second) {
+		for first_building_side in first.sides.iter() {
+			for second_building_side in second.sides.iter() {
+				if check_vector_intersection(first_building_side, second_building_side) {
+					return true
+				}
+			}
+		}
+	}
+	false
+}
 
+fn optimize_map(sorted_map: &Vec<Building>) -> () {
+	
 }
