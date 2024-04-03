@@ -1,7 +1,6 @@
-// use std::ops::{Add, Sub, SubAssign, AddAssign};
+use std::ops::{Add,Sub};
 
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Point {
 	pub x: f64,
 	pub y: f64,
@@ -20,16 +19,16 @@ impl Point {
 
 #[derive(Debug)]
 pub struct Building {
-	pub center: Point,
-	pub leftmost_point_index: u64,
-	pub points: Vec<Point>,
+	pub start_point: Point,
+	pub end_point: Point,
+	pub points: Vec<Vector>,
 }
 
 
 impl Building {
 	pub fn new(build: Vec<Vec<f64>>) -> Self {
 		log::warn!("Центры и радиусы для отдельных зданий пока что не задаются. Нуждается в исправлении!");
-		let vertex = build.iter().map(|x| Point::new(x[0], x[1])).collect::<Vec<Point>>();
+		let vertex = build.iter().map(|x| Point::new(x[0], x[1])).collect::<Vec<Vector>>();
 		
 		Self {
 			center: Point::new(0., 0.),
@@ -41,145 +40,95 @@ impl Building {
 
 #[derive(Clone, Debug, Default)]
 pub struct Vector {
-	pub x: f64,
-	pub y: f64,
-	pub dx: f64,
-	pub dy: f64,
-	// pub offset: PositionVector
+	pub position: PositionVector,
+	pub offset: PositionVector
 }
 
 impl Vector {
-	pub fn new(x: f64, y: f64, dx: f64, dy: f64 ) -> Self {
+	pub fn new(position: PositionVector, offset: PositionVector) -> Self {
 		Self { 
-			x, 
-			y,
-			dx,
-			dy
+			position,
+			offset
 		}
 	}
 
+	#[inline]
 	pub fn cross_product(&self, other: &Self) -> f64 {
-		other.dx*self.dy - self.dx*other.dy
+		PositionVector::cross_product(&self.offset, &other.offset)
 	}
 }
 
-// impl Add for Point {
-// 	type Output = Vector;
 
-// 	fn add(self, end_point: Self) -> Self::Output {
-// 		Vector::new(
-// 			self.x,
-// 			self.y,
-// 			PositionVector::new(self.x + end_point.x,self.y + end_point.y)
-// 		)
-// 	}
-// }
+impl Sub for Point {
+	type Output = PositionVector;
 
-// impl Sub for Point {
-// 	type Output = Vector;
+	fn sub(self, end_point: Self) -> Self::Output {
+		PositionVector::new(
+			end_point.x - self.x, 
+			end_point.y - self.y
+		)
+	}
+}
 
-// 	fn sub(self, end_point: Self) -> Self::Output {
-// 		Vector::new(
-// 			self.x,
-// 			self.y,
-// 			PositionVector::new(end_point.x - self.x, end_point.y - self.y)
-// 		)
-// 	}
-// }
+impl Add for &Point {
+	type Output = PositionVector;
 
-// impl Add for Vector {
-// 	type Output = Self;
+	fn add(self, other: Self) -> Self::Output {
+		PositionVector::new(
+			self.x + other.x, 
+			self.y + other.y
+		)
+	}
+}
 
-// 	fn add(self, addor_vector: Self) -> Self::Output {
-// 		Vector::new(
-// 			self.x,
-// 			self.y,
-// 			self.offset + addor_vector.offset
-// 		)
-// 	}
-// }
+impl Sub for &Point {
+	type Output = PositionVector;
 
-// impl Sub for Vector {
-// 	type Output = Self;
+	fn sub(self, start_point: Self) -> Self::Output {
+		PositionVector::new(
+			self.x - start_point.x, 
+			self.y - start_point.y
+		)
+	}
+}
 
-// 	fn sub(self, subtractor_vector: Self) -> Self::Output {
-// 		Vector::new(
-// 			self.x,
-// 			self.y,
-// 			self.offset - subtractor_vector.offset
-// 		)
-// 	}
-// }
+impl Sub for &Vector {
+	type Output = PositionVector;
 
-// impl Add for PositionVector {
-// 	type Output = Self;
+	fn sub(self, subtractor_vector: Self) -> Self::Output {
+		&self.offset - &subtractor_vector.offset
+	}
+}
 
-// 	fn add(self, addor_vector: Self) -> Self::Output {
-// 		PositionVector::new(
-// 			self.dx + addor_vector.dx,
-// 			self.dy + addor_vector.dy
-// 		)
-// 	}
-// }
+impl Sub for &PositionVector {
+	type Output = PositionVector;
 
-// impl Sub for PositionVector {
-// 	type Output = Self;
+	fn sub(self, subtractor_vector: Self) -> Self::Output {
+		PositionVector::new(
+			self.x - subtractor_vector.x,
+			self.y - subtractor_vector.y
+		)
+	}
+}
 
-// 	fn sub(self, subtractor_vector: Self) -> Self::Output {
-// 		PositionVector::new(
-// 			self.dx - subtractor_vector.dx,
-// 			self.dy - subtractor_vector.dy
-// 		)
-// 	}
-// }
+#[derive(Clone, Debug, Default)]
+pub struct PositionVector {
+	pub x: f64,
+	pub y: f64,
+}
 
+impl PositionVector {
 
-// impl Add for &PositionVector {
-// 	type Output = PositionVector;
+	pub fn new(x: f64, y: f64) -> Self {
+		Self { 
+			x,
+			y
+		}
+	}
 
-// 	fn add(self, addor_vector: Self) -> Self::Output {
-// 		PositionVector::new(
-// 			self.dx + addor_vector.dx,
-// 			self.dy + addor_vector.dy
-// 		)
-// 	}
-// }
+	#[inline]
+	pub fn cross_product(&self, other: &Self) -> f64 {
+		other.x*self.y - self.x*other.y
+	}
 
-// impl Sub for &Vector {
-// 	type Output = PositionVector;
-
-// 	fn sub(self, subtractor_vector: Self) -> Self::Output {
-// 		self - subtractor_vector
-// 	}
-// }
-
-// impl Sub for &PositionVector {
-// 	type Output = PositionVector;
-
-// 	fn sub(self, subtractor_vector: Self) -> Self::Output {
-// 		PositionVector::new(
-// 			self.dx - subtractor_vector.dx,
-// 			self.dy - subtractor_vector.dy
-// 		)
-// 	}
-// }
-
-// #[derive(Clone, Debug, Default)]
-// pub struct PositionVector {
-// 	pub dx: f64,
-// 	pub dy: f64,
-// }
-// impl PositionVector {
-
-// 	pub fn new(dx: f64, dy: f64) -> Self {
-// 		Self { 
-// 			dx,
-// 			dy
-// 		}
-// 	}
-
-// 	pub fn cross_product(&self, other: &Self) -> f64 {
-// 		other.dx*self.dy - self.dx*other.dy
-// 	}
-
-// }
+}

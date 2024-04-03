@@ -1,4 +1,4 @@
-use crate::defs::Vector;
+use crate::defs::{Building, Vector};
 
 fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 	let s1 = get_segment_division_parameter(first, second);
@@ -8,23 +8,41 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 #[inline]
 fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
-	((first.x - second.x)*second.dy - second.dx*(first.y - second.y))/Vector::cross_product(first,second)
+	(&first.offset - &second.offset).cross_product(&second.offset)/Vector::cross_product(first,second)
 }
 
+fn check_bounding_box_intersection(first: &Building, second: &Building) -> bool {
+	(first.start_point.x - second.end_point.x)*(first.end_point.x - second.start_point.x) < 0.0f64
+	&&
+	(first.start_point.y - second.end_point.y)*(first.end_point.y - second.start_point.y) < 0.0f64}
 
+/*
+dx = c1.x - c2.x
+c1.x = (l1.x + r1.x)/2
+c2.x = (l2.x + r2.x)/2
+dx = l1.x + r1.x - l2.x - r2.x
+(l1.x + r1.x - l2.x - r2.x)^2 < (r1.x - l1.x + r2.x - l2.x)^2
+// levo
+l1.x*l1.x + r1.x*r1 + l2.x*l2.x + r2.x*r2.x
++ 2*l1.x*r1.x - 2*l2.x*l1.x - 2*r2.x*l1.x
+- 2*l2.x*r1.x - 2*r2.x*r1.x + 2*l2.x*r2.x
+// pravo
+l1.x*l1.x + r1.x*r1 + l2.x*l2.x + r2.x*r2.x
+- 2*l1.x*r1.x + 2*l2.x*l1.x - 2*r2.x*l1.x
+- 2*l2.x*r1.x + 2*r2.x*r1.x - 2*l2.x*r2.x
 
-// let difference_vector = first - second;
-// PositionVector::cross_product(&difference_vector,&second.offset)/Vector::cross_product(first,second)
-// let x = first.x1 + S*first.dx;
-// let	y = first.y1 + S*first.dy;
-// let S = ((second.x1 - first.x1)*first.dy - first.dx*(second.y1 - first.y1))
-// 	/(first.dx*second.dy - second.dx*first.dy);
-// let x = second.x1 + S*second.dx;
-// let y = second.y1 + S*second.dy;
+summ
++ l1.x*r1.x - l2.x*l1.x
+- r2.x*r1.x + l2.x*r2.x
 
-// function getS(segment,line){
+dalee
+l1.x*r1.x - l2.x*l1.x - r2.x*r1.x + l2.x*r2.x
+(l1.x - r2.x)*(r1.x - l2.x) < 0
 
-// 	const S = (line.cos*segment.y2 - segment.x2*line.sin + line.b)/((segment.x1 - segment.x2)*line.sin + line.cos*(segment.y2 - segment.y1));
-// 	const x = segment.x2 + S*(segment.x1 - segment.x2);
-// 	const y = segment.y2 + S*(segment.y1 - segment.y2);
-// }
+(l1.x - r2.x)*(r1.x - l2.x) < 0
+((l1.x - l2.x) - l2.w)*((l1.x - l2.x) + l1.w)
+*/
+
+fn check_building_intersection(first: &Building, second: &Building) -> bool {
+
+}
