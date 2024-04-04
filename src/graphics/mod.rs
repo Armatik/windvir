@@ -87,11 +87,11 @@ pub fn get_triangle_indices(buildings: &Vec<Building>) -> Vec<u16> {
     let mut index = 0;
 
     for building in buildings {
-        let last_iter = building.points.len() - 1;
-        let penultimate_iter = building.points.len() - 2;
+        let last_iter = building.sides.len() - 1;
+        let penultimate_iter = building.sides.len() - 2;
         let init_index = index;
 
-        'point_loop: for i in 0..building.points.len() {
+        'point_loop: for i in 0..building.sides.len() {
             if i == last_iter {
                 indices.append(&mut vec![index, init_index, init_index + 1]);
                 index += 1;
@@ -106,7 +106,7 @@ pub fn get_triangle_indices(buildings: &Vec<Building>) -> Vec<u16> {
                 continue 'point_loop;
             }
 
-            for j in i..building.points.len() {
+            for j in i..building.sides.len() {
                 indices.append(&mut vec![index, index + 1, init_index + j as u16]);
             }
 
@@ -124,9 +124,9 @@ pub fn get_line_indices(buildings: &Vec<Building>) -> Vec<u16> {
 
     for building in buildings {
         let init_index = index;
-        let last_iter = building.points.len() - 1;
+        let last_iter = building.sides.len() - 1;
 
-        'point_loop: for i in 0..building.points.len() {
+        'point_loop: for i in 0..building.sides.len() {
             if i == last_iter {
                 indices.append(&mut vec![index, init_index]);
                 index += 1;
@@ -152,7 +152,7 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
         let mut min = usize::MAX;
         let mut max = usize::MIN;
         
-        for vertex in &building.points {
+        for vertex in &building.sides {
             points.append(&mut vec![vertex.x, vertex.y]);
         }
 

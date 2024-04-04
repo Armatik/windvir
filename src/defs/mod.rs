@@ -19,21 +19,24 @@ impl Point {
 
 #[derive(Debug)]
 pub struct Building {
-	pub start_point: Point,
-	pub end_point: Point,
-	pub sides: Vec<Vector>,
+	pub start_point: PositionVector,
+	pub end_point: PositionVector,
+	pub sides: Vec<Vector>
 }
 
 
 impl Building {
 	pub fn new(build: Vec<Vec<f64>>) -> Self {
 		log::warn!("Центры и радиусы для отдельных зданий пока что не задаются. Нуждается в исправлении!");
-		let vertex = build.iter().map(|x| Point::new(x[0], x[1])).collect::<Vec<Vector>>();
+		let vertex = build.iter().map(
+			|x| Vector::new(
+						PositionVector::new(x[0], x[1]),PositionVector::new(0.0f64, 0.0f64)
+					)).collect::<Vec<Vector>>();
 		
 		Self {
-			center: Point::new(0., 0.),
-			leftmost_point_index: 0u64,
-			points: vertex,
+			start_point: PositionVector::new(0.0f64,0.0f64),
+			end_point: PositionVector::new(0.0f64,0.0f64),
+			sides: vertex,
 		}
 	}
 }

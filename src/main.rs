@@ -328,7 +328,7 @@ impl App {
         let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
         for build in &self.buildings {
-            for point in &build.points {
+            for point in &build.sides {
                 shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![point.x, point.y]) })
             }
         }
