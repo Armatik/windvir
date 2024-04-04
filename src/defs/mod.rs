@@ -1,5 +1,6 @@
 use std::ops::{Add,Sub};
 
+
 #[derive(Clone, Debug, Default)]
 pub struct Point {
 	pub x: f64,
@@ -41,11 +42,13 @@ impl Building {
 	}
 }
 
+
 #[derive(Clone, Debug, Default)]
 pub struct Vector {
 	pub position: PositionVector,
 	pub offset: PositionVector
 }
+
 
 impl Vector {
 	pub fn new(position: PositionVector, offset: PositionVector) -> Self {
@@ -73,6 +76,7 @@ impl Sub for Point {
 	}
 }
 
+
 impl Add for &Point {
 	type Output = PositionVector;
 
@@ -83,6 +87,7 @@ impl Add for &Point {
 		)
 	}
 }
+
 
 impl Sub for &Point {
 	type Output = PositionVector;
@@ -95,6 +100,7 @@ impl Sub for &Point {
 	}
 }
 
+
 impl Sub for &Vector {
 	type Output = PositionVector;
 
@@ -102,6 +108,7 @@ impl Sub for &Vector {
 		&self.offset - &subtractor_vector.offset
 	}
 }
+
 
 impl Sub for &PositionVector {
 	type Output = PositionVector;
@@ -114,11 +121,13 @@ impl Sub for &PositionVector {
 	}
 }
 
+
 #[derive(Clone, Debug, Default)]
 pub struct PositionVector {
 	pub x: f64,
 	pub y: f64,
 }
+
 
 impl PositionVector {
 
