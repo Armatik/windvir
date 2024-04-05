@@ -40,14 +40,14 @@ pub struct BuildingC {
 
 impl BuildingC {
     unsafe fn new(data: &mut defs::Building) -> Self {
-        let layout = Layout::array::<PointC>(data.points.len()).expect("Выделено неверное кол-во памяти");
+        let layout = Layout::array::<PointC>(data.sides.len()).expect("Выделено неверное кол-во памяти");
         let out_data = unsafe { alloc(layout).cast::<PointC>() };
 
         if out_data.is_null() {
             panic!("Произошло переполнение памяти!");
         }
 
-        for (i, point) in data.points.iter_mut().enumerate() {
+        for (i, point) in data.sides.iter_mut().enumerate() {
             let point = PointC::new(point.x, point.y);
             unsafe { out_data.offset(i as isize).write(point); };
         }
@@ -56,7 +56,7 @@ impl BuildingC {
             center: PointC::new(data.center.x, data.center.y),
             leftmost_point_index: data.leftmost_point_index,
             points: out_data,
-            len_vertex: data.points.len() as u64,
+            len_vertex: data.sides.len() as u64,
         }
     }
 }
@@ -115,7 +115,7 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
         norm_buildings.push(defs::Building {
             center: defs::Point::new(building.center.x, building.center.y),
             leftmost_point_index: building.leftmost_point_index,
-            points: buildings_vertex,
+            sides: buildings_vertex,
         })
     }
 

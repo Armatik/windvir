@@ -6,6 +6,7 @@ mod graphics;
 mod json;
 mod etc;
 mod ffi;
+mod collisions;
 
 use glium::{
     glutin::{self, event_loop::ControlFlow},
@@ -339,8 +340,8 @@ impl App {
         let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
         for build in &self.buildings {
-            for point in &build.points {
-                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![point.x, point.y]) })
+            for side in &build.sides {
+                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![side.position.x, side.position.y]) })
             }
         }
 
