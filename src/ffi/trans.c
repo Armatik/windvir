@@ -17,7 +17,7 @@ freeBuildings(BuildingsVec data)
 	{
 		for (unsigned j = 0; j < data.buildings[i].lenVertex; j++)
 		{
-			free((void *)data.buildings[i].points);
+			free((void *)data.buildings[i].sides);
 		}		
 	}
 
