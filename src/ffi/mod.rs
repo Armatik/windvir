@@ -33,7 +33,7 @@ impl PointC {
 pub struct BuildingC {
     pub start_point: PointC,
     pub end_point: PointC,
-    pub points: *mut VectorC,
+    pub sides: *mut VectorC,
     pub len_vertex: u64,
 }
 
@@ -47,10 +47,10 @@ impl BuildingC {
             panic!("Произошло переполнение памяти!");
         }
 
-        for (i, point) in data.sides.iter_mut().enumerate() {
+        for (i, side) in data.sides.iter_mut().enumerate() {
             let point = VectorC::new(
-                PointC::new(point.position.x,point.position.y),
-                PointC::new(point.offset.x, point.offset.y)
+                PointC::new(side.position.x,side.position.y),
+                PointC::new(side.offset.x, side.offset.y)
             );
             unsafe { out_data.offset(i as isize).write(point); };
         }
@@ -58,7 +58,7 @@ impl BuildingC {
         Self {
             start_point: PointC::new(data.start_point.x, data.end_point.y),
             end_point: PointC::new(data.end_point.x,data.end_point.y),
-            points: out_data,
+            sides: out_data,
             len_vertex: data.sides.len() as u64,
         }
     }
@@ -134,7 +134,7 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
     for building in buildings {
         let mut buildings_vertex = Vec::<defs::Vector>::with_capacity(building.len_vertex as usize);
         let building_points = unsafe { Vec::from_raw_parts(
-            building.points, building.len_vertex as usize, building.len_vertex as usize
+            building.sides, building.len_vertex as usize, building.len_vertex as usize
         ) };
 
         for vertex in building_points {
