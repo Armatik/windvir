@@ -11,6 +11,11 @@ typedef struct
 	double y;
 } PointC;
 
+typedef struct
+{
+	PointC position;
+	PointC offset;  // Кол-во зданий в векторе
+} VectorC;
 
 typedef struct
 {
@@ -26,12 +31,6 @@ typedef struct
 	BuildingC *buildings;
 	uint64_t lenBuildings;  // Кол-во зданий в векторе
 } BuildingsVec;
-
-typedef struct
-{
-	PointC position;
-	PointC offset;  // Кол-во зданий в векторе
-} VectorC;
 
 BuildingsVec
 changeVertex(BuildingsVec data);
