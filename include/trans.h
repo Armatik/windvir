@@ -14,9 +14,9 @@ typedef struct
 
 typedef struct
 {
-	PointC center;
-	uint64_t leftmost_point_index;
-	PointC *points;
+	PointC start_point;
+	PointC end_point;
+	VectorC *points;
 	uint64_t lenVertex;  // Кол-во вершин в векторе
 } BuildingC;
 
@@ -27,6 +27,11 @@ typedef struct
 	uint64_t lenBuildings;  // Кол-во зданий в векторе
 } BuildingsVec;
 
+typedef struct
+{
+	PointC position;
+	PointC offset;  // Кол-во зданий в векторе
+} VectorC;
 
 BuildingsVec
 changeVertex(BuildingsVec data);

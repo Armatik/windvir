@@ -153,7 +153,7 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
         let mut max = usize::MIN;
         
         for vertex in &building.sides {
-            points.append(&mut vec![vertex.x, vertex.y]);
+            points.append(&mut vec![vertex.position.x, vertex.position.y]);
         }
 
         let mut result_building = earcutr::earcut(&points, &[], 2).unwrap().iter().map(|x| {
