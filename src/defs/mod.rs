@@ -15,6 +15,10 @@ impl Point {
 			y,
 		}
 	}
+
+	pub fn center_point(&self, other: &Self) -> Self {
+		Self::new((self.x + other.x)/2.0f64, (self.y + other.y)/2.0f64)
+	}
 }
 
 
@@ -138,9 +142,59 @@ impl PositionVector {
 		}
 	}
 
+	pub fn center_point(&self, other: &Self) -> Self {
+		Self::new((self.x + other.x)/2.0f64, (self.y + other.y)/2.0f64)
+	}
+
 	#[inline]
 	pub fn cross_product(&self, other: &Self) -> f64 {
 		other.x*self.y - self.x*other.y
 	}
 
+	#[inline]
+	pub fn dot_product(&self, other: &Self) -> f64 {
+		other.x*self.x + self.x*other.x
+	}
+
+	// Если можно не использовать, лучше не использовать
+	#[inline]
+	pub fn get_length(&self) -> f64 {
+		f64::sqrt(self.x*self.x + self.y*self.y)
+	}
+
+	#[inline]
+	pub fn get_squared_length(&self) -> f64 {
+		self.x*self.x + self.y*self.y
+	}
+
+	#[inline]
+	pub fn get_cos(&self) -> f64 {
+		self.x/self.get_length()
+	}
+
+	#[inline]
+	pub fn get_sin(&self) -> f64 {
+		self.y/self.get_length()
+	}
+
+	pub fn get_cos_sin(&self) -> (f64,f64) {
+		let length = self.get_length();
+		(self.x/length,self.y/length)
+	}
+
+	// Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
+	#[inline]
+	pub fn get_square(&self, other: &Self) -> f64 {
+		Self::cross_product(self, other)/2.0f64
+	}
+
+	#[inline]
+	pub fn get_cos_between_vectors(&self, other: &Self) -> f64 {
+		Self::dot_product(self, other)/(self.get_length()*other.get_length())
+	}
+
+	#[inline]
+	pub fn get_sin_between_vectors(&self, other: &Self) -> f64 {
+		Self::cross_product(self, other)/(self.get_length()*other.get_length())
+	}
 }
