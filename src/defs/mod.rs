@@ -32,7 +32,6 @@ pub struct Building {
 
 impl Building {
 	pub fn new(build: Vec<Vec<f64>>) -> Self {
-		log::warn!("Центры и радиусы для отдельных зданий пока что не задаются. Нуждается в исправлении!");
 		let vertex = build.iter().map(
 			|x| Vector::new(
 						PositionVector::new(x[0], x[1]),PositionVector::new(0.0f64, 0.0f64)
@@ -200,8 +199,17 @@ impl PositionVector {
 }
 
 
+pub enum SyntheticVariant {
+	Circle(f64),
+	Rectangle(f64, f64),
+	Segment((f64, f64), (f64, f64)),
+}
+
+
 pub trait SyntheticData {
-    fn get_data(&self) -> Vec<f64>;
+    fn get_data(&self) -> SyntheticVariant;
+	fn is_value_default(&self) -> bool;
+	fn set_value(&mut self, data: SyntheticVariant);
 }
 
 
@@ -211,19 +219,21 @@ pub struct Circle {
 }
 
 
-impl Circle {
-    pub fn new(radius: f64) -> Self {
-        Self {
-            radius,
-        }
-    }
-}
-
-
 impl SyntheticData for Circle {
-    fn get_data(&self) -> Vec<f64> {
-        vec![self.radius]
+    fn get_data(&self) -> SyntheticVariant {
+        SyntheticVariant::Circle(self.radius)
     }
+
+	fn is_value_default(&self) -> bool {
+		self.radius == f64::default()
+	}
+
+	fn set_value(&mut self, data: SyntheticVariant) {
+		match data {
+			SyntheticVariant::Circle(radius) => self.radius = radius,
+			_ => log::warn!("Данные для созданной окружности могут быть неверными!"),
+		}
+	}
 }
 
 
@@ -234,20 +244,24 @@ pub struct Rectangle {
 }
 
 
-impl Rectangle {
-    pub fn new(width: f64, height: f64) -> Self {
-        Self {
-            width,
-            height,
-        }
-    }
-}
-
-
 impl SyntheticData for Rectangle {
-    fn get_data(&self) -> Vec<f64> {
-        vec![self.width, self.height]
+    fn get_data(&self) -> SyntheticVariant {
+        SyntheticVariant::Rectangle(self.width, self.height)
     }
+
+	fn is_value_default(&self) -> bool {
+		self.width == f64::default() || self.height == f64::default()
+	}
+
+	fn set_value(&mut self, data: SyntheticVariant) {
+		match data {
+			SyntheticVariant::Rectangle(width, height) => {
+				self.width = width;
+				self.height = height;
+			},
+			_ => log::warn!("Данные для созданного прямоугольника могут быть неверными!"),
+		}
+	}
 }
 
 
@@ -260,20 +274,24 @@ pub struct Segment {
 }
 
 
-impl Segment {
-    pub fn new(x0: f64, y0: f64, x1: f64, y1: f64) -> Self {
-        Self {
-            x0,
-            x1,
-            y0,
-            y1,
-        }
-    }
-}
-
-
 impl SyntheticData for Segment {
-    fn get_data(&self) -> Vec<f64> {
-        vec![self.x0, self.y0, self.x1, self.y1]
+    fn get_data(&self) -> SyntheticVariant {
+        SyntheticVariant::Segment((self.x0, self.x1), (self.y0, self.y1))
     }
+
+	fn is_value_default(&self) -> bool {
+		self.x0 == f64::default() || self.x1 == f64::default() || self.y0 == f64::default() || self.y1 == f64::default()
+	}
+
+	fn set_value(&mut self, data: SyntheticVariant) {
+		match data {
+			SyntheticVariant::Segment((x0, x1), (y0, y1)) => {
+				self.x0 = x0;
+				self.x1 = x1;
+				self.y0 = y0;
+				self.y1 = y1;
+			},
+			_ => log::warn!("Данные для отрезка могут быть заданы неверно!"),
+		}
+	}
 }

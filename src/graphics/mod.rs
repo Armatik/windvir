@@ -1,3 +1,5 @@
+pub mod app;
+
 use glium::IndexBuffer;
 use crate::json::default_json;
 use crate::defs::Building;
