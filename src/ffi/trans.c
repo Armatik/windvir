@@ -13,9 +13,9 @@ changeVertex(BuildingsVec data)
 void
 freeBuildings(BuildingsVec data)
 {
-	for (unsigned i = 0; i < data.lenBuildings; i++)
+	for (unsigned i = 0; i < data.lenBuildings; ++i)
 	{
-		for (unsigned j = 0; j < data.buildings[i].lenVertex; j++)
+		for (unsigned j = 0; j < data.buildings[i].lenVertex; ++j)
 		{
 			free((void *)data.buildings[i].sides);
 		}		

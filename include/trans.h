@@ -14,13 +14,6 @@ typedef struct
 
 typedef struct
 {
-	PointC position;
-	PointC offset;  // Кол-во зданий в векторе
-} VectorC;
-
-
-typedef struct
-{
 	PointC start_point;
 	PointC end_point;
 	VectorC *sides;
