@@ -19,8 +19,8 @@ impl PointC {
         }
     }
 
-    pub fn repr_rust(self) -> defs::Point {
-        defs::Point {
+    pub fn repr_rust(self) -> defs::PositionVector {
+        defs::PositionVector {
             x: self.x,
             y: self.y,
         }
@@ -31,32 +31,61 @@ impl PointC {
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct BuildingC {
-    pub center: PointC,
-    pub leftmost_point_index: u64,
-    pub points: *mut PointC,
+    pub start_point: PointC,
+    pub end_point: PointC,
+    pub sides: *mut VectorC,
     pub len_vertex: u64,
 }
 
 
 impl BuildingC {
     unsafe fn new(data: &mut defs::Building) -> Self {
-        let layout = Layout::array::<PointC>(data.points.len()).expect("Выделено неверное кол-во памяти");
-        let out_data = unsafe { alloc(layout).cast::<PointC>() };
+        let layout = Layout::array::<VectorC>(data.sides.len()).expect("Выделено неверное кол-во памяти");
+        let out_data = unsafe { alloc(layout).cast::<VectorC>() };
 
         if out_data.is_null() {
             panic!("Произошло переполнение памяти!");
         }
 
-        for (i, point) in data.points.iter_mut().enumerate() {
-            let point = PointC::new(point.x, point.y);
+        for (i, side) in data.sides.iter_mut().enumerate() {
+            let point = VectorC::new(
+                PointC::new(side.position.x,side.position.y),
+                PointC::new(side.offset.x, side.offset.y)
+            );
             unsafe { out_data.offset(i as isize).write(point); };
         }
 
         Self {
-            center: PointC::new(data.center.x, data.center.y),
-            leftmost_point_index: data.leftmost_point_index,
-            points: out_data,
-            len_vertex: data.points.len() as u64,
+            start_point: PointC::new(data.start_point.x, data.end_point.y),
+            end_point: PointC::new(data.end_point.x,data.end_point.y),
+            sides: out_data,
+            len_vertex: data.sides.len() as u64,
+        }
+    }
+}
+
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct VectorC {
+    pub position: PointC,
+    pub offset: PointC,
+}
+
+
+impl VectorC {
+
+    fn new(position: PointC, offset: PointC) -> Self {
+        Self {
+            position,
+            offset
+        }
+    }
+
+    pub fn repr_rust(self) -> defs::Vector {
+        defs::Vector { 
+            position: self.position.repr_rust(),
+            offset: self.offset.repr_rust()
         }
     }
 }
@@ -103,9 +132,9 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
     let buildings = unsafe { Vec::from_raw_parts(out.buildings, out.len_buildings as usize, out.len_buildings as usize) };
     
     for building in buildings {
-        let mut buildings_vertex = Vec::<defs::Point>::with_capacity(building.len_vertex as usize);
+        let mut buildings_vertex = Vec::<defs::Vector>::with_capacity(building.len_vertex as usize);
         let building_points = unsafe { Vec::from_raw_parts(
-            building.points, building.len_vertex as usize, building.len_vertex as usize
+            building.sides, building.len_vertex as usize, building.len_vertex as usize
         ) };
 
         for vertex in building_points {
@@ -113,9 +142,9 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         norm_buildings.push(defs::Building {
-            center: defs::Point::new(building.center.x, building.center.y),
-            leftmost_point_index: building.leftmost_point_index,
-            points: buildings_vertex,
+            start_point: building.start_point.repr_rust(),
+            end_point: building.end_point.repr_rust(),
+            sides: buildings_vertex,
         })
     }
 

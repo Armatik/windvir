@@ -1,4 +1,7 @@
-#[derive(Clone, Debug)]
+use std::ops::{Add,Sub};
+
+
+#[derive(Clone, Debug, Default)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -17,9 +20,9 @@ impl Point {
 
 #[derive(Debug)]
 pub struct Building {
-    pub center: Point,
-    pub leftmost_point_index: u64,
-    pub points: Vec<Point>,
+	pub start_point: PositionVector,
+	pub end_point: PositionVector,
+	pub sides: Vec<Vector>
 }
 
 

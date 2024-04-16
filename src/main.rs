@@ -6,6 +6,7 @@ mod graphics;
 mod json;
 mod etc;
 mod ffi;
+mod collisions;
 
 use glium::{
     glutin::{self, event_loop::ControlFlow},
@@ -80,10 +81,22 @@ impl App {
                 self.cam.scale -= self.p_j.movement.scale;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
-            graphics::TransformAction::MoveUp => self.cam.offset_y -= self.p_j.movement.y,
-            graphics::TransformAction::MoveDown => self.cam.offset_y += self.p_j.movement.y,
-            graphics::TransformAction::MoveLeft => self.cam.offset_x += self.p_j.movement.x,
-            graphics::TransformAction::MoveRight => self.cam.offset_x -= self.p_j.movement.x,
+            graphics::TransformAction::MoveUp => {
+                self.cam.offset_x += self.p_j.movement.x*f32::sin(self.cam.theta)*self.window_size.1 / self.window_size.0;
+                self.cam.offset_y -= self.p_j.movement.y*f32::cos(self.cam.theta);
+            }
+            graphics::TransformAction::MoveDown => {
+                self.cam.offset_x -= self.p_j.movement.x*f32::sin(self.cam.theta)*self.window_size.1 / self.window_size.0;
+                self.cam.offset_y += self.p_j.movement.y*f32::cos(self.cam.theta);
+            }
+            graphics::TransformAction::MoveLeft => {
+                self.cam.offset_x += self.p_j.movement.x*f32::cos(self.cam.theta)*self.window_size.1 / self.window_size.0;
+                self.cam.offset_y += self.p_j.movement.y*f32::sin(self.cam.theta);
+            }
+            graphics::TransformAction::MoveRight => {
+                self.cam.offset_x -= self.p_j.movement.x*f32::cos(self.cam.theta)*self.window_size.1 / self.window_size.0;
+                self.cam.offset_y -= self.p_j.movement.y*f32::sin(self.cam.theta);
+            }
             graphics::TransformAction::RotateLeft => {
                 self.cam.theta += self.p_j.movement.theta;
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
@@ -352,8 +365,8 @@ impl App {
         let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
         for build in &self.buildings {
-            for point in &build.points {
-                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![point.x, point.y]) })
+            for side in &build.sides {
+                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![side.position.x, side.position.y]) })
             }
         }
 
