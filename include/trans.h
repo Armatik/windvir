@@ -11,6 +11,11 @@ typedef struct
 	double y;
 } PointC;
 
+typedef struct
+{
+	PointC position;
+	PointC offset;
+} VectorC;
 
 typedef struct
 {
