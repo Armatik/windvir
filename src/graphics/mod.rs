@@ -17,6 +17,7 @@ pub type IndciesLines = IndexBuffer<u16>;
 
 pub const VERTEX_SHADER_PATH: &str = "src/graphics/vertex_shader.vert";
 pub const COLOR_SHADER_PATH: &str = "src/graphics/color_shader.vert";
+pub const RANDOM_COLOR_SHADER_PATH: &str = "src/graphics/random_color_shader.vert";
 
 
 pub struct Camera {
@@ -205,8 +206,6 @@ pub fn get_synthetic_triangulation_indices(figures: &Vec<Box<dyn synthetic::Synt
                 for index in 1..SEGMENTS as u16 * 2 + 1 {
                     indices.append(&mut vec![sum as u16, sum as u16 + index, sum as u16 + index + 1]);
                 }
-
-                println!("{vertices:?}");
 
                 sum += SEGMENTS as usize * 2;
             },

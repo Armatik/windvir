@@ -73,12 +73,15 @@ impl App {
         display: &Display,
         positions: (&VertexBuffer<super::Vertex>, &VertexBuffer<super::Vertex>),
         indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
-        program: &glium::Program,
+        program: &(glium::Program, glium::Program),
     ) {
         let uniforms = uniform! {
             matrix: self.cam.transform_matrix,
             x_off: self.cam.offset_x,
             y_off: self.cam.offset_y,
+            // r_rand: 1.,
+            // g_rand: 1.,
+            // b_rand: 1.,
         };
         let mut target = display.draw();
         target.clear_color(
@@ -90,74 +93,24 @@ impl App {
         let multisampling_on = self.p_j.graphics.multisampling_on;
         let dithering_on = self.p_j.graphics.dithering_on;
 
-        match self.cam.display_type {
-            super::DisplayType::TrianglesFill => {
-                let params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    ..Default::default()
-                };
-                target.draw(&*positions.0, &*indices.2, &program, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать кадр!");
-            },
-            super::DisplayType::TrianglesFillLines => {
-                let params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Line,
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    ..Default::default()
-                };
-                target.draw(&*positions.0, &*indices.2, &program, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать кадр!");
-            },
-            super::DisplayType::Triangles => {
-                let params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    ..Default::default()
-                };
-                target.draw(&*positions.0, &*indices.0, &program, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать кадр!");
-            },
-            super::DisplayType::TrianglesLines => {
-                let params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Line,
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    ..Default::default()
-                };
-                target.draw(&*positions.0, &*indices.0, &program, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать кадр!");
-            },
-            super::DisplayType::Lines => {
-                let params = glium::DrawParameters {
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    ..Default::default()
-                };
-                target.draw(&*positions.0, &*indices.1, &program, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать кадр!");
-            },
-            super::DisplayType::ObjectSpawn => {
-                let params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    ..Default::default()
-                };
-                target.draw(&*positions.1, &*indices.3, &program, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать кадр!");
-            },
-        }
+        let (polygon_mode, positions, indices, shader) = match self.cam.display_type {
+            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, positions.0, indices.2, &program.0),
+            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, positions.0, indices.2, &program.0),
+            super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, positions.0, indices.0, &program.0),
+            super::DisplayType::TrianglesLines => (glium::draw_parameters::PolygonMode::Line, positions.0, indices.0, &program.0),
+            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, positions.0, indices.1, &program.0),
+            super::DisplayType::ObjectSpawn => (glium::draw_parameters::PolygonMode::Fill, positions.1, indices.3, &program.1),
+        };
 
+        let params = glium::DrawParameters {
+            polygon_mode,
+            multisampling: multisampling_on,
+            dithering: dithering_on,
+            smooth: Some(glium::draw_parameters::Smooth::Nicest),
+            ..Default::default()
+        };
+        target.draw(&*positions, &*indices, &shader, &uniforms, &params)
+            .expect("Ошибка! Не удалось отрисовать кадр!");
         target.finish()
             .expect("Ошибка! Не удалось закончить отрисовку кадра!");
     }

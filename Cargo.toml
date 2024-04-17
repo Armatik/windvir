@@ -12,6 +12,7 @@ glium = "0.32"
 log = "0.4.21"
 simple_logger = "4.3.3"
 earcutr = "0.4.2"
+rand = "0.8.5"
 
 
 [build-dependencies]

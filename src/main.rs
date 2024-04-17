@@ -58,21 +58,33 @@ impl App {
         let context = if self.p_j.graphics.multisampling_on {
             if self.p_j.graphics.depth_buffering_on {
                 glutin::ContextBuilder::new()
+                    .with_gl(glutin::GlRequest::Latest)
+                    .with_gl_profile(glutin::GlProfile::Core)
+                    .with_pixel_format(0, 0)
                     .with_vsync(self.p_j.graphics.vsync_on)
                     .with_depth_buffer(self.p_j.graphics.depth_buffer)
                     .with_multisampling(self.p_j.graphics.multisampling)
             } else {
                 glutin::ContextBuilder::new()
+                    .with_gl(glutin::GlRequest::Latest)
+                    .with_gl_profile(glutin::GlProfile::Core)
+                    .with_pixel_format(0, 0)
                     .with_vsync(self.p_j.graphics.vsync_on)
                     .with_multisampling(self.p_j.graphics.multisampling)
             }
         } else {
             if self.p_j.graphics.depth_buffering_on {
                 glutin::ContextBuilder::new()
+                    .with_gl(glutin::GlRequest::Latest)
+                    .with_gl_profile(glutin::GlProfile::Core)
+                    .with_pixel_format(0, 0)
                     .with_vsync(self.p_j.graphics.vsync_on)
                     .with_depth_buffer(self.p_j.graphics.depth_buffer)
             } else {
                 glutin::ContextBuilder::new()
+                    .with_gl(glutin::GlRequest::Latest)
+                    .with_gl_profile(glutin::GlProfile::Core)
+                    .with_pixel_format(0, 0)
                     .with_vsync(self.p_j.graphics.vsync_on)
             }
         };
@@ -104,15 +116,22 @@ impl App {
         )?;
         let vertex_shader_src = fs::read_to_string(graphics::VERTEX_SHADER_PATH)?;
         let color_shader_src = fs::read_to_string(graphics::COLOR_SHADER_PATH)?;
+        let random_color_shader_src = fs::read_to_string(graphics::RANDOM_COLOR_SHADER_PATH)?;
         let program = glium::Program::from_source(
             &display,
             &vertex_shader_src,
             &color_shader_src,
             None,
         )?;
+        let random_program = glium::Program::from_source(
+            &display,
+            &vertex_shader_src,
+            &random_color_shader_src,
+            None,
+        )?;
         log::info!("Все здания успешно просчитаны и заданы!");
 
-        self.window_loop(event_loop, display, positions, program, indices_triangle, indices_line, indices_triangulate)
+        self.window_loop(event_loop, display, positions, (program, random_program), indices_triangle, indices_line, indices_triangulate)
     }
 }
 

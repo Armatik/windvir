@@ -44,7 +44,7 @@ impl SyntheticData for Circle {
     }
 
 	fn is_value_default(&self) -> bool {
-		self.radius == f64::default()
+		self.radius == f64::default() || self.center == (f64::default(), f64::default())
 	}
 
 	fn set_value(&mut self, data: SyntheticVariant) {
