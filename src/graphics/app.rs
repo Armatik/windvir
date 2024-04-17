@@ -1,7 +1,5 @@
 use crate::{
-    App,
-    defs,
-    json::geojson,
+    defs, json::geojson, App
 };
 use glium::{
     Display,
@@ -73,8 +71,8 @@ impl App {
     pub fn render_frame(
         &self,
         display: &Display,
-        positions: &VertexBuffer<super::Vertex>,
-        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines),
+        positions: (&VertexBuffer<super::Vertex>, &VertexBuffer<super::Vertex>),
+        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
         program: &glium::Program,
     ) {
         let uniforms = uniform! {
@@ -101,7 +99,7 @@ impl App {
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
-                target.draw(&*positions, &*indices.2, &program, &uniforms, &params)
+                target.draw(&*positions.0, &*indices.2, &program, &uniforms, &params)
                     .expect("Ошибка! Не удалось отрисовать кадр!");
             },
             super::DisplayType::TrianglesFillLines => {
@@ -112,7 +110,7 @@ impl App {
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
-                target.draw(&*positions, &*indices.2, &program, &uniforms, &params)
+                target.draw(&*positions.0, &*indices.2, &program, &uniforms, &params)
                     .expect("Ошибка! Не удалось отрисовать кадр!");
             },
             super::DisplayType::Triangles => {
@@ -123,7 +121,7 @@ impl App {
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
-                target.draw(&*positions, &*indices.0, &program, &uniforms, &params)
+                target.draw(&*positions.0, &*indices.0, &program, &uniforms, &params)
                     .expect("Ошибка! Не удалось отрисовать кадр!");
             },
             super::DisplayType::TrianglesLines => {
@@ -134,7 +132,7 @@ impl App {
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
-                target.draw(&*positions, &*indices.0, &program, &uniforms, &params)
+                target.draw(&*positions.0, &*indices.0, &program, &uniforms, &params)
                     .expect("Ошибка! Не удалось отрисовать кадр!");
             },
             super::DisplayType::Lines => {
@@ -144,11 +142,19 @@ impl App {
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
                     ..Default::default()
                 };
-                target.draw(&*positions, &*indices.1, &program, &uniforms, &params)
+                target.draw(&*positions.0, &*indices.1, &program, &uniforms, &params)
                     .expect("Ошибка! Не удалось отрисовать кадр!");
             },
             super::DisplayType::ObjectSpawn => {
-                
+                let params = glium::DrawParameters {
+                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
+                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
+                    ..Default::default()
+                };
+                target.draw(&*positions.1, &*indices.3, &program, &uniforms, &params)
+                    .expect("Ошибка! Не удалось отрисовать кадр!");
             },
         }
 

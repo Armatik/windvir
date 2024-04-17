@@ -1,3 +1,5 @@
+pub mod synthetic;
+
 use std::ops::{Add,Sub};
 
 
@@ -195,103 +197,5 @@ impl PositionVector {
 	#[inline]
 	pub fn get_sin_between_vectors(&self, other: &Self) -> f64 {
 		Self::cross_product(self, other)/(self.get_length()*other.get_length())
-	}
-}
-
-
-pub enum SyntheticVariant {
-	Circle(f64),
-	Rectangle(f64, f64),
-	Segment((f64, f64), (f64, f64)),
-}
-
-
-pub trait SyntheticData {
-    fn get_data(&self) -> SyntheticVariant;
-	fn is_value_default(&self) -> bool;
-	fn set_value(&mut self, data: SyntheticVariant);
-}
-
-
-#[derive(Default)]
-pub struct Circle {
-    radius: f64,
-}
-
-
-impl SyntheticData for Circle {
-    fn get_data(&self) -> SyntheticVariant {
-        SyntheticVariant::Circle(self.radius)
-    }
-
-	fn is_value_default(&self) -> bool {
-		self.radius == f64::default()
-	}
-
-	fn set_value(&mut self, data: SyntheticVariant) {
-		match data {
-			SyntheticVariant::Circle(radius) => self.radius = radius,
-			_ => log::warn!("Данные для созданной окружности могут быть неверными!"),
-		}
-	}
-}
-
-
-#[derive(Default)]
-pub struct Rectangle {
-    width: f64,
-    height: f64,
-}
-
-
-impl SyntheticData for Rectangle {
-    fn get_data(&self) -> SyntheticVariant {
-        SyntheticVariant::Rectangle(self.width, self.height)
-    }
-
-	fn is_value_default(&self) -> bool {
-		self.width == f64::default() || self.height == f64::default()
-	}
-
-	fn set_value(&mut self, data: SyntheticVariant) {
-		match data {
-			SyntheticVariant::Rectangle(width, height) => {
-				self.width = width;
-				self.height = height;
-			},
-			_ => log::warn!("Данные для созданного прямоугольника могут быть неверными!"),
-		}
-	}
-}
-
-
-#[derive(Default)]
-pub struct Segment {
-    x0: f64,
-    x1: f64,
-    y0: f64,
-    y1: f64,
-}
-
-
-impl SyntheticData for Segment {
-    fn get_data(&self) -> SyntheticVariant {
-        SyntheticVariant::Segment((self.x0, self.x1), (self.y0, self.y1))
-    }
-
-	fn is_value_default(&self) -> bool {
-		self.x0 == f64::default() || self.x1 == f64::default() || self.y0 == f64::default() || self.y1 == f64::default()
-	}
-
-	fn set_value(&mut self, data: SyntheticVariant) {
-		match data {
-			SyntheticVariant::Segment((x0, x1), (y0, y1)) => {
-				self.x0 = x0;
-				self.x1 = x1;
-				self.y0 = y0;
-				self.y1 = y1;
-			},
-			_ => log::warn!("Данные для отрезка могут быть заданы неверно!"),
-		}
 	}
 }

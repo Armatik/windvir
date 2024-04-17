@@ -2,10 +2,10 @@ pub mod app;
 
 use glium::IndexBuffer;
 use crate::json::default_json;
-use crate::defs::Building;
+use crate::defs::{Building, synthetic};
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vertex {
     pub position: [f64; 2],
 }
@@ -176,4 +176,56 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
     }
 
     result
+}
+
+
+pub fn get_synthetic_triangulation_indices(figures: &Vec<Box<dyn synthetic::SyntheticData>>) -> (Vec<Vertex>, Vec<u16>) {
+    let mut indices = Vec::<u16>::new();
+    let mut vertices = Vec::<Vertex>::new();
+    let mut sum = 0;
+
+    for figure in figures {
+        match figure.get_data() {
+            synthetic::SyntheticVariant::Circle((x, y), r) => {
+                const SEGMENTS: f64 = 25.;
+                const DELTA_PHI: f64 = std::f64::consts::PI / SEGMENTS;
+                let mut phi = 0.;
+                
+                vertices.push(Vertex { position: [x, y] });
+
+                while phi < 2. * std::f64::consts::PI + DELTA_PHI {
+                    let x = x + r * f64::cos(phi);
+                    let y = y + r * f64::sin(phi);
+
+                    vertices.push(Vertex { position: [x, y] });
+
+                    phi += DELTA_PHI;
+                }
+
+                for index in 1..SEGMENTS as u16 * 2 + 1 {
+                    indices.append(&mut vec![sum as u16, sum as u16 + index, sum as u16 + index + 1]);
+                }
+
+                println!("{vertices:?}");
+
+                sum += SEGMENTS as usize * 2;
+            },
+            synthetic::SyntheticVariant::Rectangle((lu_x, lu_y), (rd_x, rd_y)) => {
+                vertices.append(&mut vec![
+                    Vertex { position: [lu_x, lu_y] }, Vertex { position: [rd_x, lu_y] }, Vertex { position: [rd_x, rd_y] }, Vertex { position: [lu_x, rd_y] }
+                ]);
+                indices.append(&mut vec![sum as u16, sum as u16 + 1, sum as u16 + 2, sum as u16, sum as u16 + 3, sum as u16 + 2]);
+
+                sum += 4;
+            },
+            synthetic::SyntheticVariant::Segment((p0_x, p0_y), (p1_x, p1_y)) => {
+                vertices.append(&mut vec![Vertex { position: [p0_x, p0_y] }, Vertex { position: [p1_x, p1_y] }]);
+                indices.append(&mut vec![sum as u16, sum as u16 + 1, sum as u16]);
+
+                sum += 2;
+            },
+        }
+    }
+
+    (vertices, indices)
 }
