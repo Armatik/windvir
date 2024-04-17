@@ -1,3 +1,5 @@
+pub mod synthetic;
+
 use std::ops::{Add,Sub};
 
 
@@ -32,7 +34,6 @@ pub struct Building {
 
 impl Building {
 	pub fn new(build: Vec<Vec<f64>>) -> Self {
-		log::warn!("Центры и радиусы для отдельных зданий пока что не задаются. Нуждается в исправлении!");
 		let vertex = build.iter().map(
 			|x| Vector::new(
 						PositionVector::new(x[0], x[1]),PositionVector::new(0.0f64, 0.0f64)

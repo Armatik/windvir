@@ -33,6 +33,7 @@ pub struct Movement {
     pub y: f32,
     pub scale: f32,
     pub theta: f32,
+    pub aim_speed: f32,
 }
 
 
@@ -98,6 +99,7 @@ impl Default for Movement {
             y: 0.00007,
             scale: 7.,
             theta: 0.04,
+            aim_speed: 0.01,
         }
     }
 }

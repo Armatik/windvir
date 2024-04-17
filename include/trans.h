@@ -19,8 +19,15 @@ typedef struct
 
 typedef struct
 {
-	PointC start_point;
-	PointC end_point;
+	PointC position;
+	PointC offset;
+} VectorC;
+
+
+typedef struct
+{
+	PointC startPoint;
+	PointC endPoint;
 	VectorC *sides;
 	uint64_t lenVertex;  // Кол-во вершин в векторе
 } BuildingC;
