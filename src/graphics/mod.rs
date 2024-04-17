@@ -148,20 +148,17 @@ pub fn get_line_indices(buildings: &Vec<Building>) -> Vec<u16> {
 }
 
 
+
 pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
     let mut result = Vec::<u16>::new();
     let mut sum = 0;
     
     for building in buildings {
-        let mut points = Vec::<f64>::new();
+        
         let mut min = usize::MAX;
         let mut max = usize::MIN;
         
-        for vertex in &building.sides {
-            points.append(&mut vec![vertex.position.x, vertex.position.y]);
-        }
-
-        let mut result_building = earcutr::earcut(&points, &[], 2).unwrap().iter().map(|x| {
+        let mut result_building = building.triangulate().iter().map(|x| {
                 if *x < min {
                     min = *x;
                 } else if *x > max {
@@ -172,7 +169,7 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
             }).collect::<Vec<u16>>();
         result.append(&mut result_building);
 
-        sum += max - min + 2;
+        sum += max - min + 1;
     }
 
     result

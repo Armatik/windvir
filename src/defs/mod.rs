@@ -45,6 +45,20 @@ impl Building {
 			sides: vertex,
 		}
 	}
+
+	pub fn triangulate(&self) -> Vec<usize> {
+		let mut points = Vec::<f64>::with_capacity(self.sides.len()*2usize);
+		for vertex in &self.sides {
+			points.push(vertex.position.x);
+			points.push(vertex.position.y);
+		}
+		earcutr::earcut(&points, &[], 2).unwrap()
+	}
+
+	pub fn get_square(&self) -> f64 {
+		println!("{:#?},{},{:#?}", self.triangulate(),self.sides.len(),&self.sides);
+		0.0f64
+	}
 }
 
 
