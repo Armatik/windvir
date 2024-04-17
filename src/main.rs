@@ -15,6 +15,8 @@ use std::{fs, env};
 use json::{geojson, default_json};
 use defs::synthetic;
 
+use crate::defs::Building;
+
 
 type WindowWidth = f32;
 type WindowHeight = f32;
@@ -81,12 +83,11 @@ impl App {
         let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
         for build in &self.buildings {
-            // build.get_square();
             for side in &build.sides {
                 shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![side.position.x, side.position.y]) })
             }
         }
-
+        
         let positions = glium::VertexBuffer::new(&display, &shape)?;
         let indices_triangle = glium::IndexBuffer::new(
             &display,
