@@ -18,23 +18,18 @@ pub enum SyntheticVariant {
 }
 
 
-#[allow(private_in_public)]
-trait DataVertex {
-    fn get_vertices(&self) -> Vec<graphics::Vertex>; 
-}
-
-
-pub trait SyntheticData: DataVertex {
+pub trait SyntheticData {
     fn get_data(&self) -> SyntheticVariant;
 	fn is_value_default(&self) -> bool;
 	fn set_value(&mut self, data: SyntheticVariant);
     /// Возвращается `None` в случае если у структуры присутсвует != 2 точки
     fn set_points(&mut self, p0: super::Point, p1: super::Point) -> Option<()>;
     fn get_rgb(&self) -> (f32, f32, f32);
+    #[allow(dead_code)]
     fn set_rgb(&mut self, r: f32, g: f32, b: f32);
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>);
     fn get_primitive(&self) -> glium::index::PrimitiveType;
-    /// Возвращается `None` в случае невозможно изменит примитив
+    /// Возвращается `None` в случае если невозможно изменить примитив
     fn change_primitive(&mut self) -> Option<()>; 
 }
 
@@ -54,7 +49,7 @@ impl Circle {
             None => {
                 let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
             },
         };
 
@@ -99,7 +94,23 @@ impl SyntheticData for Circle {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        let mut phi = 0.;
+        let mut vertices = Vec::<graphics::Vertex>::with_capacity(SEGMENTS_NUM);
         let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM * 3 - 3);
+        let x = self.center.x;
+        let y = self.center.y;
+        let r = self.radius;
+        
+        vertices.push(graphics::Vertex { position: [x, y] });
+
+        while phi < 2. * std::f64::consts::PI + DELTA_PHI {
+            let x = x + r * f64::cos(phi);
+            let y = y + r * f64::sin(phi);
+
+            vertices.push(graphics::Vertex { position: [x, y] });
+
+            phi += DELTA_PHI;
+        }
 
         if self.is_fill {
             for index in 1..SEGMENTS_NUM as u16 {
@@ -111,7 +122,7 @@ impl SyntheticData for Circle {
             }
         }
 
-        (self.get_vertices(), Some(indices))
+        (vertices, Some(indices))
     }
 
     fn get_primitive(&self) -> glium::index::PrimitiveType {
@@ -134,30 +145,6 @@ impl SyntheticData for Circle {
 }
 
 
-impl DataVertex for Circle {
-    fn get_vertices(&self) -> Vec<graphics::Vertex> {
-        let mut phi = 0.;
-        let mut vertices = Vec::<graphics::Vertex>::with_capacity(SEGMENTS_NUM);
-        let x = self.center.x;
-        let y = self.center.y;
-        let r = self.radius;
-        
-        vertices.push(graphics::Vertex { position: [x, y] });
-
-        while phi < 2. * std::f64::consts::PI + DELTA_PHI {
-            let x = x + r * f64::cos(phi);
-            let y = y + r * f64::sin(phi);
-
-            vertices.push(graphics::Vertex { position: [x, y] });
-
-            phi += DELTA_PHI;
-        }
-
-        vertices
-    }
-}
-
-
 pub struct Rectangle {
     left_up_point: super::Point,
     right_down_point: super::Point,
@@ -173,7 +160,7 @@ impl Rectangle {
             None => {
                 let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
             },         
         };
         
@@ -221,10 +208,20 @@ impl SyntheticData for Rectangle {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        let lu_x = self.left_up_point.x;
+        let lu_y = self.left_up_point.y;
+        let rd_x = self.right_down_point.x;
+        let rd_y = self.right_down_point.y;
+
+        let vertices = vec![graphics::Vertex { position: [lu_x, lu_y] },
+            graphics::Vertex { position: [rd_x, lu_y] },
+            graphics::Vertex { position: [rd_x, rd_y] },
+            graphics::Vertex { position: [lu_x, rd_y] }];
+
         return if self.is_fill {
-            (self.get_vertices(), Some(vec![0, 1, 2, 0, 3, 2]))
+            (vertices, Some(vec![0, 1, 2, 0, 3, 2]))
         } else {
-            (self.get_vertices(), Some(vec![0, 1, 1, 2, 2, 3]))
+            (vertices, Some(vec![0, 1, 1, 2, 2, 3]))
         }
     }
 
@@ -248,21 +245,6 @@ impl SyntheticData for Rectangle {
 }
 
 
-impl DataVertex for Rectangle {
-    fn get_vertices(&self) -> Vec<graphics::Vertex> {
-        let lu_x = self.left_up_point.x;
-        let lu_y = self.left_up_point.y;
-        let rd_x = self.right_down_point.x;
-        let rd_y = self.right_down_point.y;
-
-        vec![graphics::Vertex { position: [lu_x, lu_y] },
-            graphics::Vertex { position: [rd_x, lu_y] },
-            graphics::Vertex { position: [rd_x, rd_y] },
-            graphics::Vertex { position: [lu_x, rd_y] }]
-    }
-}
-
-
 pub struct Segment {
 	p0: super::Point,
 	p1: super::Point,
@@ -277,7 +259,7 @@ impl Segment {
             None => {
                 let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
             },
         };
 
@@ -324,7 +306,12 @@ impl SyntheticData for Segment {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
-        (self.get_vertices(), None)
+        let p0_x = self.p0.x;
+        let p0_y = self.p0.y;
+        let p1_x = self.p1.x;
+        let p1_y = self.p1.y;
+
+        (vec![graphics::Vertex { position: [p0_x, p0_y] }, graphics::Vertex { position: [p1_x, p1_y] }], None)
     }
 
     fn get_primitive(&self) -> glium::index::PrimitiveType {
@@ -333,17 +320,5 @@ impl SyntheticData for Segment {
 
     fn change_primitive(&mut self) -> Option<()> {
         None
-    }
-}
-
-
-impl DataVertex for Segment {
-    fn get_vertices(&self) -> Vec<graphics::Vertex> {
-        let p0_x = self.p0.x;
-        let p0_y = self.p0.y;
-        let p1_x = self.p1.x;
-        let p1_y = self.p1.y;
-
-        vec![graphics::Vertex { position: [p0_x, p0_y] }, graphics::Vertex { position: [p1_x, p1_y] }]
     }
 }
