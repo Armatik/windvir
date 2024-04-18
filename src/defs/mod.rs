@@ -98,6 +98,20 @@ impl Vector {
     pub fn cross_product(&self, other: &Self) -> f64 {
         PositionVector::cross_product(&self.offset, &other.offset)
     }
+
+    pub fn get_right_normal(&self) -> PositionVector {
+        PositionVector { 
+            x: self.offset.y,
+            y: -self.offset.x
+        }
+    }
+
+    pub fn get_left_normal(&self) -> PositionVector {
+        PositionVector { 
+            x: -self.offset.y,
+            y: self.offset.x
+        }
+    }
 }
 
 
