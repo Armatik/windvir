@@ -242,8 +242,98 @@ impl App {
                                     glutin::event::VirtualKeyCode::E => self.transform_map(graphics::TransformAction::RotateRight),
                                     glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
                                     glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
-                                    glutin::event::VirtualKeyCode::P => if input.state == glutin::event::ElementState::Released {
-                                        self.cam.display_type.switch();
+                                    glutin::event::VirtualKeyCode::C => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        match self.synthetic_data.back() {
+                                            Some(figure) => if figure.is_value_default() {
+                                                return;
+                                            },
+                                            _ => {},
+                                        }
+    
+                                        log::info!("Выберите размер для окружности, используя цифры 0..=9");
+                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
+                                    },
+                                    glutin::event::VirtualKeyCode::R => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        match self.synthetic_data.back() {
+                                            Some(figure) => if figure.is_value_default() {
+                                                return;
+                                            },
+                                            _ => {},
+                                        }
+    
+                                        log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
+                                        self.synthetic_data.push_back(Box::new(synthetic::Rectangle::default()));
+                                    },
+                                    glutin::event::VirtualKeyCode::L => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        match self.synthetic_data.back() {
+                                            Some(figure) => if figure.is_value_default() {
+                                                return;
+                                            },
+                                            _ => {},
+                                        }
+    
+                                        log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
+                                        self.synthetic_data.push_back(Box::new(synthetic::Segment::default()));
+                                    },
+                                    glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
+                                    value @ (glutin::event::VirtualKeyCode::Key1 | glutin::event::VirtualKeyCode::Key2 | 
+                                        glutin::event::VirtualKeyCode::Key3 | glutin::event::VirtualKeyCode::Key4 |
+                                        glutin::event::VirtualKeyCode::Key5 | glutin::event::VirtualKeyCode::Key6 |
+                                        glutin::event::VirtualKeyCode::Key7 | glutin::event::VirtualKeyCode::Key8 |
+                                        glutin::event::VirtualKeyCode::Key9) =>  if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                            if let Some(figure) = self.synthetic_data.back() {
+                                                if figure.is_value_default() {
+                                                    let size = self.p_j.aim.aim_adjusment * value as u64 as f64;
+                                                    self.synthetic_data.back_mut().unwrap()
+                                                        .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
+
+                                                    log::info!("Окружность размером {size} была успешно задана!");
+                                                }
+                                            }                                 
+                                    },
+                                    glutin::event::VirtualKeyCode::Plus => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Top);
+                                    },
+                                    glutin::event::VirtualKeyCode::LBracket => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Left);
+                                    },
+                                    glutin::event::VirtualKeyCode::RBracket => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Right);
+                                    },
+                                    glutin::event::VirtualKeyCode::Apostrophe => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Down);
+                                    },
+                                    glutin::event::VirtualKeyCode::Period => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Default);
+                                    },
+                                    glutin::event::VirtualKeyCode::Return => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
+                                        key.state == glutin::event::ElementState::Released {
+                                            match self.synthetic_data.back() {
+                                                Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
+                                                    return;
+                                                } else if !figure.is_value_default() {
+                                                    return;
+                                                },
+                                                _ => return,
+                                            }
+
+                                            if self.synthetic_datas_point.is_point_default() {
+                                                self.synthetic_datas_point.x = self.aim.x;
+                                                self.synthetic_datas_point.y = self.aim.y;
+
+                                                log::info!("Первая точка была успешно отмечена!");
+                                            } else {
+                                                match self.synthetic_data.back().unwrap().get_data() {
+                                                    synthetic::SyntheticVariant::Rectangle(_, _) | synthetic::SyntheticVariant::Segment(_, _) =>
+                                                        self.synthetic_data.back_mut().unwrap().set_points(
+                                                            self.synthetic_datas_point.clone(), self.aim.clone(),
+                                                        ).expect("Произошла ошибка! Данные точки начали задаваться для окружности!"),
+                                                    _ => {},
+                                                }
+                                                
+                                                self.synthetic_datas_point = defs::Point::default();
+                                                log::info!("Фигура была успешно задана!");
+                                            }
                                     },
                                     _ => {},
                                 },
