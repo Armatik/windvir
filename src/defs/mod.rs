@@ -3,7 +3,7 @@ pub mod synthetic;
 use std::ops::{Add,Sub};
 
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -20,6 +20,10 @@ impl Point {
 
     pub fn center_point(&self, other: &Self) -> Self {
         Self::new((self.x + other.x)/2.0f64, (self.y + other.y)/2.0f64)
+    }
+
+    pub fn is_point_default(&self) -> bool {
+        *self == Self::default()
     }
 }
 

@@ -13,11 +13,11 @@ impl App {
         let speed = self.p_j.aim.aim_speed;
 
         match action {
-            control::MoveAim::Top => self.aim.1 += speed,
-            control::MoveAim::Right => self.aim.0 += speed,
-            control::MoveAim::Left => self.aim.0 -= speed,
-            control::MoveAim::Down => self.aim.1 -= speed,
-            control::MoveAim::Default => self.aim = (-self.p_j.map_offset.x as f64, -self.p_j.map_offset.y as f64),
+            control::MoveAim::Top => self.aim.y += speed,
+            control::MoveAim::Right => self.aim.x += speed,
+            control::MoveAim::Left => self.aim.x -= speed,
+            control::MoveAim::Down => self.aim.y -= speed,
+            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x as f64, -self.p_j.map_offset.y as f64),
         };
     } 
 
@@ -120,9 +120,10 @@ impl App {
                     point_size: None,
                     ..Default::default()
                 };
+                let mut rgb = (f32::default(), f32::default(), f32::default());
 
                 for figure in &self.synthetic_data {
-                    let rgb = figure.get_rgb();
+                    rgb = figure.get_rgb();
                     
                     let uniforms = uniform! {
                         matrix: self.cam.transform_matrix,
@@ -156,6 +157,28 @@ impl App {
                     }
                 }
 
+                params.polygon_mode = glium::draw_parameters::PolygonMode::Point;
+                params.smooth = None;
+                params.point_size = Some(self.p_j.aim.aim_size);
+                let figure_point_uniforms = uniform! {
+                    matrix: self.cam.transform_matrix,
+                    x_off: self.cam.offset_x,
+                    y_off: self.cam.offset_y,
+                    r_rand: rgb.0,
+                    g_rand: rgb.1,
+                    b_rand: rgb.2,
+                };
+                let figure_points = glium::VertexBuffer::new(display, &[
+                    super::Vertex { position: [self.synthetic_datas_point.x, self.synthetic_datas_point.y] },
+                ]).expect("Ошибка! Не удалось задать позицию для прицела!");
+                target.draw(
+                    &figure_points,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::Points),
+                    &program.1,
+                    &figure_point_uniforms,
+                    &params,
+                ).expect("Ошибка! Не удалось отрисовать прицел!");
+
                 let aim_uniforms = uniform! {
                     matrix: self.cam.transform_matrix,
                     x_off: self.cam.offset_x,
@@ -164,10 +187,8 @@ impl App {
                     g_rand: 0.0_f32,
                     b_rand: 0.0_f32,
                 };
-                params.polygon_mode = glium::draw_parameters::PolygonMode::Point;
-                params.smooth = None;
-                params.point_size = Some(self.p_j.aim.aim_size);
-                let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.0, self.aim.1] }])
+                
+                let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.x, self.aim.y] }])
                     .expect("Ошибка! Не удалось задать позицию для прицела!");
                 target.draw(
                     &aim_position,

@@ -15,8 +15,6 @@ use std::{fs, env, collections::LinkedList};
 use json::{geojson, default_json};
 use defs::synthetic;
 
-use crate::defs::Building;
-
 
 type WindowWidth = f32;
 type WindowHeight = f32;
@@ -29,7 +27,8 @@ pub struct App {
     window_size: (WindowWidth, WindowHeight),
     buildings: Vec<defs::Building>,
     synthetic_data: LinkedList<Box<dyn synthetic::SyntheticData>>,
-    aim: (f64, f64),
+    synthetic_datas_point: defs::Point,
+    aim: defs::Point,
 }
 
 
@@ -47,7 +46,8 @@ impl App {
             window_size: (p_j.resolution.width as f32, p_j.resolution.height as f32),
             buildings,
             synthetic_data: LinkedList::new(),
-            aim: (-p_j.map_offset.x as f64, -p_j.map_offset.y as f64),
+            synthetic_datas_point: defs::Point::default(),
+            aim: defs::Point::new(-p_j.map_offset.x as f64, -p_j.map_offset.y as f64),
         }
     }
 

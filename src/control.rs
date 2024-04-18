@@ -1,7 +1,7 @@
 use crate::{
     App,
     graphics::{self, Vertex},
-    defs::synthetic,
+    defs::{self, synthetic},
 };
 use glium::{
     glutin::{self, event_loop::ControlFlow}, Display, VertexBuffer
@@ -112,21 +112,31 @@ impl App {
                                             },
                                             _ => {},
                                         }
-                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
-
+    
                                         log::info!("Выберите размер для окружности, используя цифры 0..=9");
+                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
                                     },
                                     R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        todo!("Сделать спавн прямоугольника")
-                                        // if self.synthetic_data.len() == 0 || !self.synthetic_data[self.synthetic_data.len() - 1].is_value_default() {
-                                        //     self.synthetic_data.push(Box::new(defs::Rectangle::default()));
-                                        // }
+                                        match self.synthetic_data.back() {
+                                            Some(figure) => if figure.is_value_default() {
+                                                return;
+                                            },
+                                            _ => {},
+                                        }
+    
+                                        log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
+                                        self.synthetic_data.push_back(Box::new(synthetic::Rectangle::default()));
                                     },
                                     L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        todo!("Сделать спавн отрезка")
-                                        // if self.synthetic_data.len() == 0 || !self.synthetic_data[self.synthetic_data.len() - 1].is_value_default() {
-                                        //     self.synthetic_data.push(Box::new(defs::Segment::default()));
-                                        // }
+                                        match self.synthetic_data.back() {
+                                            Some(figure) => if figure.is_value_default() {
+                                                return;
+                                            },
+                                            _ => {},
+                                        }
+    
+                                        log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
+                                        self.synthetic_data.push_back(Box::new(synthetic::Segment::default()));
                                     },
                                     NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
                                     value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) =>
@@ -135,7 +145,7 @@ impl App {
                                                 if figure.is_value_default() {
                                                     let size = self.p_j.aim.aim_adjusment * value as f64;
                                                     self.synthetic_data.back_mut().unwrap()
-                                                        .set_value(synthetic::SyntheticVariant::Circle(self.aim, size));
+                                                        .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
 
                                                     log::info!("Окружность размером {size} была успешно задана!");
                                                 }
@@ -156,8 +166,34 @@ impl App {
                                     DOT_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                                         self.move_aim(MoveAim::Default);
                                     },
-                                    RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        todo!("Сделать выбор точек")
+                                    RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
+                                        input.state == glutin::event::ElementState::Released {
+                                            match self.synthetic_data.back() {
+                                                Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
+                                                    return;
+                                                } else if !figure.is_value_default() {
+                                                    return;
+                                                },
+                                                _ => return,
+                                            }
+
+                                            if self.synthetic_datas_point.is_point_default() {
+                                                self.synthetic_datas_point.x = self.aim.x;
+                                                self.synthetic_datas_point.y = self.aim.y;
+
+                                                log::info!("Первая точка была успешно отмечена!");
+                                            } else {
+                                                match self.synthetic_data.back().unwrap().get_data() {
+                                                    synthetic::SyntheticVariant::Rectangle(_, _) | synthetic::SyntheticVariant::Segment(_, _) =>
+                                                        self.synthetic_data.back_mut().unwrap().set_points(
+                                                            self.synthetic_datas_point.clone(), self.aim.clone(),
+                                                        ).expect("Произошла ошибка! Данные точки начали задаваться для окружности!"),
+                                                    _ => {},
+                                                }
+                                                
+                                                self.synthetic_datas_point = defs::Point::default();
+                                                log::info!("Фигура была успешно задана!");
+                                            }
                                     },
                                     _ => {},
                                 }

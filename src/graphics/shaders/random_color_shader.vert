@@ -7,7 +7,8 @@ uniform float g_rand;
 uniform float b_rand;
 
 
-void main()
+void
+main()
 {
-    color = vec4(r_rand, g_rand, b_rand, 1.);
+	color = vec4(r_rand, g_rand, b_rand, 1.);
 }
