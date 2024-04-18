@@ -52,6 +52,7 @@ pub struct Graphics {
 pub struct Aim {
     pub aim_adjusment: f64,
     pub aim_speed: f64,
+    pub aim_size: f32,
 }
 
 
@@ -132,6 +133,7 @@ impl Default for Aim {
         Self {
             aim_adjusment: 0.00005,
             aim_speed: 0.00005,
+            aim_size: 10.,
         }
     }
 }

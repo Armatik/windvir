@@ -3,7 +3,6 @@ use crate::graphics;
 
 
 const RED_ADJUSMENT: f32 = 0.8;
-pub const AIM_INDEX: usize = 0;
 
 
 pub enum SyntheticVariant {

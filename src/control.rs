@@ -93,8 +93,6 @@ impl App {
                             const ARROW_DOWN_KEY: u32 = 0x6c;
                             
                             if !is_synthetic {
-                                println!("{}", input.scancode);
-
                                 match input.scancode {
                                     V_KEY => if input.state == glutin::event::ElementState::Released {
                                         self.cam.display_type.switch();
@@ -119,11 +117,13 @@ impl App {
                                         log::info!("Выберите размер для окружности, используя цифры 0..=9");
                                     },
                                     R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        todo!("Сделать спавн прямоугольника")
                                         // if self.synthetic_data.len() == 0 || !self.synthetic_data[self.synthetic_data.len() - 1].is_value_default() {
                                         //     self.synthetic_data.push(Box::new(defs::Rectangle::default()));
                                         // }
                                     },
                                     L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        todo!("Сделать спавн отрезка")
                                         // if self.synthetic_data.len() == 0 || !self.synthetic_data[self.synthetic_data.len() - 1].is_value_default() {
                                         //     self.synthetic_data.push(Box::new(defs::Segment::default()));
                                         // }
@@ -157,7 +157,7 @@ impl App {
                                         self.move_aim(MoveAim::Default);
                                     },
                                     RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-
+                                        todo!("Сделать выбор точек")
                                     },
                                     _ => {},
                                 }
