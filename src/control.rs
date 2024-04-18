@@ -97,7 +97,7 @@ impl App {
                                 match input.scancode {
                                     V_KEY => if input.state == glutin::event::ElementState::Released {
                                         if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                            let mut data = match self.synthetic_data.back_mut() {
+                                            let data = match self.synthetic_data.back_mut() {
                                                 Some(data) => if data.is_value_default() {
                                                     log::warn!("Фигура еще не была задана!");
 

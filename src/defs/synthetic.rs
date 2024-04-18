@@ -54,7 +54,7 @@ impl Circle {
             None => {
                 let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
             },
         };
 
@@ -173,7 +173,7 @@ impl Rectangle {
             None => {
                 let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
             },         
         };
         
@@ -277,7 +277,7 @@ impl Segment {
             None => {
                 let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
             },
         };
 
