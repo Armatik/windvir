@@ -105,7 +105,7 @@ impl SyntheticData for Circle {
     fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
         let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM * 2 - 2);
 
-        for index in 1..SEGMENTS_NUM as u16 {
+        for index in 1..SEGMENTS_NUM as u16 - 1 {
             indices.append(&mut vec![index, index + 1]);
         }
 
