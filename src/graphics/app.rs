@@ -159,7 +159,7 @@ impl App {
 
                 params.polygon_mode = glium::draw_parameters::PolygonMode::Point;
                 params.smooth = None;
-                params.point_size = Some(self.p_j.aim.aim_size);
+                params.point_size = Some(self.p_j.aim.aim_size / 2.);
                 let figure_point_uniforms = uniform! {
                     matrix: self.cam.transform_matrix,
                     x_off: self.cam.offset_x,
@@ -177,8 +177,9 @@ impl App {
                     &program.1,
                     &figure_point_uniforms,
                     &params,
-                ).expect("Ошибка! Не удалось отрисовать прицел!");
+                ).expect("Ошибка! Не удалось отрисовать точку для задания фигуры!");
 
+                params.point_size = Some(self.p_j.aim.aim_size);
                 let aim_uniforms = uniform! {
                     matrix: self.cam.transform_matrix,
                     x_off: self.cam.offset_x,

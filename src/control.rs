@@ -74,6 +74,7 @@ impl App {
                             const W_KEY: u32 = 0x11;
                             const E_KEY: u32 = 0x12;
                             const R_KEY: u32 = 0x13;
+                            const P_KEY: u32 = 0x19;
                             const LEFT_BRACKET: u32 = 0x1a;
                             const RIGHT_BRACKET: u32 = 0x1b;
                             const RETURN_KEY: u32 = 0x1c;
@@ -95,6 +96,9 @@ impl App {
                             if !is_synthetic {
                                 match input.scancode {
                                     V_KEY => if input.state == glutin::event::ElementState::Released {
+                                        self.cam.display_type.change_visible_regime();
+                                    },
+                                    P_KEY => if input.state == glutin::event::ElementState::Released {
                                         self.cam.display_type.switch();
                                     },
                                     W_KEY | ARROW_UP_KEY => self.transform_map(graphics::TransformAction::MoveUp),

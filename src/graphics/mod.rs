@@ -64,7 +64,7 @@ pub enum TransformAction {
 }
 
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum DisplayType {
     TrianglesFill,
     TrianglesFillLines,
@@ -78,12 +78,26 @@ pub enum DisplayType {
 impl DisplayType {
     pub fn switch(&mut self) {
         *self = match self {
-            Self::TrianglesFill => Self::TrianglesFillLines,
+            Self::TrianglesFill => Self::Triangles,
             Self::TrianglesFillLines => Self::Triangles,
-            Self::Triangles => Self::TrianglesLines,
+            Self::Triangles => Self::Lines,
             Self::TrianglesLines => Self::Lines,
             Self::Lines => Self::ObjectSpawn,
             Self::ObjectSpawn => Self::TrianglesFill,
+        }
+    }
+
+    pub fn change_visible_regime(&mut self) {
+        *self = match self {
+            Self::TrianglesFill => Self::TrianglesFillLines,
+            Self::TrianglesFillLines => Self::TrianglesFill,
+            Self::Triangles => Self::TrianglesLines,
+            Self::TrianglesLines => Self::Triangles,
+            _ => {
+                log::warn!("У данного режима отсутвует другой вид отображения!");
+
+                return;
+            },
         }
     }
 }
