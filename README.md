@@ -24,6 +24,23 @@ RUST_LOG=windvir cargo run --release -- -c
 `Q | E` - rotate map
 
 `V` - change vision
+
+`0` – return to the center of the map
+
+### Engine mode controls
+`+` – move the sight up
+
+`[` – move the sight left
+
+`]` – move the sight right
+
+`'` – move the sight down
+
+`.` – return the sight on center of map
+
+### Spawn objects in engine mode
+`C` – set the circumference, and then select a size from 1 to 9 inclusive
+
 ## Settings
 You can change default settings in file `default_settings.json`
 
