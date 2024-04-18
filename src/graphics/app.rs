@@ -105,15 +105,20 @@ impl App {
         let multisampling_on = self.p_j.graphics.multisampling_on;
         let dithering_on = self.p_j.graphics.dithering_on;
 
-        let (polygon_mode, indices) = match self.cam.display_type {
+        let (polygon_mode, indices) = match self.cam.display_type.clone() {
             super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, indices.2),
             super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, indices.2),
             super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, indices.0),
             super::DisplayType::TrianglesLines => (glium::draw_parameters::PolygonMode::Line, indices.0),
             super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, indices.1),
-            super::DisplayType::ObjectSpawn => {
+            regime @ (super::DisplayType::ObjectSpawn | super::DisplayType::ObjectSpawnContour) => {
+                let (polygon_mode, primitive) = match regime {
+                    super::DisplayType::ObjectSpawn => (glium::draw_parameters::PolygonMode::Fill, glium::index::PrimitiveType::TrianglesList),
+                    super::DisplayType::ObjectSpawnContour => (glium::draw_parameters::PolygonMode::Line, glium::index::PrimitiveType::LineLoop),
+                    _ => unreachable!("Обработан ошибочный режим!"),
+                };
                 let mut params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
+                    polygon_mode,
                     multisampling: multisampling_on,
                     dithering: dithering_on,
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
@@ -134,14 +139,18 @@ impl App {
                         b_rand: rgb.2,
                     };
                     
-                    let (positions, indices) = figure.get_vertices_and_indices();
+                    let (positions, indices) = match regime {
+                        super::DisplayType::ObjectSpawn => figure.get_vertices_and_indices(),
+                        super::DisplayType::ObjectSpawnContour => figure.get_vertices_and_indices_contour(),
+                        _ => unreachable!("Обработан ошибочный режим!"),
+                    };
                     let positions = glium::VertexBuffer::new(display, &positions)
                         .expect("Ошибка! Не удалось создать буффер вершин для объекта!");
 
                     if let Some(indices) = indices {
                         let indices = glium::IndexBuffer::new(
                             display,
-                            glium::index::PrimitiveType::TrianglesList,
+                            primitive,
                             &indices,
                         ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
                         target.draw(&positions, &indices, &program.1, &uniforms, &params)

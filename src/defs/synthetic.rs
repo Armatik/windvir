@@ -5,6 +5,9 @@ use super::Point;
 
 
 const RED_ADJUSMENT: f32 = 0.8;
+const SEGMENTS: f64 = 25.;
+const DELTA_PHI: f64 = std::f64::consts::PI / SEGMENTS;
+const SEGMENTS_NUM: usize = SEGMENTS as usize * 2 + 1;
 
 
 pub enum SyntheticVariant {
@@ -17,7 +20,13 @@ pub enum SyntheticVariant {
 }
 
 
-pub trait SyntheticData {
+#[allow(private_in_public)]
+trait DataVertex {
+    fn get_vertices(&self) -> Vec<graphics::Vertex>; 
+}
+
+
+pub trait SyntheticData: DataVertex {
     fn get_data(&self) -> SyntheticVariant;
 	fn is_value_default(&self) -> bool;
 	fn set_value(&mut self, data: SyntheticVariant);
@@ -26,6 +35,7 @@ pub trait SyntheticData {
     fn get_rgb(&self) -> (f32, f32, f32);
     fn set_rgb(&mut self, r: f32, g: f32, b: f32);
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>);
+    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>);
 }
 
 
@@ -83,12 +93,31 @@ impl SyntheticData for Circle {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
-        const SEGMENTS: f64 = 25.;
-        const DELTA_PHI: f64 = std::f64::consts::PI / SEGMENTS;
-        const SEGMENTS_NUM: usize = SEGMENTS as usize * 2 + 1;
+        let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM * 3 - 3);
+
+        for index in 1..SEGMENTS_NUM as u16 {
+            indices.append(&mut vec![0, index, index + 1]);
+        }
+
+        (self.get_vertices(), Some(indices))
+    }
+
+    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM * 2 - 2);
+
+        for index in 1..SEGMENTS_NUM as u16 {
+            indices.append(&mut vec![index, index + 1]);
+        }
+
+        (self.get_vertices(), Some(indices))
+    }
+}
+
+
+impl DataVertex for Circle {
+    fn get_vertices(&self) -> Vec<graphics::Vertex> {
         let mut phi = 0.;
         let mut vertices = Vec::<graphics::Vertex>::with_capacity(SEGMENTS_NUM);
-        let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM - 1);
         let x = self.center.x;
         let y = self.center.y;
         let r = self.radius;
@@ -104,11 +133,7 @@ impl SyntheticData for Circle {
             phi += DELTA_PHI;
         }
 
-        for index in 1..SEGMENTS_NUM as u16 {
-            indices.append(&mut vec![0, index, index + 1]);
-        }
-
-        (vertices, Some(indices))
+        vertices
     }
 }
 
@@ -170,16 +195,26 @@ impl SyntheticData for Rectangle {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        (self.get_vertices(), Some(vec![0, 1, 2, 0, 3, 2]))
+    }
+
+    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        (self.get_vertices(), Some(vec![0, 1, 1, 2, 2, 3]))
+    }
+}
+
+
+impl DataVertex for Rectangle {
+    fn get_vertices(&self) -> Vec<graphics::Vertex> {
         let lu_x = self.left_up_point.x;
         let lu_y = self.left_up_point.y;
         let rd_x = self.right_down_point.x;
         let rd_y = self.right_down_point.y;
 
-        (vec![graphics::Vertex { position: [lu_x, lu_y] },
+        vec![graphics::Vertex { position: [lu_x, lu_y] },
             graphics::Vertex { position: [rd_x, lu_y] },
             graphics::Vertex { position: [rd_x, rd_y] },
-            graphics::Vertex { position: [lu_x, rd_y] }
-            ], Some(vec![0, 1, 2, 0, 3, 2]))
+            graphics::Vertex { position: [lu_x, rd_y] }]
     }
 }
 
@@ -241,11 +276,22 @@ impl SyntheticData for Segment {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        (self.get_vertices(), None)
+    }
+
+    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
+        (self.get_vertices(), None)
+    }
+}
+
+
+impl DataVertex for Segment {
+    fn get_vertices(&self) -> Vec<graphics::Vertex> {
         let p0_x = self.p0.x;
         let p0_y = self.p0.y;
         let p1_x = self.p1.x;
         let p1_y = self.p1.y;
 
-        (vec![graphics::Vertex { position: [p0_x, p0_y] }, graphics::Vertex { position: [p1_x, p1_y] }], None)
+        vec![graphics::Vertex { position: [p0_x, p0_y] }, graphics::Vertex { position: [p1_x, p1_y] }]
     }
 }

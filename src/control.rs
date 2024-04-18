@@ -109,68 +109,78 @@ impl App {
                                     E_KEY => self.transform_map(graphics::TransformAction::RotateRight),
                                     Z_KEY => self.transform_map(graphics::TransformAction::Increase),
                                     X_KEY => self.transform_map(graphics::TransformAction::Reduce),
-                                    C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        match self.synthetic_data.back() {
-                                            Some(figure) => if figure.is_value_default() {
-                                                return;
-                                            },
-                                            _ => {},
-                                        }
-    
-                                        log::info!("Выберите размер для окружности, используя цифры 0..=9");
-                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
+                                    C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            match self.synthetic_data.back() {
+                                                Some(figure) => if figure.is_value_default() {
+                                                    return;
+                                                },
+                                                _ => {},
+                                            }
+        
+                                            log::info!("Выберите размер для окружности, используя цифры 0..=9");
+                                            self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
                                     },
-                                    R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        match self.synthetic_data.back() {
-                                            Some(figure) => if figure.is_value_default() {
-                                                return;
-                                            },
-                                            _ => {},
-                                        }
-    
-                                        log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
-                                        self.synthetic_data.push_back(Box::new(synthetic::Rectangle::default()));
+                                    R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            match self.synthetic_data.back() {
+                                                Some(figure) => if figure.is_value_default() {
+                                                    return;
+                                                },
+                                                _ => {},
+                                            }
+        
+                                            log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
+                                            self.synthetic_data.push_back(Box::new(synthetic::Rectangle::default()));
                                     },
-                                    L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        match self.synthetic_data.back() {
-                                            Some(figure) => if figure.is_value_default() {
-                                                return;
-                                            },
-                                            _ => {},
-                                        }
-    
-                                        log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
-                                        self.synthetic_data.push_back(Box::new(synthetic::Segment::default()));
+                                    L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            match self.synthetic_data.back() {
+                                                Some(figure) => if figure.is_value_default() {
+                                                    return;
+                                                },
+                                                _ => {},
+                                            }
+        
+                                            log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
+                                            self.synthetic_data.push_back(Box::new(synthetic::Segment::default()));
                                     },
                                     NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
                                     value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) =>
-                                        if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                            if let Some(figure) = self.synthetic_data.back() {
-                                                if figure.is_value_default() {
-                                                    let size = self.p_j.aim.aim_adjusment * value as f64;
-                                                    self.synthetic_data.back_mut().unwrap()
-                                                        .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
+                                        if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                            self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                                if let Some(figure) = self.synthetic_data.back() {
+                                                    if figure.is_value_default() {
+                                                        let size = self.p_j.aim.aim_adjusment * value as f64;
+                                                        self.synthetic_data.back_mut().unwrap()
+                                                            .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
 
-                                                    log::info!("Окружность размером {size} была успешно задана!");
-                                                }
-                                            }                                 
+                                                        log::info!("Окружность размером {size} была успешно задана!");
+                                                    }
+                                                }                                 
                                     },
-                                    PLUS_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        self.move_aim(MoveAim::Top);
+                                    PLUS_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            self.move_aim(MoveAim::Top);
                                     },
-                                    LEFT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        self.move_aim(MoveAim::Left);
+                                    LEFT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            self.move_aim(MoveAim::Left);
                                     },
-                                    RIGHT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        self.move_aim(MoveAim::Right);
+                                    RIGHT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            self.move_aim(MoveAim::Right);
                                     },
-                                    QUOTE_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        self.move_aim(MoveAim::Down);
+                                    QUOTE_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            self.move_aim(MoveAim::Down);
                                     },
-                                    DOT_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        self.move_aim(MoveAim::Default);
+                                    DOT_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour {
+                                            self.move_aim(MoveAim::Default);
                                     },
-                                    RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
+                                    RETURN_KEY => if (self.cam.display_type == graphics::DisplayType::ObjectSpawn ||
+                                        self.cam.display_type == graphics::DisplayType::ObjectSpawnContour) &&
                                         input.state == glutin::event::ElementState::Released {
                                             match self.synthetic_data.back() {
                                                 Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
