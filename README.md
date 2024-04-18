@@ -39,7 +39,7 @@ RUST_LOG=windvir cargo run --release -- -c
 `.` – return the sight on center of map
 
 ### Spawn objects in engine mode
-`C` – set the circumference, and then select a size from 1 to 9 inclusive
+`C` – set the circumference, and then select a size from 1 to 9 inclusive using keyboard
 
 ## Settings
 You can change default settings in file `default_settings.json`
