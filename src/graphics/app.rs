@@ -111,14 +111,9 @@ impl App {
             super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, indices.0),
             super::DisplayType::TrianglesLines => (glium::draw_parameters::PolygonMode::Line, indices.0),
             super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, indices.1),
-            regime @ (super::DisplayType::ObjectSpawn | super::DisplayType::ObjectSpawnContour) => {
-                let (polygon_mode, primitive) = match regime {
-                    super::DisplayType::ObjectSpawn => (glium::draw_parameters::PolygonMode::Fill, glium::index::PrimitiveType::TrianglesList),
-                    super::DisplayType::ObjectSpawnContour => (glium::draw_parameters::PolygonMode::Line, glium::index::PrimitiveType::LineLoop),
-                    _ => unreachable!("Обработан ошибочный режим!"),
-                };
+            super::DisplayType::ObjectSpawn => {
                 let mut params = glium::DrawParameters {
-                    polygon_mode,
+                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
                     multisampling: multisampling_on,
                     dithering: dithering_on,
                     smooth: Some(glium::draw_parameters::Smooth::Nicest),
@@ -139,11 +134,14 @@ impl App {
                         b_rand: rgb.2,
                     };
                     
-                    let (positions, indices) = match regime {
-                        super::DisplayType::ObjectSpawn => figure.get_vertices_and_indices(),
-                        super::DisplayType::ObjectSpawnContour => figure.get_vertices_and_indices_contour(),
-                        _ => unreachable!("Обработан ошибочный режим!"),
+                    let (positions, indices) = figure.get_vertices_and_indices();
+                    let primitive = figure.get_primitive();
+                    let polygon_mode = match primitive {
+                        glium::index::PrimitiveType::TrianglesList => glium::draw_parameters::PolygonMode::Fill,
+                        glium::index::PrimitiveType::LineLoop => glium::draw_parameters::PolygonMode::Line,
+                        _ => unreachable!("Попался невозможный примитив!"),
                     };
+                    params.polygon_mode = polygon_mode;
                     let positions = glium::VertexBuffer::new(display, &positions)
                         .expect("Ошибка! Не удалось создать буффер вершин для объекта!");
 

@@ -72,7 +72,6 @@ pub enum DisplayType {
     TrianglesLines,
     Lines,
     ObjectSpawn,
-    ObjectSpawnContour,
 }
 
 
@@ -85,7 +84,6 @@ impl DisplayType {
             Self::TrianglesLines => Self::Lines,
             Self::Lines => Self::ObjectSpawn,
             Self::ObjectSpawn => Self::TrianglesFill,
-            Self::ObjectSpawnContour => Self::TrianglesFill,
         }
     }
 
@@ -95,8 +93,6 @@ impl DisplayType {
             Self::TrianglesFillLines => Self::TrianglesFill,
             Self::Triangles => Self::TrianglesLines,
             Self::TrianglesLines => Self::Triangles,
-            Self::ObjectSpawn => Self::ObjectSpawnContour,
-            Self::ObjectSpawnContour => Self::ObjectSpawn,
             _ => {
                 log::warn!("У данного режима отсутвует другой вид отображения!");
 

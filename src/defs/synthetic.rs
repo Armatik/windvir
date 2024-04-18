@@ -1,8 +1,6 @@
 use rand::Rng;
 use crate::graphics;
 
-use super::Point;
-
 
 const RED_ADJUSMENT: f32 = 0.8;
 const SEGMENTS: f64 = 25.;
@@ -35,28 +33,36 @@ pub trait SyntheticData: DataVertex {
     fn get_rgb(&self) -> (f32, f32, f32);
     fn set_rgb(&mut self, r: f32, g: f32, b: f32);
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>);
-    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>);
+    fn get_primitive(&self) -> glium::index::PrimitiveType;
+    /// Возвращается `None` в случае невозможно изменит примитив
+    fn change_primitive(&mut self) -> Option<()>; 
 }
 
 
 pub struct Circle {
     center: super::Point,
 	radius: f64,
+    is_fill: bool,
     rgb: (f32, f32, f32),
 }
 
 
-impl Default for Circle {
-    fn default() -> Self {
-        let mut rng = rand::thread_rng();
-        let r = rng.gen::<f32>() * RED_ADJUSMENT;
-        let g = rng.gen::<f32>();
-        let b = rng.gen::<f32>();
-        
+impl Circle {
+    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
+        let rgb = match rgb {
+            Some(rgb) => rgb,
+            None => {
+                let mut rng = rand::thread_rng();
+
+                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+            },
+        };
+
         Self {
             center: super::Point::default(),
             radius: f64::default(),
-            rgb: (r, g, b),
+            is_fill: true,
+            rgb,
         }
     }
 }
@@ -68,7 +74,7 @@ impl SyntheticData for Circle {
     }
 
 	fn is_value_default(&self) -> bool {
-		self.radius == f64::default() || self.center == Point::default()
+		self.radius == f64::default() || self.center == super::Point::default()
 	}
 
 	fn set_value(&mut self, data: SyntheticVariant) {
@@ -95,21 +101,35 @@ impl SyntheticData for Circle {
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
         let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM * 3 - 3);
 
-        for index in 1..SEGMENTS_NUM as u16 {
-            indices.append(&mut vec![0, index, index + 1]);
+        if self.is_fill {
+            for index in 1..SEGMENTS_NUM as u16 {
+                indices.append(&mut vec![0, index, index + 1]);
+            }
+        } else {
+            for index in 1..SEGMENTS_NUM as u16 - 1 {
+                indices.append(&mut vec![index, index + 1]);
+            }
         }
 
         (self.get_vertices(), Some(indices))
     }
 
-    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
-        let mut indices = Vec::<u16>::with_capacity(SEGMENTS_NUM * 2 - 2);
+    fn get_primitive(&self) -> glium::index::PrimitiveType {
+        return if self.is_fill {
+            glium::index::PrimitiveType::TrianglesList
+        } else {
+            glium::index::PrimitiveType::LineLoop
+        }
+    }
 
-        for index in 1..SEGMENTS_NUM as u16 - 1 {
-            indices.append(&mut vec![index, index + 1]);
+    fn change_primitive(&mut self) -> Option<()> {
+        if self.is_fill {
+            self.is_fill = false;
+        } else {
+            self.is_fill = true;
         }
 
-        (self.get_vertices(), Some(indices))
+        Some(())
     }
 }
 
@@ -141,21 +161,27 @@ impl DataVertex for Circle {
 pub struct Rectangle {
     left_up_point: super::Point,
     right_down_point: super::Point,
+    is_fill: bool,
     rgb: (f32, f32, f32),
 }
 
 
-impl Default for Rectangle {
-    fn default() -> Self {
-        let mut rng = rand::thread_rng();
-        let r = rng.gen::<f32>() * RED_ADJUSMENT;
-        let g = rng.gen::<f32>();
-        let b = rng.gen::<f32>();
+impl Rectangle {
+    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
+        let rgb = match rgb {
+            Some(rgb) => rgb,
+            None => {
+                let mut rng = rand::thread_rng();
 
+                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+            },         
+        };
+        
         Self {
             left_up_point: super::Point::default(),
             right_down_point: super::Point::default(),
-            rgb: (r, g, b),
+            is_fill: true,
+            rgb,
         }
     }
 }
@@ -195,11 +221,29 @@ impl SyntheticData for Rectangle {
     }
 
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
-        (self.get_vertices(), Some(vec![0, 1, 2, 0, 3, 2]))
+        return if self.is_fill {
+            (self.get_vertices(), Some(vec![0, 1, 2, 0, 3, 2]))
+        } else {
+            (self.get_vertices(), Some(vec![0, 1, 1, 2, 2, 3]))
+        }
     }
 
-    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
-        (self.get_vertices(), Some(vec![0, 1, 1, 2, 2, 3]))
+    fn get_primitive(&self) -> glium::index::PrimitiveType {
+        return if self.is_fill {
+            glium::index::PrimitiveType::TrianglesList
+        } else {
+            glium::index::PrimitiveType::LineLoop
+        }
+    }
+
+    fn change_primitive(&mut self) -> Option<()> {
+        if self.is_fill {
+            self.is_fill = false;
+        } else {
+            self.is_fill = true;
+        }
+
+        Some(())
     }
 }
 
@@ -226,17 +270,21 @@ pub struct Segment {
 }
 
 
-impl Default for Segment {
-    fn default() -> Self {
-        let mut rng = rand::thread_rng();
-        let r = rng.gen::<f32>() * RED_ADJUSMENT;
-        let g = rng.gen::<f32>();
-        let b = rng.gen::<f32>();
+impl Segment {
+    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
+        let rgb = match rgb {
+            Some(rgb) => rgb,
+            None => {
+                let mut rng = rand::thread_rng();
+
+                (rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
+            },
+        };
 
         Self {
             p0: super::Point::default(),
             p1: super::Point::default(),
-            rgb: (r, g, b),
+            rgb,
         }
     }
 }
@@ -279,8 +327,12 @@ impl SyntheticData for Segment {
         (self.get_vertices(), None)
     }
 
-    fn get_vertices_and_indices_contour(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {
-        (self.get_vertices(), None)
+    fn get_primitive(&self) -> glium::index::PrimitiveType {
+        glium::index::PrimitiveType::LineLoop
+    }
+
+    fn change_primitive(&mut self) -> Option<()> {
+        None
     }
 }
 
