@@ -23,9 +23,10 @@ impl App {
 
     pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<defs::Building> {
         let mut buildings = Vec::<defs::Building>::with_capacity(p_g.features.len());
-
         for building in &p_g.features {
-            buildings.push(defs::Building::new(building.geometry.coordinates[0][0].clone()));
+            let mut temp_building = building.geometry.coordinates[0][0].clone();
+            temp_building.pop();
+            buildings.push(defs::Building::new(temp_building));
         }
 
         buildings
