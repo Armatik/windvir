@@ -23,7 +23,9 @@ RUST_LOG=windvir cargo run --release -- -c
 
 `Q | E` - rotate map
 
-`V` - change vision
+`P` - change regime
+
+`V` - change vision of regime
 
 `0` – return to the center of the map
 
