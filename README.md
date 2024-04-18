@@ -25,7 +25,7 @@ RUST_LOG=windvir cargo run --release -- -c
 
 `P` - change regime
 
-`V` - change vision of regime
+`V` - change vision of regime and change display type in engine mode 
 
 `0` – return to the center of the map
 
