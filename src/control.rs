@@ -255,7 +255,29 @@ impl App {
                             match key.virtual_keycode {
                                 Some(cap) => match cap {
                                     glutin::event::VirtualKeyCode::V => if key.state == glutin::event::ElementState::Released {
-                                        self.cam.display_type.switch();
+                                        if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                            let mut data = match self.synthetic_data.back_mut() {
+                                                Some(data) => if data.is_value_default() {
+                                                    log::warn!("Фигура еще не была задана!");
+
+                                                    return;
+                                                } else {
+                                                    data
+                                                },
+                                                None => {
+                                                    log::warn!("Ни одной фигуры еще не было создано!");
+
+                                                    return;
+                                                },
+                                            };
+
+                                            match data.change_primitive() {
+                                                None => log::warn!("Нельзя изменить режим отображения для последней созданной фигуры"),
+                                                _ => {},
+                                            };
+                                        } else {
+                                            self.cam.display_type.change_visible_regime();
+                                        }
                                     },
                                     glutin::event::VirtualKeyCode::W | glutin::event::VirtualKeyCode::Up => self.transform_map(graphics::TransformAction::MoveUp),
                                     glutin::event::VirtualKeyCode::A | glutin::event::VirtualKeyCode::Left =>
@@ -277,7 +299,7 @@ impl App {
                                         }
     
                                         log::info!("Выберите размер для окружности, используя цифры 0..=9");
-                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
+                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::new(None)));
                                     },
                                     glutin::event::VirtualKeyCode::R => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                                         match self.synthetic_data.back() {
@@ -288,7 +310,7 @@ impl App {
                                         }
     
                                         log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
-                                        self.synthetic_data.push_back(Box::new(synthetic::Rectangle::default()));
+                                        self.synthetic_data.push_back(Box::new(synthetic::Rectangle::new(None)));
                                     },
                                     glutin::event::VirtualKeyCode::L => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                                         match self.synthetic_data.back() {
@@ -299,7 +321,7 @@ impl App {
                                         }
     
                                         log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
-                                        self.synthetic_data.push_back(Box::new(synthetic::Segment::default()));
+                                        self.synthetic_data.push_back(Box::new(synthetic::Segment::new(None)));
                                     },
                                     glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
                                     value @ (glutin::event::VirtualKeyCode::Key1 | glutin::event::VirtualKeyCode::Key2 | 
