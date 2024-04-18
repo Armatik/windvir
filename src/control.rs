@@ -8,28 +8,16 @@ use glium::{
 };
 
 
-enum MoveAim {
+pub enum MoveAim {
     Top,
     Right,
     Left,
     Down,
+    Default,
 }
 
 
 impl App {
-    fn change_aim(&mut self, action: MoveAim) {
-        match action {
-            MoveAim::Top => self.synthetic_data[synthetic::AIM_INDEX].move_aim(0., self.p_j.movement.aim_speed as f64)
-                .expect("Ошибка! Прицел был утерян!"),
-            MoveAim::Right => self.synthetic_data[synthetic::AIM_INDEX].move_aim(self.p_j.movement.aim_speed as f64, 0.)
-                .expect("Ошибка! Прицел был утерян!"),
-            MoveAim::Left => self.synthetic_data[synthetic::AIM_INDEX].move_aim(-self.p_j.movement.aim_speed as f64, 0.)
-                .expect("Ошибка! Прицел был утерян!"),
-            MoveAim::Down => self.synthetic_data[synthetic::AIM_INDEX].move_aim(0., -self.p_j.movement.aim_speed as f64)
-                .expect("Ошибка! Прицел был утерян!"),
-        };
-    } 
-
     pub fn window_loop(
         mut self,
         event_loop: glutin::event_loop::EventLoop<()>,
@@ -40,15 +28,6 @@ impl App {
         indices_line: graphics::IndciesLines,
         indices_triangulate: graphics::IndciesTriangles
     ) -> ! {
-        let (synthetic_vertices, synthetic_indices) = graphics::get_synthetic_triangulation_indices(&self.synthetic_data);
-        let mut synthetic_vertices_buffer = glium::VertexBuffer::new(&display, &synthetic_vertices)
-            .expect("Ошибка! Не удалось создать вектор вершин для синтетических данных!");
-        let mut synthetic_indices_buffer = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::TrianglesList,
-            &synthetic_indices,
-        ).expect("Ошибка! Не удлалось соединить все вершины синтетических объектов!");
-
         event_loop.run(move |ev, _, control_flow| {
             match ev {
                 glutin::event::Event::WindowEvent { event, .. } => {
@@ -67,15 +46,15 @@ impl App {
                             self.transform_map(graphics::TransformAction::Resize);
                             self.render_frame(
                                 &display,
-                                (&positions, &synthetic_vertices_buffer),
-                                (&indices_triangle, &indices_line, &indices_triangulate, &synthetic_indices_buffer),
+                                &positions,
+                                (&indices_triangle, &indices_line, &indices_triangulate),
                                 &program,
                             );
                         },
                         glutin::event::WindowEvent::Moved(_) => self.render_frame(
                             &display,
-                            (&positions, &synthetic_vertices_buffer),
-                            (&indices_triangle, &indices_line, &indices_triangulate, &synthetic_indices_buffer),
+                            &positions,
+                            (&indices_triangle, &indices_line, &indices_triangulate),
                             &program
                         ),
                         #[cfg(unix)]
@@ -89,24 +68,33 @@ impl App {
                             const NUM7_KEY: u32 = 0x08;
                             const NUM8_KEY: u32 = 0x09;
                             const NUM9_KEY: u32 = 0x0a;
+                            const NUM0_KEY: u32 = 0x0b;
+                            const PLUS_KEY: u32 = 0x0d;
                             const Q_KEY: u32 = 0x10;
                             const W_KEY: u32 = 0x11;
                             const E_KEY: u32 = 0x12;
                             const R_KEY: u32 = 0x13;
+                            const LEFT_BRACKET: u32 = 0x1a;
+                            const RIGHT_BRACKET: u32 = 0x1b;
+                            const RETURN_KEY: u32 = 0x1c;
                             const A_KEY: u32 = 0x1e;
                             const S_KEY: u32 = 0x1f;
                             const D_KEY: u32 = 0x20;
                             const L_KEY: u32 = 0x26;
+                            const QUOTE_KEY: u32 = 0x28;
                             const Z_KEY: u32 = 0x2c;
                             const X_KEY: u32 = 0x2d;
                             const C_KEY: u32 = 0x2e;
                             const V_KEY: u32 = 0x2f;
+                            const DOT_KEY: u32 = 0x34;
                             const ARROW_UP_KEY: u32 = 0x67;
                             const ARROW_LEFT_KEY: u32 = 0x69;
                             const ARROW_RIGHT_KEY: u32 = 0x6a;
                             const ARROW_DOWN_KEY: u32 = 0x6c;
                             
                             if !is_synthetic {
+                                println!("{}", input.scancode);
+
                                 match input.scancode {
                                     V_KEY => if input.state == glutin::event::ElementState::Released {
                                         self.cam.display_type.switch();
@@ -120,11 +108,15 @@ impl App {
                                     Z_KEY => self.transform_map(graphics::TransformAction::Increase),
                                     X_KEY => self.transform_map(graphics::TransformAction::Reduce),
                                     C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                        if self.synthetic_data.len() == 1 || !self.synthetic_data[self.synthetic_data.len() - 1].is_value_default() {
-                                            self.synthetic_data.push(Box::new(synthetic::Circle::default()));
-
-                                            log::info!("Выберите размер для окружности, используя цифры 0..=9");
+                                        match self.synthetic_data.back() {
+                                            Some(figure) => if figure.is_value_default() {
+                                                return;
+                                            },
+                                            _ => {},
                                         }
+                                        self.synthetic_data.push_back(Box::new(synthetic::Circle::default()));
+
+                                        log::info!("Выберите размер для окружности, используя цифры 0..=9");
                                     },
                                     R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                                         // if self.synthetic_data.len() == 0 || !self.synthetic_data[self.synthetic_data.len() - 1].is_value_default() {
@@ -136,31 +128,36 @@ impl App {
                                         //     self.synthetic_data.push(Box::new(defs::Segment::default()));
                                         // }
                                     },
+                                    NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
                                     value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) =>
                                         if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                                            let index_elem = self.synthetic_data.len() - 1;
+                                            if let Some(figure) = self.synthetic_data.back() {
+                                                if figure.is_value_default() {
+                                                    let size = self.p_j.aim.aim_adjusment * value as f64;
+                                                    self.synthetic_data.back_mut().unwrap()
+                                                        .set_value(synthetic::SyntheticVariant::Circle(self.aim, size));
 
-                                            if self.synthetic_data[index_elem].is_value_default() {
-                                                if let synthetic::SyntheticVariant::Circle(aim_center, _) =
-                                                    self.synthetic_data[synthetic::AIM_INDEX].get_data() {
-                                                        let size = 0.00025 * value as f64;
-                                                        self.synthetic_data[index_elem].set_value(synthetic::SyntheticVariant::Circle(aim_center, size));
-
-                                                        log::info!("Окружность размером {size} была успешно задана!");
-                                                } else {
-                                                    log::error!("Пропал прицел!");
-
-                                                    unreachable!("Произошла пропажа прицела");
+                                                    log::info!("Окружность размером {size} была успешно задана!");
                                                 }
-                                            }
-                                            let (synthetic_vertices, synthetic_indices) = graphics::get_synthetic_triangulation_indices(&self.synthetic_data);
-                                            synthetic_vertices_buffer = glium::VertexBuffer::new(&display, &synthetic_vertices)
-                                                .expect("Ошибка! Не удалось создать вектор вершин для синтетических данных!");
-                                            synthetic_indices_buffer = glium::IndexBuffer::new(
-                                                &display,
-                                                glium::index::PrimitiveType::TrianglesList,
-                                                &synthetic_indices,
-                                            ).expect("Ошибка! Не удлалось соединить все вершины синтетических объектов!");                                            
+                                            }                                 
+                                    },
+                                    PLUS_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Top);
+                                    },
+                                    LEFT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Left);
+                                    },
+                                    RIGHT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Right);
+                                    },
+                                    QUOTE_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Down);
+                                    },
+                                    DOT_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+                                        self.move_aim(MoveAim::Default);
+                                    },
+                                    RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+
                                     },
                                     _ => {},
                                 }
@@ -168,8 +165,8 @@ impl App {
 
                             self.render_frame(
                                 &display,
-                                (&positions, &synthetic_vertices_buffer),
-                                (&indices_triangle, &indices_line, &indices_triangulate, &synthetic_indices_buffer),
+                                &positions,
+                                (&indices_triangle, &indices_line, &indices_triangulate),
                                 &program
                             );
                         },
@@ -181,8 +178,8 @@ impl App {
                         glutin::event::StartCause::Init => {
                             self.render_frame(
                                 &display,
-                                (&positions, &synthetic_vertices_buffer),
-                            (&indices_triangle, &indices_line, &indices_triangulate, &synthetic_indices_buffer),
+                                &positions,
+                                (&indices_triangle, &indices_line, &indices_triangulate),
                                 &program,
                             );
                         },

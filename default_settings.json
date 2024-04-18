@@ -28,6 +28,10 @@
         "multisampling": 16,
         "depth_buffer": 24
     },
+    "aim": {
+        "aim_adjusment": 0.00005,
+        "aim_speed": 0.00005
+    },
     "scale": 180.0,
     "theta": 0.0
 }

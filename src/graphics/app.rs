@@ -1,5 +1,5 @@
 use crate::{
-    defs, json::geojson, App
+    defs, json::geojson, App, control,
 };
 use glium::{
     Display,
@@ -9,6 +9,18 @@ use glium::{
 
 
 impl App {
+    pub fn move_aim(&mut self, action: control::MoveAim) {
+        let speed = self.p_j.aim.aim_speed;
+
+        match action {
+            control::MoveAim::Top => self.aim.1 += speed,
+            control::MoveAim::Right => self.aim.0 += speed,
+            control::MoveAim::Left => self.aim.0 -= speed,
+            control::MoveAim::Down => self.aim.1 -= speed,
+            control::MoveAim::Default => self.aim = (-self.p_j.map_offset.x as f64, -self.p_j.map_offset.y as f64),
+        };
+    } 
+
     pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<defs::Building> {
         let mut buildings = Vec::<defs::Building>::with_capacity(p_g.features.len());
 
@@ -65,24 +77,23 @@ impl App {
                 transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
             },
             super::TransformAction::Resize => transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale),
+            super::TransformAction::Default => {
+                self.cam.offset_x = self.p_j.map_offset.x;
+                self.cam.offset_y = self.p_j.map_offset.y;
+                self.cam.theta = self.p_j.theta;
+                self.cam.scale = self.p_j.scale;
+                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
+            },
         }
     }
 
     pub fn render_frame(
         &self,
         display: &Display,
-        positions: (&VertexBuffer<super::Vertex>, &VertexBuffer<super::Vertex>),
-        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
+        positions: &VertexBuffer<super::Vertex>,
+        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines),
         program: &(glium::Program, glium::Program),
     ) {
-        let uniforms = uniform! {
-            matrix: self.cam.transform_matrix,
-            x_off: self.cam.offset_x,
-            y_off: self.cam.offset_y,
-            // r_rand: 1.,
-            // g_rand: 1.,
-            // b_rand: 1.,
-        };
         let mut target = display.draw();
         target.clear_color(
             self.p_j.background_color.r,
@@ -93,15 +104,89 @@ impl App {
         let multisampling_on = self.p_j.graphics.multisampling_on;
         let dithering_on = self.p_j.graphics.dithering_on;
 
-        let (polygon_mode, positions, indices, shader) = match self.cam.display_type {
-            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, positions.0, indices.2, &program.0),
-            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, positions.0, indices.2, &program.0),
-            super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, positions.0, indices.0, &program.0),
-            super::DisplayType::TrianglesLines => (glium::draw_parameters::PolygonMode::Line, positions.0, indices.0, &program.0),
-            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, positions.0, indices.1, &program.0),
-            super::DisplayType::ObjectSpawn => (glium::draw_parameters::PolygonMode::Fill, positions.1, indices.3, &program.1),
+        let (polygon_mode, indices) = match self.cam.display_type {
+            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, indices.2),
+            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, indices.2),
+            super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, indices.0),
+            super::DisplayType::TrianglesLines => (glium::draw_parameters::PolygonMode::Line, indices.0),
+            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, indices.1),
+            super::DisplayType::ObjectSpawn => {
+                let mut params = glium::DrawParameters {
+                    polygon_mode: glium::draw_parameters::PolygonMode::Point,
+                    multisampling: multisampling_on,
+                    dithering: dithering_on,
+                    smooth: None,
+                    point_size: Some(10.),
+                    ..Default::default()
+                };
+                let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.0, self.aim.1] }])
+                    .expect("Ошибка! Не удалось задать позицию для прицела!");
+                let mut uniforms = uniform! {
+                    matrix: self.cam.transform_matrix,
+                    x_off: self.cam.offset_x,
+                    y_off: self.cam.offset_y,
+                    r_rand: 1.,
+                    g_rand: 0.,
+                    b_rand: 0.,
+                };
+                target.draw(
+                    &aim_position,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::Points),
+                    &program.1,
+                    &uniforms,
+                    &params,
+                ).expect("Ошибка! Не удалось отрисовать прицел!");
+                params.polygon_mode = glium::draw_parameters::PolygonMode::Fill;
+                params.smooth = Some(glium::draw_parameters::Smooth::Nicest);
+                params.point_size = None;
+
+                for figure in &self.synthetic_data {
+                    let rgb = figure.get_rgb();
+                    
+                    uniforms = uniform! {
+                        matrix: self.cam.transform_matrix,
+                        x_off: self.cam.offset_x,
+                        y_off: self.cam.offset_y,
+                        r_rand: rgb.0,
+                        g_rand: rgb.1,
+                        b_rand: rgb.2,
+                    };
+                    
+                    let (positions, indices) = figure.get_vertices_and_indices();
+                    let positions = glium::VertexBuffer::new(display, &positions)
+                        .expect("Ошибка! Не удалось создать буффер вершин для объекта!");
+
+                    if let Some(indices) = indices {
+                        let indices = glium::IndexBuffer::new(
+                            display,
+                            glium::index::PrimitiveType::TrianglesList,
+                            &indices,
+                        ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
+                        target.draw(&positions, &indices, &program.1, &uniforms, &params)
+                            .expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
+                    } else {
+                        target.draw(
+                            &positions,
+                            &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
+                            &program.1,
+                            &uniforms,
+                            &params
+                        ).expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
+                    }
+                }
+
+                target.finish()
+                    .expect("Ошибка! Не удалось закончить отрисовку кадра!");
+
+                return;
+            },
         };
 
+        let uniforms = uniform! {
+            matrix: self.cam.transform_matrix,
+            x_off: self.cam.offset_x,
+            y_off: self.cam.offset_y,
+        };
         let params = glium::DrawParameters {
             polygon_mode,
             multisampling: multisampling_on,
@@ -109,8 +194,8 @@ impl App {
             smooth: Some(glium::draw_parameters::Smooth::Nicest),
             ..Default::default()
         };
-        target.draw(&*positions, &*indices, &shader, &uniforms, &params)
-            .expect("Ошибка! Не удалось отрисовать кадр!");
+        target.draw(positions, indices, &program.0, &uniforms, &params)
+            .expect("Ошибка! Не удалось отрисовать объект(ы)!");
         target.finish()
             .expect("Ошибка! Не удалось закончить отрисовку кадра!");
     }

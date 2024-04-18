@@ -11,7 +11,7 @@ mod control;
 
 use glium::glutin;
 use graphics::Vertex;
-use std::{fs, env};
+use std::{fs, env, collections::LinkedList};
 use json::{geojson, default_json};
 use defs::synthetic;
 
@@ -26,7 +26,8 @@ pub struct App {
     cam: graphics::Camera,
     window_size: (WindowWidth, WindowHeight),
     buildings: Vec<defs::Building>,
-    synthetic_data: Vec<Box<dyn synthetic::SyntheticData>>,
+    synthetic_data: LinkedList<Box<dyn synthetic::SyntheticData>>,
+    aim: (f64, f64),
 }
 
 
@@ -43,7 +44,8 @@ impl App {
             cam: graphics::Camera::default(),
             window_size: (p_j.resolution.width as f32, p_j.resolution.height as f32),
             buildings,
-            synthetic_data: vec![Box::new(synthetic::Circle::new_aim(-p_j.map_offset.x as f64, -p_j.map_offset.y as f64))],
+            synthetic_data: LinkedList::new(),
+            aim: (-p_j.map_offset.x as f64, -p_j.map_offset.y as f64),
         }
     }
 

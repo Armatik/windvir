@@ -49,12 +49,20 @@ pub struct Graphics {
 
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
+pub struct Aim {
+    pub aim_adjusment: f64,
+    pub aim_speed: f64,
+}
+
+
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct PersistentJ {
     pub resolution: Resolution,
     pub map_offset: MapOffset,
     pub background_color: BackgroundColor,
     pub movement: Movement,
     pub graphics: Graphics,
+    pub aim: Aim,
     pub scale: f32,
     pub theta: f32,
 }
@@ -119,6 +127,16 @@ impl Default for Graphics {
 }
 
 
+impl Default for Aim {
+    fn default() -> Self {
+        Self {
+            aim_adjusment: 0.00005,
+            aim_speed: 0.00005,
+        }
+    }
+}
+
+
 impl Default for PersistentJ {
     fn default() -> Self {
         let path = match fs::canonicalize(FILE_PATH) {
@@ -139,15 +157,7 @@ impl Default for PersistentJ {
             let data: PersistentJ = serde_json::from_slice(&data)
                 .expect(&format!("Ошибка! Не удалось прочитать GEOJSON по пути {}", path));
 
-            Self {
-                resolution: data.resolution,
-                map_offset: data.map_offset,
-                background_color: data.background_color,
-                movement: data.movement,
-                graphics: data.graphics,
-                scale: data.scale,
-                theta: data.theta,
-            }
+            data
         } else {
             Self {
                 scale: 180.,
