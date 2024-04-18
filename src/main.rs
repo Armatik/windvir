@@ -20,6 +20,9 @@ type WindowWidth = f32;
 type WindowHeight = f32;
 
 
+implement_vertex!(Vertex, position);
+
+
 pub struct App {    
     p_g: geojson::PersistentG,
     p_j: default_json::PersistentJ,
@@ -93,7 +96,6 @@ impl App {
             }
         };
         let display = glium::Display::new(window, context, &event_loop)?;
-        implement_vertex!(Vertex, position);
         let mut shape = Vec::<Vertex>::with_capacity(self.buildings.len());
 
         for build in &self.buildings {
