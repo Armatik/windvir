@@ -59,6 +59,7 @@ grahams_algorithm(BuildingC *building){
 	result_points[0] = points[0];
 	result_points[1] = points[1];
 
+	// Нахождение выпуклой оболочки
 	for(uint64_t i = 2; i < building->lenVertex; ++i){
 		double x1 = result_points[result_size-1].x - result_points[result_size-2].x;
 		double x2 = points[i].x - result_points[result_size-1].x;
@@ -66,7 +67,7 @@ grahams_algorithm(BuildingC *building){
 		double y1 = result_points[result_size-1].y - result_points[result_size-2].y;
 		double y2 = points[i].y - result_points[result_size-1].y;
 
-		if(x1 * y2 - x2 * y1 > 0){
+		if(x1 * y2 > x2 * y1){
 			// Добавление точки в массив
 			result_points = (PointC*) realloc(result_points, (result_size + 1) * sizeof(PointC));
 			result_points[result_size] = points[i];
@@ -80,9 +81,25 @@ grahams_algorithm(BuildingC *building){
 		}
 	}
 
-	for(uint64_t i = 0; i < result_size; ++i){
-		printf("%f\t%f\n", result_points[i].x, result_points[i].y);
+	// Запись изменений в здание
+	free(building->sides);
+	building->sides = malloc(result_size * sizeof(VectorC));
+	building->lenVertex = result_size;
+	
+	VectorC side;
+	for(uint64_t i = 0; i < result_size - 1; ++i){
+		side.position = result_points[i];
+		side.offset.x = result_points[i+1].x - result_points[i].x;
+		side.offset.y = result_points[i+1].y - result_points[i].y;
+
+		building->sides[i] = side;
 	}
+
+	side.position = result_points[result_size - 1];
+	side.offset.x = result_points[0].x - result_points[result_size - 1].x;
+	side.offset.y = result_points[0].y - result_points[result_size - 1].y;
+
+	building->sides[result_size - 1] = side;
 
 	free(points);
 	free(result_points);
@@ -92,10 +109,9 @@ BuildingsVec
 changeVertex(BuildingsVec data)
 {
 	// Алгоритм Грэхема
-	
-	grahams_algorithm(&(data.buildings[0]));
-	
-
+	for(uint64_t i = 0; i < data.lenBuildings; ++i){
+		grahams_algorithm(&(data.buildings[i]));
+	}
 
 	return data;
 }
