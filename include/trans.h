@@ -41,8 +41,11 @@ changeVertex(BuildingsVec data);
 bool
 is_lefter(PointC* a, PointC* b, PointC* main); // Говорит находится ли точка b левее точки a относительно точки main
 
+//int
+//compare_points(const void *p1, const void *p2);
+
 void
-move_points(PointC* a, PointC* b); // Меняет местами значения точек a и b
+swap_points(PointC* a, PointC* b); // Меняет местами значения точек a и b
 
 void
 grahams_algorithm(BuildingC *building);

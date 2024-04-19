@@ -3,13 +3,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//PointC leftmost_point; // Самая левая точка здания
+
 bool
 is_lefter(PointC *a, PointC *b, PointC *main){
-	return ( ((a->x - main->x) * (b->y - main->y) - (b->x - main->x) * (a->y - main->y)) > 0 );
+	return ( ((a->x - main->x) * (b->y - main->y) - (b->x - main->x) * (a->y - main->y)) < 0 );
 }
+/*
+int
+compare_points(const void *p1, const void *p2){
+	double x1 = ((PointC*)p1)->x - leftmost_point.x;
+	double x2 = ((PointC*)p2)->x - leftmost_point.x;
+	double y1 = ((PointC*)p1)->y - leftmost_point.y;
+	double y2 = ((PointC*)p2)->y - leftmost_point.y;
 
+	return (x2 * y1 - x1 * y2);
+}
+*/
 void
-move_points(PointC *a, PointC *b){
+swap_points(PointC *a, PointC *b){
 	PointC c = {a->x, a->y};
 
 	a->x = b->x;
@@ -46,30 +58,27 @@ grahams_algorithm(BuildingC *building){
 		}
 	}
 
-	move_points(points, points + left_point_index);
+	swap_points(points, points + left_point_index);
 
 	// Упорядочивание точек
-	PointC* sorted_points = malloc((building->lenVertex - 1) * sizeof(PointC));
-	for(uint64_t i = 0; i < building->lenVertex - 1; ++i){
-		sorted_points[i] = points[i+1];
-	}
-
-	free(points);
-
 	// Жесткая сортировка пузырьком
-	for(uint64_t i = 0; i < building->lenVertex - 1; ++i){
-		for(uint64_t j = 0; j < building->lenVertex - 2; ++j){
-			if(is_lefter(sorted_points + j, sorted_points + j + 1, &leftmost_point)){
-				move_points(sorted_points + j, sorted_points + j + 1);
+	
+	for(uint64_t i = 1; i < building->lenVertex - 1; ++i){
+		for(uint64_t j = 1; j < building->lenVertex - 2; ++j){
+			if(is_lefter(points + j, points + j + 1, &leftmost_point)){
+				swap_points(points + j, points + j + 1);
 			}
 		}
 	}
+	
 
-	for(uint64_t i = 0; i < building->lenVertex - 1; ++i){
-		printf("%f\t%f\n", sorted_points[i].x, sorted_points[i].y);
+	//qsort(points + 1, building->lenVertex - 1, sizeof(PointC), compare_points);
+
+	for(uint64_t i = 0; i < building->lenVertex; ++i){
+		printf("%f\t%f\n", points[i].x, points[i].y);
 	}
 
-	free(sorted_points);
+	free(points);
 }
 
 BuildingsVec
