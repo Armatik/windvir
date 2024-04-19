@@ -31,10 +31,10 @@ grahams_algorithm(BuildingC *building){
 
 	// Определение самой левой точки и минимальных и максимальных координат
 	leftmost_point = points[0];
-	double xmin = points[0].x;
-	double xmax = points[0].x;
-	double ymin = points[0].y;
-	double ymax = points[0].y;
+	float xmin = points[0].x;
+	float xmax = points[0].x;
+	float ymin = points[0].y;
+	float ymax = points[0].y;
 
 	uint64_t left_point_index = 0;
 	for(uint64_t i = 1; i < building->lenVertex; ++i){
@@ -75,11 +75,11 @@ grahams_algorithm(BuildingC *building){
 
 	// Нахождение выпуклой оболочки
 	for(uint64_t i = 2; i < building->lenVertex; ++i){
-		double x1 = result_points[result_size-1].x - result_points[result_size-2].x;
-		double x2 = points[i].x - result_points[result_size-1].x;
+		float x1 = result_points[result_size-1].x - result_points[result_size-2].x;
+		float x2 = points[i].x - result_points[result_size-1].x;
 
-		double y1 = result_points[result_size-1].y - result_points[result_size-2].y;
-		double y2 = points[i].y - result_points[result_size-1].y;
+		float y1 = result_points[result_size-1].y - result_points[result_size-2].y;
+		float y2 = points[i].y - result_points[result_size-1].y;
 
 		if(x1 * y2 > x2 * y1){
 			// Добавление точки в массив
