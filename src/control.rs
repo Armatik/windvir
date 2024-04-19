@@ -23,10 +23,14 @@ impl App {
         event_loop: glutin::event_loop::EventLoop<()>,
         display: Display,
         positions: VertexBuffer<Vertex>,
-        program: (glium::Program, glium::Program),
+        field_positions: VertexBuffer<graphics::ShaderVertex>,
+        program: glium::Program,
+        random_program: glium::Program,
+        field_program: glium::Program,
         indices_triangle: graphics::IndciesTriangles,
         indices_line: graphics::IndciesLines,
-        indices_triangulate: graphics::IndciesTriangles
+        indices_triangulate: graphics::IndciesTriangles,
+        indices_field: graphics::IndciesTriangles,
     ) -> ! {
         event_loop.run(move |ev, _, control_flow| {
             match ev {
@@ -47,15 +51,17 @@ impl App {
                             self.render_frame(
                                 &display,
                                 &positions,
-                                (&indices_triangle, &indices_line, &indices_triangulate),
-                                &program,
+                                &field_positions,
+                                (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                                (&program, &random_program, &field_program),
                             );
                         },
                         glutin::event::WindowEvent::Moved(_) => self.render_frame(
                             &display,
                             &positions,
-                            (&indices_triangle, &indices_line, &indices_triangulate),
-                            &program
+                            &field_positions,
+                            (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                            (&program, &random_program, &field_program),
                         ),
                         #[cfg(unix)]
                         glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
@@ -228,8 +234,9 @@ impl App {
                             self.render_frame(
                                 &display,
                                 &positions,
-                                (&indices_triangle, &indices_line, &indices_triangulate),
-                                &program
+                                &field_positions,
+                                (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                                (&program, &random_program, &field_program),
                             );
                         },
                         _ => {},
@@ -241,8 +248,9 @@ impl App {
                             self.render_frame(
                                 &display,
                                 &positions,
-                                (&indices_triangle, &indices_line, &indices_triangulate),
-                                &program,
+                                &field_positions,
+                                (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                                (&program, &random_program, &field_program),
                             );
                         },
                         _ => {},

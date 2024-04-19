@@ -64,6 +64,7 @@ pub struct PersistentJ {
     pub movement: Movement,
     pub graphics: Graphics,
     pub aim: Aim,
+    pub reverse_field_size: f32,
     pub scale: f32,
     pub theta: f32,
 }
@@ -162,6 +163,7 @@ impl Default for PersistentJ {
             data
         } else {
             Self {
+                reverse_field_size: 130.,
                 scale: 180.,
                 theta: 0.,
                 ..Default::default()

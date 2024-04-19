@@ -117,9 +117,26 @@ impl App {
             glium::index::PrimitiveType::TrianglesList,
             &indices_triangulate,
         )?;
+        const CORRECTION_FACTOR: f32 = 1000.;
+        let field_size = self.p_j.reverse_field_size; 
+        let default_width = self.p_j.resolution.width as f32 / CORRECTION_FACTOR;
+        let default_height = self.p_j.resolution.height as f32 / CORRECTION_FACTOR;
+        let field_positions = glium::VertexBuffer::new(&display, &vec![
+            graphics::ShaderVertex { position: [-1. / field_size * default_width, 1. / field_size * default_height], color: [1., 0., 0.] },
+            graphics::ShaderVertex { position: [1. / field_size * default_width, 1. / field_size * default_height], color: [0., 1., 0.] },
+            graphics::ShaderVertex { position: [1. / field_size * default_width, -1. / field_size * default_height], color: [0., 0., 1.] },
+            graphics::ShaderVertex { position: [-1. / field_size * default_width, -1. / field_size * default_height], color: [1., 1., 0.] },
+        ])?;
+        let indices_field = glium::IndexBuffer::new(
+            &display,
+            glium::index::PrimitiveType::TrianglesList,
+            &vec![0_u16, 1, 2, 0, 2, 3],
+        )?;
         let vertex_shader_src = fs::read_to_string(graphics::VERTEX_SHADER_PATH)?;
         let color_shader_src = fs::read_to_string(graphics::COLOR_SHADER_PATH)?;
         let random_color_shader_src = fs::read_to_string(graphics::RANDOM_COLOR_SHADER_PATH)?;
+        let field_vertex_shader_src = fs::read_to_string(graphics::FIELD_VERTEX_SHADER_PATH)?;
+        let field_color_shader_src = fs::read_to_string(graphics::FIELD_COLOR_SHADER_PATH)?;
         let program = glium::Program::from_source(
             &display,
             &vertex_shader_src,
@@ -132,9 +149,27 @@ impl App {
             &random_color_shader_src,
             None,
         )?;
+        let field_program = glium::Program::from_source(
+            &display,
+            &field_vertex_shader_src,
+            &field_color_shader_src,
+            None,
+        )?;
         log::info!("Все здания успешно просчитаны и заданы!");
 
-        self.window_loop(event_loop, display, positions, (program, random_program), indices_triangle, indices_line, indices_triangulate)
+        self.window_loop(
+            event_loop,
+            display,
+            positions,
+            field_positions,
+            program,
+            random_program,
+            field_program,
+            indices_triangle,
+            indices_line,
+            indices_triangulate,
+            indices_field,
+        )
     }
 }
 

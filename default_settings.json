@@ -33,6 +33,7 @@
         "aim_speed": 0.00005,
         "aim_size": 10.0
     },
+    "reverse_field_size": 130.0,
     "scale": 180.0,
     "theta": 0.0
 }

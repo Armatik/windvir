@@ -9,18 +9,6 @@ use glium::{
 
 
 impl App {
-    pub fn move_aim(&mut self, action: control::MoveAim) {
-        let speed = self.p_j.aim.aim_speed;
-
-        match action {
-            control::MoveAim::Top => self.aim.y += speed,
-            control::MoveAim::Right => self.aim.x += speed,
-            control::MoveAim::Left => self.aim.x -= speed,
-            control::MoveAim::Down => self.aim.y -= speed,
-            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x, -self.p_j.map_offset.y),
-        };
-    } 
-
     pub fn trans_persistent(p_g: &geojson::PersistentG) -> Vec<defs::Building> {
         let mut buildings = Vec::<defs::Building>::with_capacity(p_g.features.len());
         for building in &p_g.features {
@@ -92,8 +80,9 @@ impl App {
         &self,
         display: &Display,
         positions: &VertexBuffer<super::Vertex>,
-        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines),
-        program: &(glium::Program, glium::Program),
+        field_positions: &VertexBuffer<super::ShaderVertex>,
+        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
+        program: (&glium::Program, &glium::Program, &glium::Program),
     ) {
         let mut target = display.draw();
         target.clear_color(
@@ -104,8 +93,8 @@ impl App {
         );
         let multisampling_on = self.p_j.graphics.multisampling_on;
         let dithering_on = self.p_j.graphics.dithering_on;
-
-        let (polygon_mode, indices) = match self.cam.display_type.clone() {
+        
+        let (polygon_mode, indices_buildings) = match self.cam.display_type.clone() {
             super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, indices.2),
             super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, indices.2),
             super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, indices.0),
@@ -213,21 +202,40 @@ impl App {
             },
         };
 
-        let uniforms = uniform! {
-            matrix: self.cam.transform_matrix,
-            x_off: self.cam.offset_x,
-            y_off: self.cam.offset_y,
-        };
-        let params = glium::DrawParameters {
-            polygon_mode,
+        
+        let mut params = glium::DrawParameters {
+            polygon_mode: glium::draw_parameters::PolygonMode::Fill,
             multisampling: multisampling_on,
             dithering: dithering_on,
             smooth: Some(glium::draw_parameters::Smooth::Nicest),
             ..Default::default()
         };
-        target.draw(positions, indices, &program.0, &uniforms, &params)
+        let field_uniforms = uniform! {
+            matrix: self.cam.transform_matrix,
+        };
+        target.draw(field_positions, indices.3, program.2, &field_uniforms, &Default::default())
+            .expect("Ошибка! Не удлаось отрисовать поле!");
+        params.polygon_mode = polygon_mode;
+        let uniforms = uniform! {
+            matrix: self.cam.transform_matrix,
+            x_off: self.cam.offset_x,
+            y_off: self.cam.offset_y,
+        };
+        target.draw(positions, indices_buildings, &program.0, &uniforms, &params)
             .expect("Ошибка! Не удалось отрисовать объект(ы)!");
         target.finish()
             .expect("Ошибка! Не удалось закончить отрисовку кадра!");
+    }
+
+    pub fn move_aim(&mut self, action: control::MoveAim) {
+        let speed = self.p_j.aim.aim_speed;
+
+        match action {
+            control::MoveAim::Top => self.aim.y += speed,
+            control::MoveAim::Right => self.aim.x += speed,
+            control::MoveAim::Left => self.aim.x -= speed,
+            control::MoveAim::Down => self.aim.y -= speed,
+            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x, -self.p_j.map_offset.y),
+        };
     }
 }

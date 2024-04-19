@@ -14,6 +14,17 @@ pub struct Vertex {
 implement_vertex!(Vertex, position);
 
 
+
+#[derive(Clone, Copy)]
+pub struct ShaderVertex {
+    pub position: [f32; 2],
+    pub color: [f32; 3],
+}
+
+
+implement_vertex!(ShaderVertex, position, color);
+
+
 pub type IndciesTriangles = IndexBuffer<u16>;
 pub type IndciesLines = IndexBuffer<u16>;
 
@@ -21,6 +32,8 @@ pub type IndciesLines = IndexBuffer<u16>;
 pub const VERTEX_SHADER_PATH: &str = "src/graphics/shaders/vertex_shader.vert";
 pub const COLOR_SHADER_PATH: &str = "src/graphics/shaders/color_shader.vert";
 pub const RANDOM_COLOR_SHADER_PATH: &str = "src/graphics/shaders/random_color_shader.vert";
+pub const FIELD_VERTEX_SHADER_PATH: &str = "src/graphics/shaders/field_vertex_shader.vert";
+pub const FIELD_COLOR_SHADER_PATH: &str = "src/graphics/shaders/field_color_shader.vert";
 
 
 pub struct Camera {
@@ -165,7 +178,6 @@ pub fn get_line_indices(buildings: &Vec<Building>) -> Vec<u16> {
 
     indices
 }
-
 
 
 pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
