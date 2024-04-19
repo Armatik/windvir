@@ -9,7 +9,7 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 
 #[inline]
-fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
+fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f32 {
 	(&first.offset - &second.offset).cross_product(&second.offset)/Vector::cross_product(first,second)
 }
 
@@ -17,9 +17,9 @@ fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
 // Не оптимизировано
 #[inline]
 fn _check_bounding_box_intersection(first: &Building, second: &Building) -> bool {
-	(first.start_point.x - second.end_point.x)*(first.end_point.x - second.start_point.x) < 0.0f64
+	(first.start_point.x - second.end_point.x)*(first.end_point.x - second.start_point.x) < 0.
 	&&
-	(first.start_point.y - second.end_point.y)*(first.end_point.y - second.start_point.y) < 0.0f64
+	(first.start_point.y - second.end_point.y)*(first.end_point.y - second.start_point.y) < 0.
 }
 
 
@@ -27,7 +27,7 @@ fn _check_bounding_box_intersection(first: &Building, second: &Building) -> bool
 fn check_bounding_box_intersection(first: &Building, second: &Building) -> bool {
 	first.start_point.x < second.end_point.x
 	&&
-	(first.start_point.y - second.end_point.y)*(first.end_point.y - second.start_point.y) < 0.0f64
+	(first.start_point.y - second.end_point.y)*(first.end_point.y - second.start_point.y) < 0.
 }
 
 // Не оптимизированно

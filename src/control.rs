@@ -169,7 +169,7 @@ impl App {
                                         if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                                             if let Some(figure) = self.synthetic_data.back() {
                                                 if figure.is_value_default() {
-                                                    let size = self.p_j.aim.aim_adjusment * value as f64;
+                                                    let size = self.p_j.aim.aim_adjusment * value as f32;
                                                     self.synthetic_data.back_mut().unwrap()
                                                         .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
 

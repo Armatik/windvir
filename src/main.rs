@@ -20,9 +20,6 @@ type WindowWidth = f32;
 type WindowHeight = f32;
 
 
-implement_vertex!(Vertex, position);
-
-
 pub struct App {    
     p_g: geojson::PersistentG,
     p_j: default_json::PersistentJ,
@@ -50,7 +47,7 @@ impl App {
             buildings,
             synthetic_data: LinkedList::new(),
             synthetic_datas_point: defs::Point::default(),
-            aim: defs::Point::new(-p_j.map_offset.x as f64, -p_j.map_offset.y as f64),
+            aim: defs::Point::new(-p_j.map_offset.x, -p_j.map_offset.y),
         }
     }
 
@@ -100,7 +97,7 @@ impl App {
 
         for build in &self.buildings {
             for side in &build.sides {
-                shape.push(Vertex { position: etc::vec_to_arr::<f64, 2>(vec![side.position.x, side.position.y]) })
+                shape.push(Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x, side.position.y]) })
             }
         }
         

@@ -17,7 +17,7 @@ impl App {
             control::MoveAim::Right => self.aim.x += speed,
             control::MoveAim::Left => self.aim.x -= speed,
             control::MoveAim::Down => self.aim.y -= speed,
-            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x as f64, -self.p_j.map_offset.y as f64),
+            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x, -self.p_j.map_offset.y),
         };
     } 
 

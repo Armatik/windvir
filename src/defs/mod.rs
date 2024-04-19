@@ -5,13 +5,13 @@ use std::ops::{Add,Sub};
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Point {
-    pub x: f64,
-    pub y: f64,
+    pub x: f32,
+    pub y: f32,
 }
 
 
 impl Point {
-    pub fn new(x: f64, y: f64) -> Self {
+    pub fn new(x: f32, y: f32) -> Self {
         Self {
             x,
             y,
@@ -19,7 +19,7 @@ impl Point {
     }
 
     pub fn center_point(&self, other: &Self) -> Self {
-        Self::new((self.x + other.x)/2.0f64, (self.y + other.y)/2.0f64)
+        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
     }
 
     pub fn is_point_default(&self) -> bool {
@@ -37,21 +37,21 @@ pub struct Building {
 
 
 impl Building {
-    pub fn new(build: Vec<Vec<f64>>) -> Self {
+    pub fn new(build: Vec<Vec<f32>>) -> Self {
         let vertex = build.iter().map(
             |x| Vector::new(
-                        PositionVector::new(x[0], x[1]),PositionVector::new(0.0f64, 0.0f64)
+                        PositionVector::new(x[0], x[1]),PositionVector::new(0., 0.)
                     )).collect::<Vec<Vector>>();
         
         Self {
-            start_point: PositionVector::new(0.0f64,0.0f64),
-            end_point: PositionVector::new(0.0f64,0.0f64),
+            start_point: PositionVector::new(0.,0.),
+            end_point: PositionVector::new(0.,0.),
             sides: vertex,
         }
     }
 
     pub fn triangulate(&self) -> Vec<usize> {
-        let mut points = Vec::<f64>::with_capacity(self.sides.len()*2usize);
+        let mut points = Vec::<f32>::with_capacity(self.sides.len()*2usize);
         for vertex in &self.sides {
             points.push(vertex.position.x);
             points.push(vertex.position.y);
@@ -59,18 +59,18 @@ impl Building {
         earcutr::earcut(&points, &[], 2).unwrap()
     }
 
-    pub fn get_square(&self) -> f64 {
+    pub fn get_square(&self) -> f32 {
         let triangulation_indicies = self.triangulate();
-        let mut square = 0.0f64;
+        let mut square = 0.;
         for i in 0..triangulation_indicies.len()/3usize {
             square +=  PositionVector::get_square(&(&self.sides[i].position - &self.sides[i + 1usize].position),&(&self.sides[i].position - &self.sides[i + 2usize].position));
         }
         square
     }
 
-    pub fn get_double_square(&self) -> f64 {
+    pub fn get_double_square(&self) -> f32 {
         let triangulation_indicies = self.triangulate();
-        let mut square = 0.0f64;
+        let mut square = 0.;
         for i in 0..triangulation_indicies.len()/3usize {
             square +=  PositionVector::get_double_square(&(&self.sides[i].position - &self.sides[i + 1usize].position),&(&self.sides[i].position - &self.sides[i + 2usize].position));
         }
@@ -95,7 +95,7 @@ impl Vector {
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> f64 {
+    pub fn cross_product(&self, other: &Self) -> f32 {
         PositionVector::cross_product(&self.offset, &other.offset)
     }
 
@@ -174,14 +174,14 @@ impl Sub for &PositionVector {
 
 #[derive(Clone, Debug, Default)]
 pub struct PositionVector {
-    pub x: f64,
-    pub y: f64,
+    pub x: f32,
+    pub y: f32,
 }
 
 
 impl PositionVector {
 
-    pub fn new(x: f64, y: f64) -> Self {
+    pub fn new(x: f32, y: f32) -> Self {
         Self { 
             x,
             y
@@ -189,63 +189,63 @@ impl PositionVector {
     }
 
     pub fn center_point(&self, other: &Self) -> Self {
-        Self::new((self.x + other.x)/2.0f64, (self.y + other.y)/2.0f64)
+        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> f64 {
+    pub fn cross_product(&self, other: &Self) -> f32 {
         other.x*self.y - self.x*other.y
     }
 
     #[inline]
-    pub fn dot_product(&self, other: &Self) -> f64 {
+    pub fn dot_product(&self, other: &Self) -> f32 {
         other.x*self.x + self.x*other.x
     }
 
     // Если можно не использовать, лучше не использовать
     #[inline]
-    pub fn get_length(&self) -> f64 {
-        f64::sqrt(self.x*self.x + self.y*self.y)
+    pub fn get_length(&self) -> f32 {
+        f32::sqrt(self.x * self.x + self.y * self.y)
     }
 
     #[inline]
-    pub fn get_squared_length(&self) -> f64 {
+    pub fn get_squared_length(&self) -> f32 {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
-    pub fn get_cos(&self) -> f64 {
+    pub fn get_cos(&self) -> f32 {
         self.x/self.get_length()
     }
 
     #[inline]
-    pub fn get_sin(&self) -> f64 {
+    pub fn get_sin(&self) -> f32 {
         self.y/self.get_length()
     }
 
-    pub fn get_cos_sin(&self) -> (f64,f64) {
+    pub fn get_cos_sin(&self) -> (f32, f32) {
         let length = self.get_length();
         (self.x/length,self.y/length)
     }
 
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
     #[inline]
-    pub fn get_square(&self, other: &Self) -> f64 {
-        Self::cross_product(self, other).abs()/2.0f64
+    pub fn get_square(&self, other: &Self) -> f32 {
+        f32::abs(Self::cross_product(self, other)) / 2.
     }
 
     #[inline]
-    pub fn get_double_square(&self, other: &Self) -> f64 {
+    pub fn get_double_square(&self, other: &Self) -> f32 {
         Self::cross_product(self, other).abs()
     }
 
     #[inline]
-    pub fn get_cos_between_vectors(&self, other: &Self) -> f64 {
+    pub fn get_cos_between_vectors(&self, other: &Self) -> f32 {
         Self::dot_product(self, other)/(self.get_length()*other.get_length())
     }
 
     #[inline]
-    pub fn get_sin_between_vectors(&self, other: &Self) -> f64 {
+    pub fn get_sin_between_vectors(&self, other: &Self) -> f32 {
         Self::cross_product(self, other)/(self.get_length()*other.get_length())
     }
 }

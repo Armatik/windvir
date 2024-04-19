@@ -6,13 +6,13 @@ use crate::defs;
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct PointC {
-    pub x: f64,
-    pub y: f64,
+    pub x: f32,
+    pub y: f32,
 }
 
 
 impl PointC {
-    fn new(x: f64, y: f64) -> Self {
+    fn new(x: f32, y: f32) -> Self {
         Self {
             x,
             y,

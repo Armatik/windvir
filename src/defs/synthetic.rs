@@ -3,14 +3,14 @@ use crate::graphics;
 
 
 const RED_ADJUSMENT: f32 = 0.8;
-const SEGMENTS: f64 = 25.;
-const DELTA_PHI: f64 = std::f64::consts::PI / SEGMENTS;
+const SEGMENTS: f32 = 25.;
+const DELTA_PHI: f32 = std::f32::consts::PI / SEGMENTS;
 const SEGMENTS_NUM: usize = SEGMENTS as usize * 2 + 1;
 
 
 pub enum SyntheticVariant {
     /// Первый аргумент `центр`. Второй аргумент `радиус`
-	Circle(super::Point, f64),
+	Circle(super::Point, f32),
     /// Первый аргумент `самая левая верхняя точка`. Второй аргумент `самая правая нижняя точка`
 	Rectangle(super::Point, super::Point),
     /// Первый аргумент `первая точка` отрезка. Второй аргумент `второя точка` отрезка
@@ -36,7 +36,7 @@ pub trait SyntheticData {
 
 pub struct Circle {
     center: super::Point,
-	radius: f64,
+	radius: f32,
     is_fill: bool,
     rgb: (f32, f32, f32),
 }
@@ -55,7 +55,7 @@ impl Circle {
 
         Self {
             center: super::Point::default(),
-            radius: f64::default(),
+            radius: f32::default(),
             is_fill: true,
             rgb,
         }
@@ -69,7 +69,7 @@ impl SyntheticData for Circle {
     }
 
 	fn is_value_default(&self) -> bool {
-		self.radius == f64::default() || self.center == super::Point::default()
+		self.radius == f32::default() || self.center == super::Point::default()
 	}
 
 	fn set_value(&mut self, data: SyntheticVariant) {
@@ -103,9 +103,9 @@ impl SyntheticData for Circle {
         
         vertices.push(graphics::Vertex { position: [x, y] });
 
-        while phi < 2. * std::f64::consts::PI + DELTA_PHI {
-            let x = x + r * f64::cos(phi);
-            let y = y + r * f64::sin(phi);
+        while phi < 2. * std::f32::consts::PI + DELTA_PHI {
+            let x = x + r * f32::cos(phi);
+            let y = y + r * f32::sin(phi);
 
             vertices.push(graphics::Vertex { position: [x, y] });
 

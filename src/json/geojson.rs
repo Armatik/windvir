@@ -13,7 +13,7 @@ struct Properties {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Geometry {
     tupe: String,
-    pub coordinates: Vec<Vec<Vec<Vec<f64>>>>,
+    pub coordinates: Vec<Vec<Vec<Vec<f32>>>>,
 }
 
 
