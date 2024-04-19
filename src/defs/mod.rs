@@ -60,18 +60,18 @@ impl Building {
     }
 
     pub fn get_square(&self) -> f32 {
-        let triangulation_indicies = self.triangulate();
+        let triangulation_indices = self.triangulate();
         let mut square = 0.;
-        for i in 0..triangulation_indicies.len()/3usize {
+        for i in 0..triangulation_indices.len()/3usize {
             square +=  PositionVector::get_square(&(&self.sides[i].position - &self.sides[i + 1usize].position),&(&self.sides[i].position - &self.sides[i + 2usize].position));
         }
         square
     }
 
     pub fn get_double_square(&self) -> f32 {
-        let triangulation_indicies = self.triangulate();
+        let triangulation_indices = self.triangulate();
         let mut square = 0.;
-        for i in 0..triangulation_indicies.len()/3usize {
+        for i in 0..triangulation_indices.len()/3usize {
             square +=  PositionVector::get_double_square(&(&self.sides[i].position - &self.sides[i + 1usize].position),&(&self.sides[i].position - &self.sides[i + 2usize].position));
         }
         square
