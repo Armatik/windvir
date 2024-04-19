@@ -81,7 +81,7 @@ impl App {
         display: &Display,
         positions: &VertexBuffer<super::Vertex>,
         field_positions: &VertexBuffer<super::ShaderVertex>,
-        indices: (&super::IndciesTriangles, &super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
+        indices: (&super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
         program: (&glium::Program, &glium::Program, &glium::Program),
     ) {
         let mut target = display.draw();
@@ -95,11 +95,9 @@ impl App {
         let dithering_on = self.p_j.graphics.dithering_on;
         
         let (polygon_mode, indices_buildings) = match self.cam.display_type.clone() {
-            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, indices.2),
-            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, indices.2),
-            super::DisplayType::Triangles => (glium::draw_parameters::PolygonMode::Fill, indices.0),
-            super::DisplayType::TrianglesLines => (glium::draw_parameters::PolygonMode::Line, indices.0),
-            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, indices.1),
+            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, indices.1),
+            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, indices.1),
+            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, indices.0),
             super::DisplayType::ObjectSpawn => {
                 let mut params = glium::DrawParameters {
                     polygon_mode: glium::draw_parameters::PolygonMode::Fill,
@@ -213,7 +211,7 @@ impl App {
         let field_uniforms = uniform! {
             matrix: self.cam.transform_matrix,
         };
-        target.draw(field_positions, indices.3, program.2, &field_uniforms, &Default::default())
+        target.draw(field_positions, indices.2, program.2, &field_uniforms, &Default::default())
             .expect("Ошибка! Не удлаось отрисовать поле!");
         params.polygon_mode = polygon_mode;
         let uniforms = uniform! {

@@ -27,7 +27,6 @@ impl App {
         program: glium::Program,
         random_program: glium::Program,
         field_program: glium::Program,
-        indices_triangle: graphics::IndciesTriangles,
         indices_line: graphics::IndciesLines,
         indices_triangulate: graphics::IndciesTriangles,
         indices_field: graphics::IndciesTriangles,
@@ -52,7 +51,7 @@ impl App {
                                 &display,
                                 &positions,
                                 &field_positions,
-                                (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                                (&indices_line, &indices_triangulate, &indices_field),
                                 (&program, &random_program, &field_program),
                             );
                         },
@@ -60,7 +59,7 @@ impl App {
                             &display,
                             &positions,
                             &field_positions,
-                            (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                            (&indices_line, &indices_triangulate, &indices_field),
                             (&program, &random_program, &field_program),
                         ),
                         #[cfg(unix)]
@@ -235,7 +234,7 @@ impl App {
                                 &display,
                                 &positions,
                                 &field_positions,
-                                (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                                (&indices_line, &indices_triangulate, &indices_field),
                                 (&program, &random_program, &field_program),
                             );
                         },
@@ -249,7 +248,7 @@ impl App {
                                 &display,
                                 &positions,
                                 &field_positions,
-                                (&indices_triangle, &indices_line, &indices_triangulate, &indices_field),
+                                (&indices_line, &indices_triangulate, &indices_field),
                                 (&program, &random_program, &field_program),
                             );
                         },

@@ -52,7 +52,6 @@ impl App {
     }
 
     pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
-        let indices_triangle = graphics::get_triangle_indices(&self.buildings);
         let indices_line = graphics::get_line_indices(&self.buildings);
         let indices_triangulate = graphics::get_triangulation_indices(&self.buildings);
         let event_loop = glutin::event_loop::EventLoop::new();
@@ -102,11 +101,6 @@ impl App {
         }
         
         let positions = glium::VertexBuffer::new(&display, &shape)?;
-        let indices_triangle = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::TrianglesList,
-            &indices_triangle,
-        )?;
         let indices_line = glium::IndexBuffer::new(
             &display,
             glium::index::PrimitiveType::LinesList,
@@ -165,7 +159,6 @@ impl App {
             program,
             random_program,
             field_program,
-            indices_triangle,
             indices_line,
             indices_triangulate,
             indices_field,
