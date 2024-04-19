@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,12 @@ is_lefter(PointC* a, PointC* b, PointC* main); // Говорит находит�
 
 void
 swap_points(PointC* a, PointC* b); // Меняет местами значения точек a и b
+
+void
+add_point(PointC* array, PointC *point); // Добавляет точку в конец массива
+
+void
+remove_point(PointC* array, uint64_t index); // Удаляет точку из массива по индексу
 
 void
 grahams_algorithm(BuildingC *building);
