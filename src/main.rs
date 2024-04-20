@@ -51,46 +51,30 @@ impl App {
     }
 
     pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
-        let indices_line = graphics::get_line_indices(&self.buildings);
-        let indices_triangulate = graphics::get_triangulation_indices(&self.buildings);
         let event_loop = glutin::event_loop::EventLoop::new();
         let window = glutin::window::WindowBuilder::new()
             .with_title(&self.p_g.name)
             .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
         let context = self.get_window_ctx(); 
         let display = glium::Display::new(window, context, &event_loop)?;
+
         let shape = self.get_buildings_vertices();
+        let building_vertices = glium::VertexBuffer::new(&display, &shape)?;
         
-        let positions = glium::VertexBuffer::new(&display, &shape)?;
-        let indices_line = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::LinesList,
-            &indices_line,
-        )?;
-        let indices_triangulate = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::TrianglesList,
-            &indices_triangulate,
-        )?;
         let field_positions = self.init_field(true, &display)?;
-        let indices_field = glium::IndexBuffer::new(
-            &display,
-            glium::index::PrimitiveType::TrianglesList,
-            &vec![0_u16, 1, 2, 0, 2, 3],
-        )?;
         let shaders = self.init_shaders(&display)?;
+
+        let indices = self.init_indices(&display)?;
         
         log::info!("Все здания успешно просчитаны и заданы!");
 
         self.window_loop(
             event_loop,
             display,
-            positions,
+            building_vertices,
             field_positions,
             shaders,
-            indices_line,
-            indices_triangulate,
-            indices_field,
+            indices,
         )
     }
 

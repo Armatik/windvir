@@ -1,5 +1,5 @@
 use crate::{
-    defs, json::geojson, App, control, graphics,
+    defs::{self, app}, json::geojson, App, control, graphics,
 };
 use std::fs;
 use glium::{
@@ -95,14 +95,14 @@ impl App {
         }
     }
 
-    pub fn render_frame(
+    pub fn render_frame<T>(
         &self,
         display: &Display,
         positions: &VertexBuffer<super::Vertex>,
         field_positions: &VertexBuffer<super::ShaderVertex>,
-        indices: (&super::IndciesLines, &super::IndciesLines, &super::IndciesTriangles),
+        indices: &app::FigureIndices<T>,
         shaders: &Shaders,
-    ) {
+    ) where T: glium::index::Index {
         let mut target = display.draw();
         target.clear_color(
             self.p_j.background_color.r,
@@ -114,9 +114,9 @@ impl App {
         let dithering_on = self.p_j.graphics.dithering_on;
         
         let (polygon_mode, indices_buildings) = match self.cam.display_type.clone() {
-            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, indices.1),
-            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, indices.1),
-            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, indices.0),
+            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, &indices.buildings_indices_triangulate),
+            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, &indices.buildings_indices_triangulate),
+            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, &indices.buildings_indices_line),
             super::DisplayType::ObjectSpawn => {
                 let mut params = glium::DrawParameters {
                     polygon_mode: glium::draw_parameters::PolygonMode::Fill,
@@ -230,7 +230,7 @@ impl App {
         let field_uniforms = uniform! {
             matrix: self.cam.transform_matrix,
         };
-        target.draw(field_positions, indices.2, &shaders.field_shader, &field_uniforms, &Default::default())
+        target.draw(field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &Default::default())
             .expect("Ошибка! Не удлаось отрисовать поле!");
         params.polygon_mode = polygon_mode;
         let uniforms = uniform! {

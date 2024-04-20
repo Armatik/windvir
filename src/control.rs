@@ -1,7 +1,7 @@
 use crate::{
     App,
-    graphics::{self, Vertex, app},
-    defs::{self, synthetic},
+    graphics::{self, Vertex, app as graphics_app},
+    defs::{self, synthetic, app as defs_app},
 };
 use glium::{
     glutin::{self, event_loop::ControlFlow}, Display, VertexBuffer
@@ -18,17 +18,15 @@ pub enum MoveAim {
 
 
 impl App {
-    pub fn window_loop(
+    pub fn window_loop<T>(
         mut self,
         event_loop: glutin::event_loop::EventLoop<()>,
         display: Display,
         positions: VertexBuffer<Vertex>,
         field_positions: VertexBuffer<graphics::ShaderVertex>,
-        shaders: app::Shaders,
-        indices_line: graphics::IndciesLines,
-        indices_triangulate: graphics::IndciesTriangles,
-        indices_field: graphics::IndciesTriangles,
-    ) -> ! {
+        shaders: graphics_app::Shaders,
+        indices: defs_app::FigureIndices<T>,
+    ) -> ! where T: glium::index::Index {
         event_loop.run(move |ev, _, control_flow| {
             match ev {
                 glutin::event::Event::WindowEvent { event, .. } => {
@@ -49,7 +47,7 @@ impl App {
                                 &display,
                                 &positions,
                                 &field_positions,
-                                (&indices_line, &indices_triangulate, &indices_field),
+                                &indices,
                                 &shaders,
                             );
                         },
@@ -57,7 +55,7 @@ impl App {
                             &display,
                             &positions,
                             &field_positions,
-                            (&indices_line, &indices_triangulate, &indices_field),
+                            &indices,
                             &shaders,
                         ),
                         #[cfg(unix)]
@@ -232,7 +230,7 @@ impl App {
                                 &display,
                                 &positions,
                                 &field_positions,
-                                (&indices_line, &indices_triangulate, &indices_field),
+                                &indices,
                                 &shaders,
                             );
                         },
@@ -246,7 +244,7 @@ impl App {
                                 &display,
                                 &positions,
                                 &field_positions,
-                                (&indices_line, &indices_triangulate, &indices_field),
+                                &indices,
                                 &shaders,
                             );
                         },

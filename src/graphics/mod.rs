@@ -1,6 +1,5 @@
 pub mod app;
 
-use glium::IndexBuffer;
 use crate::json::default_json;
 use crate::defs::Building;
 
@@ -23,10 +22,6 @@ pub struct ShaderVertex {
 
 
 implement_vertex!(ShaderVertex, position, color);
-
-
-pub type IndciesTriangles = IndexBuffer<u16>;
-pub type IndciesLines = IndexBuffer<u16>;
 
 
 pub const VERTEX_SHADER_PATH: &str = "src/graphics/shaders/vertex_shader.vert";
