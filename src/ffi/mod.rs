@@ -1,13 +1,13 @@
 use std::alloc::{alloc, Layout};
-use crate::json::{default_json, geojson};
+use crate::json::geojson::PersistentG;
 use crate::defs;
 
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct PointC {
-    pub x: f32,
-    pub y: f32,
+struct PointC {
+    x: f32,
+    y: f32,
 }
 
 
@@ -31,10 +31,10 @@ impl PointC {
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct BuildingC {
-    pub start_point: PointC,
-    pub end_point: PointC,
-    pub sides: *mut VectorC,
-    pub len_vertex: u64,
+    start_point: PointC,
+    end_point: PointC,
+    sides: *mut VectorC,
+    len_vertex: u64,
 }
 
 
@@ -68,8 +68,8 @@ impl BuildingC {
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct VectorC {
-    pub position: PointC,
-    pub offset: PointC,
+    position: PointC,
+    offset: PointC,
 }
 
 
@@ -93,9 +93,19 @@ impl VectorC {
 
 #[repr(C)]
 #[derive(Debug)]
-struct BuildingsVec {
-    buildings: *mut BuildingC,
+pub struct BuildingsVec {
+    pub buildings: *mut BuildingC,
     len_buildings: u64,
+}
+
+
+impl Default for BuildingsVec {
+    fn default() -> Self {
+        Self {
+            buildings: std::ptr::null_mut(),
+            len_buildings: u64::default(),
+        }
+    }
 }
 
 
@@ -120,15 +130,12 @@ impl BuildingsVec {
 }
 
 
-pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
-    let p_g = geojson::PersistentG::default();
-    let p_j = default_json::PersistentJ::default();
-    let data = crate::App::trans_persistent(&p_g);
+pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -> Result<BuildingsVec, Box<dyn std::error::Error>> {
+    let data = crate::App::trans_persistent(p_g);
     let data = unsafe { BuildingsVec::new(data) };
 
     let out = unsafe { changeVertex(data) };
     
-    let mut norm_buildings = Vec::<defs::Building>::with_capacity(p_g.features.len());
     let buildings = unsafe { Vec::from_raw_parts(out.buildings, out.len_buildings as usize, out.len_buildings as usize) };
     
     for building in buildings {
@@ -148,16 +155,12 @@ pub fn ffi_loop() -> Result<(), Box<dyn std::error::Error>> {
         })
     }
 
-    let app = crate::App::new(p_g, p_j, Some(norm_buildings));
-    app.start_app()?;
-    unsafe { freeBuildings(out); };
-
-    Ok(())
+    Ok(out)
 
 }
 
 
 extern "C" {
     fn changeVertex(_: BuildingsVec) -> BuildingsVec;
-    fn freeBuildings(_: BuildingsVec);
+    pub fn freeBuildings(_: BuildingsVec);
 }

@@ -8,6 +8,10 @@ If you want to use `FFI` protocol, then you need compile with command
 ```
 RUST_LOG=windvir cargo run --release -- -c
 ```
+If you want to start application with rainbow field, then you need compile with command
+```
+RUST_LOG=windvir cargo run --release -- -r
+```
 ## Controls
 `W | ArrowUp` - move up
 

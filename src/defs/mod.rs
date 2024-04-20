@@ -29,7 +29,7 @@ impl Point {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Building {
     pub start_point: PositionVector,
     pub end_point: PositionVector,
@@ -80,7 +80,7 @@ impl Building {
 }
 
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Vector {
     pub position: PositionVector,
     pub offset: PositionVector
@@ -173,7 +173,7 @@ impl Sub for &PositionVector {
 }
 
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct PositionVector {
     pub x: f32,
     pub y: f32,

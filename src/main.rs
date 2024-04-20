@@ -28,11 +28,12 @@ pub struct App {
     synthetic_data: LinkedList<Box<dyn synthetic::SyntheticData>>,
     synthetic_datas_point: defs::Point,
     aim: defs::Point,
+    rainbow_field: bool,
 }
 
 
 impl App {
-    pub fn new(p_g: geojson::PersistentG, p_j: default_json::PersistentJ, def_buildings: Option<Vec<defs::Building>>) -> Self {
+    pub fn new(p_g: geojson::PersistentG, p_j: default_json::PersistentJ, def_buildings: Option<Vec<defs::Building>>, rainbow_field: bool) -> Self {
         let buildings = match def_buildings {
             Some(data) => data,
             None => Self::trans_persistent(&p_g),
@@ -47,6 +48,7 @@ impl App {
             synthetic_data: LinkedList::new(),
             synthetic_datas_point: defs::Point::default(),
             aim: defs::Point::new(-p_j.map_offset.x, -p_j.map_offset.y),
+            rainbow_field,
         }
     }
 
@@ -61,7 +63,7 @@ impl App {
         let shape = self.get_buildings_vertices();
         let building_vertices = glium::VertexBuffer::new(&display, &shape)?;
         
-        let field_positions = self.init_field(true, &display)?;
+        let field_positions = self.init_field(self.rainbow_field, &display)?;
         let shaders = self.init_shaders(&display)?;
 
         let indices = self.init_indices(&display)?;
@@ -128,6 +130,11 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = env::args();
     let args_len = args.len();
     let mut is_first_arg = true;
+    let mut rainbow = false;
+    let p_g = geojson::PersistentG::default();
+    let p_j = default_json::PersistentJ::default();
+    let mut ffi_buildigs = Vec::<defs::Building>::with_capacity(p_g.features.len());
+    let mut ffi_out = ffi::BuildingsVec::default();
 
     for arg in args {
         if args_len > 1 {
@@ -138,27 +145,35 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             if &arg == "--help" || &arg == "-h" {
-                println!("Чтобы запустить программу с FFI режимом, используйте флаг -c.");
+                etc::print_help();
 
                 return Ok(());
             } else if &arg == "-c" {
                 log::info!("Приложение запущено с FFI режимом");
 
-                ffi::ffi_loop()?;
+                ffi_out = ffi::ffi_loop(&mut ffi_buildigs, &p_g)?;
+            } else if &arg == "-r" {
+                log::info!("Приложение запущено с разноцветным полем");
 
-                return Ok(());
+                rainbow = true;
             } else {
                 panic!("Неизвестный аргумент {}", arg);
             }
         }
         
     }
-
-    let p_g = geojson::PersistentG::default();
-    let p_j = default_json::PersistentJ::default();
     
-    let app = App::new(p_g, p_j, None);
+    let app = if ffi_buildigs == Vec::new() {
+        App::new(p_g, p_j, None, rainbow)
+    } else {
+        App::new(p_g, p_j, Some(ffi_buildigs), rainbow)
+    };
+
     app.start_app()?;
+
+    if !ffi_out.buildings.is_null() {
+        unsafe { ffi::freeBuildings(ffi_out); };
+    }
     
     Ok(())
 }
