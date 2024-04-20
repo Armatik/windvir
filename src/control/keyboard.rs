@@ -1,5 +1,27 @@
-use crate::{App, graphics, defs::{self, synthetic}};
+use crate::{App, graphics, defs::synthetic};
 use glium::glutin::{self, event};
+
+
+macro_rules! check_last_for_default {
+    ($data:ident) => {
+        match $data.synthetic_data.back() {
+            Some(figure) => if figure.is_value_default() {
+                return;
+            },
+            _ => {},
+        }
+    };
+    (point $data:ident) => {
+        match $data.synthetic_data.back() {
+            Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
+                return;
+            } else if !figure.is_value_default() {
+                return;
+            },
+            _ => return,
+        }
+    };
+}
 
 
 impl App {
@@ -78,50 +100,24 @@ impl App {
                 Z_KEY => self.transform_map(graphics::TransformAction::Increase),
                 X_KEY => self.transform_map(graphics::TransformAction::Reduce),
                 C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                    match self.synthetic_data.back() {
-                        Some(figure) => if figure.is_value_default() {
-                            return;
-                        },
-                        _ => {},
-                    }
+                    check_last_for_default!(self);
 
-                    log::info!("Выберите размер для окружности, используя цифры 0..=9");
-                    self.synthetic_data.push_back(Box::new(synthetic::Circle::new(None)));
+                    self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 0..=9");
                 },
                 R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                    match self.synthetic_data.back() {
-                        Some(figure) => if figure.is_value_default() {
-                            return;
-                        },
-                        _ => {},
-                    }
+                    check_last_for_default!(self);
 
-                    log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
-                    self.synthetic_data.push_back(Box::new(synthetic::Rectangle::new(None)));
+                    self.define_figure(synthetic::Rectangle::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
                 },
                 L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                    match self.synthetic_data.back() {
-                        Some(figure) => if figure.is_value_default() {
-                            return;
-                        },
-                        _ => {},
-                    }
+                    check_last_for_default!(self);
 
-                    log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
-                    self.synthetic_data.push_back(Box::new(synthetic::Segment::new(None)));
+                    self.define_figure(synthetic::Segment::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
                 },
                 NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
                 value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) =>
                     if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                        if let Some(figure) = self.synthetic_data.back() {
-                            if figure.is_value_default() {
-                                let size = self.p_j.aim.aim_adjusment * value as f32;
-                                self.synthetic_data.back_mut().unwrap()
-                                    .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
-
-                                log::info!("Окружность размером {size} была успешно задана!");
-                            }
-                        }                                 
+                        self.spawn_circle(value as f32);                               
                 },
                 PLUS_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                     self.move_aim(super::MoveAim::Top);
@@ -140,32 +136,9 @@ impl App {
                 },
                 RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
                     input.state == glutin::event::ElementState::Released {
-                        match self.synthetic_data.back() {
-                            Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
-                                return;
-                            } else if !figure.is_value_default() {
-                                return;
-                            },
-                            _ => return,
-                        }
+                        check_last_for_default!(point self);
 
-                        if self.synthetic_datas_point.is_point_default() {
-                            self.synthetic_datas_point.x = self.aim.x;
-                            self.synthetic_datas_point.y = self.aim.y;
-
-                            log::info!("Первая точка была успешно отмечена!");
-                        } else {
-                            match self.synthetic_data.back().unwrap().get_data() {
-                                synthetic::SyntheticVariant::Rectangle(_, _) | synthetic::SyntheticVariant::Segment(_, _) =>
-                                    self.synthetic_data.back_mut().unwrap().set_points(
-                                        self.synthetic_datas_point.clone(), self.aim.clone(),
-                                    ).expect("Произошла ошибка! Данные точки начали задаваться для окружности!"),
-                                _ => {},
-                            }
-                            
-                            self.synthetic_datas_point = defs::Point::default();
-                            log::info!("Фигура была успешно задана!");
-                        }
+                        self.spawn_point()
                 },
                 _ => {},
             }
@@ -212,37 +185,19 @@ impl App {
             glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
             glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
             glutin::event::VirtualKeyCode::C => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                match self.synthetic_data.back() {
-                    Some(figure) => if figure.is_value_default() {
-                        return;
-                    },
-                    _ => {},
-                }
+                check_last_for_default!(self);
 
-                log::info!("Выберите размер для окружности, используя цифры 0..=9");
-                self.synthetic_data.push_back(Box::new(synthetic::Circle::new(None)));
+                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 0..=9");
             },
             glutin::event::VirtualKeyCode::R => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                match self.synthetic_data.back() {
-                    Some(figure) => if figure.is_value_default() {
-                        return;
-                    },
-                    _ => {},
-                }
+                check_last_for_default!(self);
 
-                log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
-                self.synthetic_data.push_back(Box::new(synthetic::Rectangle::new(None)));
+                self.define_figure(synthetic::Rectangle::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
             },
             glutin::event::VirtualKeyCode::L => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                match self.synthetic_data.back() {
-                    Some(figure) => if figure.is_value_default() {
-                        return;
-                    },
-                    _ => {},
-                }
+                check_last_for_default!(self);
 
-                log::info!("Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
-                self.synthetic_data.push_back(Box::new(synthetic::Segment::new(None)));
+                self.define_figure(synthetic::Segment::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
             },
             glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
             value @ (glutin::event::VirtualKeyCode::Key1 | glutin::event::VirtualKeyCode::Key2 | 
@@ -250,15 +205,7 @@ impl App {
                 glutin::event::VirtualKeyCode::Key5 | glutin::event::VirtualKeyCode::Key6 |
                 glutin::event::VirtualKeyCode::Key7 | glutin::event::VirtualKeyCode::Key8 |
                 glutin::event::VirtualKeyCode::Key9) =>  if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                    if let Some(figure) = self.synthetic_data.back() {
-                        if figure.is_value_default() {
-                            let size = self.p_j.aim.aim_adjusment * value as u32 as f32;
-                            self.synthetic_data.back_mut().unwrap()
-                                .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
-
-                            log::info!("Окружность размером {size} была успешно задана!");
-                        }
-                    }                                 
+                    self.spawn_circle(value as u32 as f32);                               
             },
             glutin::event::VirtualKeyCode::Plus => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                 self.move_aim(super::MoveAim::Top);
@@ -277,32 +224,9 @@ impl App {
             },
             glutin::event::VirtualKeyCode::Return => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
                 key.state == glutin::event::ElementState::Released {
-                    match self.synthetic_data.back() {
-                        Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
-                            return;
-                        } else if !figure.is_value_default() {
-                            return;
-                        },
-                        _ => return,
-                    }
+                    check_last_for_default!(point self);
 
-                    if self.synthetic_datas_point.is_point_default() {
-                        self.synthetic_datas_point.x = self.aim.x;
-                        self.synthetic_datas_point.y = self.aim.y;
-
-                        log::info!("Первая точка была успешно отмечена!");
-                    } else {
-                        match self.synthetic_data.back().unwrap().get_data() {
-                            synthetic::SyntheticVariant::Rectangle(_, _) | synthetic::SyntheticVariant::Segment(_, _) =>
-                                self.synthetic_data.back_mut().unwrap().set_points(
-                                    self.synthetic_datas_point.clone(), self.aim.clone(),
-                                ).expect("Произошла ошибка! Данные точки начали задаваться для окружности!"),
-                            _ => {},
-                        }
-                        
-                        self.synthetic_datas_point = defs::Point::default();
-                        log::info!("Фигура была успешно задана!");
-                    }
+                    self.spawn_point();
             },
             _ => {},
         }

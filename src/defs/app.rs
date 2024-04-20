@@ -1,4 +1,4 @@
-use crate::{App, graphics, etc};
+use crate::{App, graphics, etc, defs::{self, synthetic}};
 
 
 pub struct FigureIndices<T> where T: glium::index::Index {
@@ -83,5 +83,43 @@ impl App {
         let indices = FigureIndices::new(indices_line, indices_triangulate, indices_field);
 
         Ok(indices)
+    }
+
+    pub fn spawn_point(&mut self) {
+        if self.synthetic_datas_point.is_point_default() {
+            self.synthetic_datas_point.x = self.aim.x;
+            self.synthetic_datas_point.y = self.aim.y;
+
+            log::info!("Первая точка была успешно отмечена!");
+        } else {
+            match self.synthetic_data.back().unwrap().get_data() {
+                synthetic::SyntheticVariant::Rectangle(_, _) | synthetic::SyntheticVariant::Segment(_, _) =>
+                    self.synthetic_data.back_mut().unwrap().set_points(
+                        self.synthetic_datas_point.clone(), self.aim.clone(),
+                    ).expect("Произошла ошибка! Данные точки начали задаваться для окружности!"),
+                _ => {},
+            }
+            
+            self.synthetic_datas_point = defs::Point::default();
+            log::info!("Фигура была успешно задана!");
+        }
+    }
+
+    pub fn spawn_circle(&mut self, value: f32) {
+        if let Some(figure) = self.synthetic_data.back() {
+            if figure.is_value_default() {
+                let size = self.p_j.aim.aim_adjusment * value;
+                self.synthetic_data.back_mut().unwrap()
+                    .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
+
+                log::info!("Окружность размером {size} была успешно задана!");
+            }
+        }
+    }
+
+    pub fn define_figure<'a, F>(&'a mut self, figure: F, log_info: &'a str) where F: synthetic::SyntheticData + 'static {
+        log::info!("{log_info}");
+        
+        self.synthetic_data.push_back(Box::new(figure));
     }
 }
