@@ -9,7 +9,7 @@ mod ffi;
 mod collisions;
 mod control;
 
-use glium::glutin;
+use glium::glutin::{self, dpi};
 use std::{env, collections::LinkedList};
 use json::{geojson, default_json};
 use defs::synthetic;
@@ -112,6 +112,12 @@ impl App {
                     .with_vsync(self.p_j.graphics.vsync_on)
             }
         };
+    }
+
+    pub fn resize_window(&mut self, size: dpi::PhysicalSize<u32>) {
+        self.window_size.0 = size.width as f32;
+        self.window_size.1 = size.height as f32;
+        self.transform_map(graphics::TransformAction::Resize);
     }
 }
 
