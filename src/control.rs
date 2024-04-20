@@ -1,6 +1,6 @@
 use crate::{
     App,
-    graphics::{self, Vertex},
+    graphics::{self, Vertex, app},
     defs::{self, synthetic},
 };
 use glium::{
@@ -24,9 +24,7 @@ impl App {
         display: Display,
         positions: VertexBuffer<Vertex>,
         field_positions: VertexBuffer<graphics::ShaderVertex>,
-        program: glium::Program,
-        random_program: glium::Program,
-        field_program: glium::Program,
+        shaders: app::Shaders,
         indices_line: graphics::IndciesLines,
         indices_triangulate: graphics::IndciesTriangles,
         indices_field: graphics::IndciesTriangles,
@@ -52,7 +50,7 @@ impl App {
                                 &positions,
                                 &field_positions,
                                 (&indices_line, &indices_triangulate, &indices_field),
-                                (&program, &random_program, &field_program),
+                                &shaders,
                             );
                         },
                         glutin::event::WindowEvent::Moved(_) => self.render_frame(
@@ -60,7 +58,7 @@ impl App {
                             &positions,
                             &field_positions,
                             (&indices_line, &indices_triangulate, &indices_field),
-                            (&program, &random_program, &field_program),
+                            &shaders,
                         ),
                         #[cfg(unix)]
                         glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
@@ -235,7 +233,7 @@ impl App {
                                 &positions,
                                 &field_positions,
                                 (&indices_line, &indices_triangulate, &indices_field),
-                                (&program, &random_program, &field_program),
+                                &shaders,
                             );
                         },
                         _ => {},
@@ -249,7 +247,7 @@ impl App {
                                 &positions,
                                 &field_positions,
                                 (&indices_line, &indices_triangulate, &indices_field),
-                                (&program, &random_program, &field_program),
+                                &shaders,
                             );
                         },
                         _ => {},
