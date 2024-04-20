@@ -229,6 +229,8 @@ impl App {
         };
         let field_uniforms = uniform! {
             matrix: self.cam.transform_matrix,
+            x_off: self.cam.offset_x - self.p_j.map_offset.x,
+            y_off: self.cam.offset_y - self.p_j.map_offset.y,
         };
         target.draw(field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &Default::default())
             .expect("Ошибка! Не удлаось отрисовать поле!");
