@@ -9,7 +9,7 @@ mod ffi;
 mod collisions;
 mod control;
 
-use glium::glutin::{self, dpi};
+use glium::glutin::{self, dpi, window};
 use std::{env, collections::LinkedList};
 use json::{geojson, default_json};
 use defs::synthetic;
@@ -54,8 +54,11 @@ impl App {
 
     pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
         let event_loop = glutin::event_loop::EventLoop::new();
+        let (icon, (width, height)) = graphics::get_icon()?;
+        let icon = window::Icon::from_rgba(icon, width, height)?;
         let window = glutin::window::WindowBuilder::new()
             .with_title(&self.p_g.name)
+            .with_window_icon(Some(icon))
             .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
         let context = self.get_window_ctx(); 
         let display = glium::Display::new(window, context, &event_loop)?;

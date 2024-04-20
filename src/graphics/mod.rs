@@ -2,6 +2,7 @@ pub mod app;
 
 use crate::json::default_json;
 use crate::defs::Building;
+use image::io::Reader;
 
 
 #[derive(Copy, Clone, Debug)]
@@ -29,6 +30,7 @@ pub const COLOR_SHADER_PATH: &str = "src/graphics/shaders/color_shader.vert";
 pub const RANDOM_COLOR_SHADER_PATH: &str = "src/graphics/shaders/random_color_shader.vert";
 pub const FIELD_VERTEX_SHADER_PATH: &str = "src/graphics/shaders/field_vertex_shader.vert";
 pub const FIELD_COLOR_SHADER_PATH: &str = "src/graphics/shaders/field_color_shader.vert";
+const ICON_PATH: &str = "icons/icon.png";
 
 
 pub struct Camera {
@@ -157,4 +159,13 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
     }
 
     result
+}
+
+
+pub fn get_icon() -> Result<(Vec<u8>, (u32, u32)), Box<dyn std::error::Error>> {
+    let img = Reader::open(ICON_PATH)?.decode()?;
+    let width = img.width();
+    let height = img.width();
+
+    Ok((img.as_bytes().to_vec(), (width, height)))
 }
