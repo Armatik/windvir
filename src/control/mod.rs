@@ -61,15 +61,17 @@ impl App {
                         ),
                         #[cfg(unix)]
                         glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
-                            self.unix_keyboard_control(input, is_synthetic);
+                            let need_rerender = self.unix_keyboard_control(input, is_synthetic);
 
-                            self.render_frame(
-                                &display,
-                                &positions,
-                                &field_positions,
-                                &indices,
-                                &shaders,
-                            );
+                            if need_rerender {
+                                self.render_frame(
+                                    &display,
+                                    &positions,
+                                    &field_positions,
+                                    &indices,
+                                    &shaders,
+                                );
+                            }
                         },
                         _ => {},
                     }
@@ -92,12 +94,14 @@ impl App {
                 glutin::event::Event::DeviceEvent { event, .. } => {
                     match event {
                         glutin::event::DeviceEvent::Key(key) => {
-                            match key.virtual_keycode {
+                            let need_rerender = match key.virtual_keycode {
                                 Some(cap) => self.windows_keyboard_control(key, cap),
                                 None => return,
-                            }
+                            };
 
-                            self.render_frame(&display, &positions, &field_positions, &indices, &shaders);
+                            if need_rerender {
+                                self.render_frame(&display, &positions, &field_positions, &indices, &shaders);
+                            }
                         },
                         _ => {},
                     }

@@ -67,7 +67,7 @@ impl BuildingC {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct VectorC {
+struct VectorC {
     position: PointC,
     offset: PointC,
 }
