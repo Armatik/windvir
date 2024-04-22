@@ -26,7 +26,7 @@ pub struct App {
     window_size: (WindowWidth, WindowHeight),
     buildings: Vec<defs::Building>,
     synthetic_data: LinkedList<Box<dyn synthetic::SyntheticData>>,
-    synthetic_datas_point: defs::Point,
+    synthetic_datas_points: Vec<defs::Point>,
     aim: defs::Point,
     rainbow_field: bool,
 }
@@ -46,7 +46,7 @@ impl App {
             window_size: (p_j.resolution.width as f32, p_j.resolution.height as f32),
             buildings,
             synthetic_data: LinkedList::new(),
-            synthetic_datas_point: defs::Point::default(),
+            synthetic_datas_points: Vec::new(),
             aim: defs::Point::new(-p_j.map_offset.x, -p_j.map_offset.y),
             rainbow_field,
         }

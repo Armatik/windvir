@@ -1,4 +1,4 @@
-use crate::{App, graphics, etc, defs::{self, synthetic}};
+use crate::{App, graphics, etc, defs::synthetic};
 
 
 pub struct FigureIndices<T> where T: glium::index::Index {
@@ -85,22 +85,44 @@ impl App {
         Ok(indices)
     }
 
-    pub fn spawn_point(&mut self) {
-        if self.synthetic_datas_point.is_point_default() {
-            self.synthetic_datas_point.x = self.aim.x;
-            self.synthetic_datas_point.y = self.aim.y;
+    pub fn is_start_polygon(&self) -> bool {
+        self.synthetic_datas_points.len() == 0
+    }
+
+    pub fn is_polygon(&self) -> bool {
+        return match self.synthetic_data.back() {
+            Some(data) => data.get_data_simply() == synthetic::SimplySyntheticVariant::Polygon,
+            None => false,
+        }
+    }
+
+    pub fn spawn_point(&mut self, is_end_of_polygon: bool) {
+        if self.synthetic_datas_points.get(0).is_none() {
+            self.synthetic_datas_points.push(super::Point::new(self.aim.x, self.aim.y));
 
             log::info!("Первая точка была успешно отмечена!");
         } else {
-            match self.synthetic_data.back().unwrap().get_data() {
-                synthetic::SyntheticVariant::Rectangle(_, _) | synthetic::SyntheticVariant::Segment(_, _) =>
-                    self.synthetic_data.back_mut().unwrap().set_points(
-                        self.synthetic_datas_point.clone(), self.aim.clone(),
-                    ).expect("Произошла ошибка! Данные точки начали задаваться для окружности!"),
+            match self.synthetic_data.back().unwrap().get_data_simply() {
+                synthetic::SimplySyntheticVariant::Rectangle | synthetic::SimplySyntheticVariant::Segment => {
+                    self.synthetic_datas_points.push(super::Point::new(self.aim.x, self.aim.y));
+                    self.synthetic_data.back_mut().unwrap().set_points(self.synthetic_datas_points.clone())
+                        .expect("Произошла ошибка! Данные точки начали задаваться для окружности!");
+                },
+                synthetic::SimplySyntheticVariant::Polygon => {
+                    if is_end_of_polygon {
+                        self.synthetic_data.back_mut().unwrap().set_points(self.synthetic_datas_points.clone())
+                            .expect("Произошла ошибка! Данные точки начали задаваться для окружности!");
+                    } else {
+                        self.synthetic_datas_points.push(super::Point::new(self.aim.x, self.aim.y));
+
+                        log::info!("Точка для многоугольника была успешно задана!");
+                        return;
+                    }
+                },
                 _ => {},
             }
             
-            self.synthetic_datas_point = defs::Point::default();
+            self.synthetic_datas_points = Vec::new();
             log::info!("Фигура была успешно задана!");
         }
     }

@@ -13,7 +13,7 @@ macro_rules! check_last_for_default {
     };
     (point $data:ident) => {
         match $data.synthetic_data.back() {
-            Some(figure) => if let synthetic::SyntheticVariant::Circle(_, _) = figure.get_data() {
+            Some(figure) => if figure.get_data_simply() == synthetic::SimplySyntheticVariant::Circle {
                 return false;
             } else if !figure.is_value_default() {
                 return false;
@@ -49,6 +49,7 @@ impl App {
         const A_KEY: u32 = 0x1e;
         const S_KEY: u32 = 0x1f;
         const D_KEY: u32 = 0x20;
+        const F_KEY: u32 = 0x21;
         const L_KEY: u32 = 0x26;
         const QUOTE_KEY: u32 = 0x28;
         const Z_KEY: u32 = 0x2c;
@@ -106,21 +107,33 @@ impl App {
             X_KEY => self.transform_map(graphics::TransformAction::Reduce),
             C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 0..=9");
+                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 1..=9");
 
-                need_rerender = false
+                need_rerender = false;
             },
-            R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+            R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
                 self.define_figure(synthetic::Rectangle::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
-
-                need_rerender = false;
+                self.spawn_point(false);
             },
-            L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+            L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
                 self.define_figure(synthetic::Segment::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
-
-                need_rerender = false;
+                self.spawn_point(false);
+            },
+            F_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
+                if self.is_start_polygon() {
+                    check_last_for_default!(self);
+                    self.define_figure(synthetic::Polygon::new(None), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
+                    self.spawn_point(false);
+                } else if self.is_polygon() {
+                    self.spawn_point(true);
+                }
+                check_last_for_default!(self);
+                if self.is_start_polygon() {
+                } else {
+                    self.spawn_point(true);
+                }
             },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
             value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) =>
@@ -146,7 +159,7 @@ impl App {
                 input.state == glutin::event::ElementState::Released {
                     check_last_for_default!(point self);
 
-                    self.spawn_point();
+                    self.spawn_point(false);
             },
             _ => {},
         }
@@ -197,7 +210,7 @@ impl App {
             glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
             glutin::event::VirtualKeyCode::C => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 0..=9");
+                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 1..=9");
 
                 need_rerender = false;
             },

@@ -61,9 +61,7 @@ impl App {
                         ),
                         #[cfg(unix)]
                         glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
-                            let need_rerender = self.unix_keyboard_control(input, is_synthetic);
-
-                            if need_rerender {
+                            if self.unix_keyboard_control(input, is_synthetic) {
                                 self.render_frame(
                                     &display,
                                     &positions,

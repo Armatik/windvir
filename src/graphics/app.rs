@@ -181,16 +181,18 @@ impl App {
                     g_rand: rgb.1,
                     b_rand: rgb.2,
                 };
-                let figure_points = glium::VertexBuffer::new(display, &[
-                    super::Vertex { position: [self.synthetic_datas_point.x, self.synthetic_datas_point.y] },
-                ]).expect("Ошибка! Не удалось задать позицию для прицела!");
-                target.draw(
-                    &figure_points,
-                    &glium::index::NoIndices(glium::index::PrimitiveType::Points),
-                    &shaders.random_shader,
-                    &figure_point_uniforms,
-                    &params,
-                ).expect("Ошибка! Не удалось отрисовать точку для задания фигуры!");
+                for point in &self.synthetic_datas_points {
+                    let figure_points = glium::VertexBuffer::new(display, &[
+                        super::Vertex { position: [point.x, point.y] },
+                    ]).expect("Ошибка! Не удалось задать позицию для прицела!");
+                    target.draw(
+                        &figure_points,
+                        &glium::index::NoIndices(glium::index::PrimitiveType::Points),
+                        &shaders.random_shader,
+                        &figure_point_uniforms,
+                        &params,
+                    ).expect("Ошибка! Не удалось отрисовать точку для задания фигуры!");
+                }
 
                 params.point_size = Some(self.p_j.aim.aim_size);
                 let aim_uniforms = uniform! {
