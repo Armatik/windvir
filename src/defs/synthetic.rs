@@ -1,5 +1,6 @@
 use rand::Rng;
 use crate::graphics;
+use super::error::{self, WrongFigure};
 
 
 const RED_ADJUSMENT: f32 = 0.8;
@@ -15,6 +16,8 @@ pub enum SyntheticVariant {
 	Rectangle(super::Point, super::Point),
     /// Первый аргумент `первая точка` отрезка. Второй аргумент `второя точка` отрезка
 	Segment(super::Point, super::Point),
+    /// Рандомная фигура, содержит в себе вектор вершин
+    Polygon(Vec<graphics::Vertex>),
 }
 
 
@@ -22,15 +25,15 @@ pub trait SyntheticData {
     fn get_data(&self) -> SyntheticVariant;
 	fn is_value_default(&self) -> bool;
 	fn set_value(&mut self, data: SyntheticVariant);
-    /// Возвращается `None` в случае если у структуры присутсвует != 2 точки
-    fn set_points(&mut self, p0: super::Point, p1: super::Point) -> Option<()>;
+    /// Возвращается ошибка в случае если у структуры присутсвует != 2 точки
+    fn set_points(&mut self, p0: super::Point, p1: super::Point) -> error::Result<()>;
     fn get_rgb(&self) -> (f32, f32, f32);
     #[allow(dead_code)]
     fn set_rgb(&mut self, r: f32, g: f32, b: f32);
     fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>);
     fn get_primitive(&self) -> glium::index::PrimitiveType;
-    /// Возвращается `None` в случае если невозможно изменить примитив
-    fn change_primitive(&mut self) -> Option<()>; 
+    /// Возвращается ошибка в случае если невозможно изменить примитив
+    fn change_primitive(&mut self) -> error::Result<()>; 
 }
 
 
@@ -81,8 +84,8 @@ impl SyntheticData for Circle {
         }
 	}
 
-    fn set_points(&mut self, _p0: super::Point, _p1: super::Point) -> Option<()> {
-        None
+    fn set_points(&mut self, _p0: super::Point, _p1: super::Point) -> error::Result<()> {
+        Err(error::WrongFigure)
     }
 
     fn get_rgb(&self) -> (f32, f32, f32) {
@@ -133,14 +136,10 @@ impl SyntheticData for Circle {
         }
     }
 
-    fn change_primitive(&mut self) -> Option<()> {
-        if self.is_fill {
-            self.is_fill = false;
-        } else {
-            self.is_fill = true;
-        }
+    fn change_primitive(&mut self) -> error::Result<()> {
+        self.is_fill = !self.is_fill;
 
-        Some(())
+        Ok(())
     }
 }
 
@@ -188,15 +187,15 @@ impl SyntheticData for Rectangle {
             self.left_up_point = left_up_point;
 			self.right_down_point = right_down_point;
         } else {
-            log::warn!("Данные для созданного прямоугольника могут быть заданы не верно!");
+            log::error!("Данные для созданного прямоугольника могут быть заданы не верно!");
         }
 	}
 
-    fn set_points(&mut self, p0: super::Point, p1: super::Point) -> Option<()> {
+    fn set_points(&mut self, p0: super::Point, p1: super::Point) -> error::Result<()> {
         self.left_up_point = p0;
         self.right_down_point = p1;
         
-        Some(())
+        Ok(())
     }
 
     fn get_rgb(&self) -> (f32, f32, f32) {
@@ -233,14 +232,10 @@ impl SyntheticData for Rectangle {
         }
     }
 
-    fn change_primitive(&mut self) -> Option<()> {
-        if self.is_fill {
-            self.is_fill = false;
-        } else {
-            self.is_fill = true;
-        }
+    fn change_primitive(&mut self) -> error::Result<()> {
+        self.is_fill = !self.is_fill;
 
-        Some(())
+        Ok(())
     }
 }
 
@@ -286,15 +281,15 @@ impl SyntheticData for Segment {
             self.p0 = p0;
             self.p1 = p1;
 		} else {
-			log::warn!("Данные для отрезка могут быть заданы не верно!");
+			log::error!("Данные для отрезка могут быть заданы не верно!");
         }
 	}
 
-    fn set_points(&mut self, p0: super::Point, p1: super::Point) -> Option<()> {
+    fn set_points(&mut self, p0: super::Point, p1: super::Point) -> error::Result<()> {
         self.p0 = p0;
         self.p1 = p1;
         
-        Some(())
+        Ok(())
     }
 
     fn get_rgb(&self) -> (f32, f32, f32) {
@@ -318,7 +313,81 @@ impl SyntheticData for Segment {
         glium::index::PrimitiveType::LineLoop
     }
 
-    fn change_primitive(&mut self) -> Option<()> {
-        None
+    fn change_primitive(&mut self) -> error::Result<()> {
+        Err(WrongFigure)
+    }
+}
+
+
+pub struct Polygon {
+    points: Vec<graphics::Vertex>,
+    is_fill: bool,
+    rgb: (f32, f32, f32),
+}
+
+
+impl SyntheticData for Polygon {
+    fn change_primitive(&mut self) -> error::Result<()> {
+        self.is_fill = !self.is_fill;
+
+        Ok(())
+    }
+
+    fn get_data(&self) -> SyntheticVariant {
+        SyntheticVariant::Polygon(self.points.clone())
+    }
+
+    fn get_primitive(&self) -> glium::index::PrimitiveType {
+        return if self.is_fill {
+            glium::index::PrimitiveType::TrianglesList
+        } else {
+            glium::index::PrimitiveType::LineLoop
+        }
+    }
+
+    fn get_rgb(&self) -> (f32, f32, f32) {
+        self.rgb
+    }
+
+    fn get_vertices_and_indices(&self) -> (Vec<graphics::Vertex>, Option<Vec<u16>>) {        
+        let mut indices = Vec::<u16>::new();
+        
+        if self.is_fill {
+            let mut points = Vec::<f32>::with_capacity(self.points.len() * 2);
+            
+            for point in &self.points {
+                points.append(&mut vec![point.position[0], point.position[1]]);
+            }
+
+            let idx = earcutr::earcut(&points, &[], 2).expect("Ошибка! Не удалось триангулировать многоугольник!");
+
+            indices = idx.iter().map(|x| *x as u16).collect::<Vec<u16>>();
+        } else {
+            for i in 0..self.points.len() - 1 {
+                indices.append(&mut vec![i as u16, i as u16 + 1]);
+            }
+        }
+
+        (self.points.clone(), Some(indices))
+    }
+
+    fn is_value_default(&self) -> bool {
+        self.points == Vec::new()
+    }
+
+    fn set_points(&mut self, _p0: super::Point, _p1: super::Point) -> error::Result<()> {
+        Err(error::WrongFigure)
+    }
+
+    fn set_rgb(&mut self, r: f32, g: f32, b: f32) {
+        self.rgb = (r, g, b);
+    }
+
+    fn set_value(&mut self, data: SyntheticVariant) {
+        if let SyntheticVariant::Polygon(points) = data {
+            self.points = points;
+        } else {
+			log::error!("Данные для многоугольника могут быть заданы не верно!");
+        }
     }
 }

@@ -5,7 +5,7 @@ use crate::defs::Building;
 use image::io::Reader;
 
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Vertex {
     pub position: [f32; 2],
 }

@@ -1,5 +1,6 @@
 pub mod synthetic;
 pub mod app;
+pub mod error;
 
 use std::ops::{Add,Sub};
 
@@ -54,8 +55,7 @@ impl Building {
     pub fn triangulate(&self) -> Vec<usize> {
         let mut points = Vec::<f32>::with_capacity(self.sides.len()*2usize);
         for vertex in &self.sides {
-            points.push(vertex.position.x);
-            points.push(vertex.position.y);
+            points.append(&mut vec![vertex.position.x, vertex.position.y]);
         }
         earcutr::earcut(&points, &[], 2).unwrap()
     }
