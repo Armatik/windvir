@@ -9,9 +9,9 @@ mod ffi;
 mod collisions;
 mod control;
 
-use glium::glutin::{self, dpi, window};
+use glium::glutin::{self, dpi, window, event_loop as ev_loop};
 use std::{env, collections::LinkedList};
-use json::{geojson, default_json};
+use json::{geojson, default_json, figures};
 use defs::synthetic;
 
 
@@ -52,7 +52,7 @@ impl App {
         }
     }
 
-    pub fn start_app(self) -> Result<(), Box<dyn std::error::Error>> {
+    fn init_window(&self) -> Result<(glium::Display, ev_loop::EventLoop<()>), Box<dyn std::error::Error>> {
         let event_loop = glutin::event_loop::EventLoop::new();
         let (icon, (width, height)) = graphics::get_icon()?;
         let icon = window::Icon::from_rgba(icon, width, height)?;
@@ -61,8 +61,65 @@ impl App {
             .with_window_icon(Some(icon))
             .with_inner_size(glutin::dpi::LogicalSize::new(self.p_j.resolution.width, self.p_j.resolution.height));
         let context = self.get_window_ctx(); 
-        let display = glium::Display::new(window, context, &event_loop)?;
 
+        Ok((glium::Display::new(window, context, &event_loop)?, event_loop))
+    }
+
+    fn init_figures_cfg(&mut self) {
+        let json = figures::PersistentF::default();
+        let x_off = self.p_j.map_offset.x;
+        let y_off = self.p_j.map_offset.y;
+
+        json.circles.iter().for_each(|x| {
+            let _x = x.x - x_off;
+            let _y = x.y - y_off;
+            let radius = x.radius;
+            let rgb = x.rgb;
+
+            self.define_figure(
+                synthetic::Circle::init(_x, _y, radius, x.is_fill, rgb),
+                &format!("Окружность была задана с центром ({_x} {_y}) и с радиусом {radius} и цветом {:?}", rgb),
+            );
+        });
+        json.rectangles.iter().for_each(|x| {
+            let lu_x = x.left_up_angle_x - x_off;
+            let lu_y = x.left_up_angle_y - y_off;
+            let rd_x = x.right_down_angle_x - x_off;
+            let rd_y = x.right_down_angle_y - y_off;
+            let rgb = x.rgb;
+
+            self.define_figure(
+                synthetic::Rectangle::init(lu_x, lu_y, rd_x, rd_y, x.is_fill, rgb),
+                &format!("Прямоугольник был задан с левым верхним углом ({lu_x} {lu_y}) и правым нижним ({rd_x} {rd_y}), еще имеет цвет {:?}", rgb),
+            );
+        });
+        json.lines.iter().for_each(|x| {
+            let p0_x = x.p0_x - x_off;
+            let p0_y = x.p0_y - y_off;
+            let p1_x = x.p1_x - x_off;
+            let p1_y = x.p1_y - y_off;
+            let rgb = x.rgb;
+
+            self.define_figure(
+                synthetic::Segment::init(p0_x, p0_y, p1_x, p1_y, rgb),
+                &format!("Отрезок был задан с начальной точкой ({p0_x} {p0_y}) и конечной ({p1_x} {p1_y}), а так же цветом {:?}", rgb),
+            );
+        });
+        json.polygons.iter().for_each(|x| {
+            let points = x.points.clone().iter().map(|x| vec![x[0] - x_off, x[1] - y_off]).collect::<Vec<Vec<f32>>>();
+            let rgb = x.rgb;
+
+            self.define_figure(
+                synthetic::Polygon::init(points.clone(), x.is_fill, rgb),
+                &format!("Многоугольник был задан с точками {:?} и цветом {:?}", points, rgb),
+            );
+        })
+    }
+
+    pub fn start_app(mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let (display, event_loop) = self.init_window()?;
+
+        // ================================ Инициализация индексов и вершин ================================
         let shape = self.get_buildings_vertices();
         let building_vertices = glium::VertexBuffer::new(&display, &shape)?;
         
@@ -70,6 +127,9 @@ impl App {
         let shaders = self.init_shaders(&display)?;
 
         let indices = self.init_indices(&display)?;
+
+        self.init_figures_cfg();
+        // =================================================================================================
         
         log::info!("Все здания успешно просчитаны и заданы!");
 

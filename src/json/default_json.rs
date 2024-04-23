@@ -1,9 +1,6 @@
 use super::{Serialize, Deserialize, path, fs, PathBuf};
 
 
-const FILE_PATH: &str = "./default_settings.json";
-
-
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct Resolution {
     pub width: u32,
@@ -142,12 +139,12 @@ impl Default for Aim {
 
 impl Default for PersistentJ {
     fn default() -> Self {
-        let path = match fs::canonicalize(FILE_PATH) {
+        let path = match fs::canonicalize(super::FILE_PATH_DEFAULT) {
             Ok(path) => path,
             Err(err) => {
-                log::warn!("Не удалось канонизировать файл ({}) по пути {}", err, FILE_PATH);
+                log::warn!("Не удалось канонизировать файл ({}) по пути {}", err, super::FILE_PATH_DEFAULT);
                 
-                PathBuf::from(FILE_PATH)
+                PathBuf::from(super::FILE_PATH_DEFAULT)
             },
         };
         let path = path.to_str()

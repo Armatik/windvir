@@ -108,8 +108,7 @@ impl App {
                     self.synthetic_data.back_mut().unwrap().set_points(self.synthetic_datas_points.clone())
                         .expect("Произошла ошибка! Данные точки начали задаваться для окружности!");
                 },
-                synthetic::SimplySyntheticVariant::Polygon => {
-                    if is_end_of_polygon {
+                synthetic::SimplySyntheticVariant::Polygon => if is_end_of_polygon {
                         self.synthetic_data.back_mut().unwrap().set_points(self.synthetic_datas_points.clone())
                             .expect("Произошла ошибка! Данные точки начали задаваться для окружности!");
                     } else {
@@ -117,7 +116,6 @@ impl App {
 
                         log::info!("Точка для многоугольника была успешно задана!");
                         return;
-                    }
                 },
                 _ => {},
             }

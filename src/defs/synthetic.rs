@@ -56,21 +56,23 @@ pub struct Circle {
 
 
 impl Circle {
-    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
-        let rgb = match rgb {
-            Some(rgb) => rgb,
-            None => {
-                let mut rng = rand::thread_rng();
-
-                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
-            },
-        };
+    pub fn new() -> Self {
+        let mut rng = rand::thread_rng();
 
         Self {
             center: super::Point::default(),
             radius: f32::default(),
             is_fill: true,
-            rgb,
+            rgb: (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>()),
+        }
+    }
+
+    pub fn init(x: f32, y: f32, radius: f32, is_fill: bool, rgb: [f32; 3]) -> Self {
+        Self {
+            center: super::Point::new(x, y),
+            radius,
+            is_fill,
+            rgb: (rgb[0], rgb[1], rgb[2]),
         }
     }
 }
@@ -167,21 +169,23 @@ pub struct Rectangle {
 
 
 impl Rectangle {
-    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
-        let rgb = match rgb {
-            Some(rgb) => rgb,
-            None => {
-                let mut rng = rand::thread_rng();
+    pub fn new() -> Self {
+        let mut rng = rand::thread_rng();
 
-                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
-            },         
-        };
-        
         Self {
             left_up_point: super::Point::default(),
             right_down_point: super::Point::default(),
             is_fill: true,
-            rgb,
+            rgb: (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>()),
+        }
+    }
+
+    pub fn init(lu_x: f32, lu_y: f32, rd_x: f32, rd_y: f32, is_fill: bool, rgb: [f32; 3]) -> Self {
+        Self {
+            left_up_point: super::Point::new(lu_x, lu_y),
+            right_down_point: super::Point::new(rd_x, rd_y),
+            is_fill,
+            rgb: (rgb[0], rgb[1], rgb[2]),
         }
     }
 }
@@ -272,20 +276,21 @@ pub struct Segment {
 
 
 impl Segment {
-    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
-        let rgb = match rgb {
-            Some(rgb) => rgb,
-            None => {
-                let mut rng = rand::thread_rng();
-
-                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
-            },
-        };
+    pub fn new() -> Self {
+        let mut rng = rand::thread_rng();
 
         Self {
             p0: super::Point::default(),
             p1: super::Point::default(),
-            rgb,
+            rgb: (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>()),
+        }
+    }
+
+    pub fn init(p0_x: f32, p0_y: f32, p1_x: f32, p1_y: f32, rgb: [f32; 3]) -> Self {
+        Self {
+            p0: super::Point::new(p0_x, p0_y),
+            p1: super::Point::new(p1_x, p1_y),
+            rgb: (rgb[0], rgb[1], rgb[2]),
         }
     }
 }
@@ -360,21 +365,24 @@ pub struct Polygon {
 
 
 impl Polygon {
-    pub fn new(rgb: Option<(f32, f32, f32)>) -> Self {
-        let rgb = match rgb {
-            Some(rgb) => rgb,
-            None => {
-                let mut rng = rand::thread_rng();
-
-                (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>())
-            },
-        };
+    pub fn new() -> Self {
+        let mut rng = rand::thread_rng();
 
         Self {
             points: Vec::new(),
             is_fill: true,
-            rgb,
+            rgb: (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>()),
         } 
+    }
+
+    pub fn init(points: Vec<Vec<f32>>, is_fill: bool, rgb: [f32; 3]) -> Self {
+        let points = points.iter().map(|x| graphics::Vertex { position: [x[0], x[1]] }).collect::<Vec<graphics::Vertex>>();
+
+        Self {
+            points,
+            is_fill,
+            rgb: (rgb[0], rgb[1], rgb[2]),
+        }
     }
 }
 

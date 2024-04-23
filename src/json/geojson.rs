@@ -1,9 +1,6 @@
 use super::{Serialize, Deserialize, path, fs, PathBuf};
 
 
-const FILE_PATH: &str = "./data/Здания элеваторского района (big data).geojson";
-
-
 #[derive(Debug, Serialize, Deserialize)]
 struct Properties {
     object: String,
@@ -34,12 +31,12 @@ pub struct PersistentG {
 
 impl Default for PersistentG {
     fn default() -> Self {
-        let path = match fs::canonicalize(FILE_PATH) {
+        let path = match fs::canonicalize(super::FILE_PATH_GEOJSON) {
             Ok(path) => path,
             Err(err) => {
-                log::warn!("Не удалось канонизировать файл ({}) по пути {}", err, FILE_PATH);
+                log::warn!("Не удалось канонизировать файл ({}) по пути {}", err, super::FILE_PATH_GEOJSON);
                 
-                PathBuf::from(FILE_PATH)
+                PathBuf::from(super::FILE_PATH_GEOJSON)
             },
         };
         let path = path.to_str()

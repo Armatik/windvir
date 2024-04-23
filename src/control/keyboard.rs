@@ -107,31 +107,26 @@ impl App {
             X_KEY => self.transform_map(graphics::TransformAction::Reduce),
             C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 1..=9");
+                self.define_figure(synthetic::Circle::new(), "Выберите размер для окружности, используя цифры 1..=9");
 
                 need_rerender = false;
             },
             R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Rectangle::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
+                self.define_figure(synthetic::Rectangle::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
                 self.spawn_point(false);
             },
             L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Segment::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
+                self.define_figure(synthetic::Segment::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
                 self.spawn_point(false);
             },
             F_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
                 if self.is_start_polygon() {
                     check_last_for_default!(self);
-                    self.define_figure(synthetic::Polygon::new(None), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
+                    self.define_figure(synthetic::Polygon::new(), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
                     self.spawn_point(false);
                 } else if self.is_polygon() {
-                    self.spawn_point(true);
-                }
-                check_last_for_default!(self);
-                if self.is_start_polygon() {
-                } else {
                     self.spawn_point(true);
                 }
             },
