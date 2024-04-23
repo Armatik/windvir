@@ -51,7 +51,13 @@ RUST_LOG=windvir cargo run --release -- -r
 
 `L` - define a line segment and then use `Enter` to specify the points
 
+`F` - define a polygon and then use `Enter` to specify the poits
+
 ## Settings
 You can change default settings in file `default_settings.json`
 
 In the graphics column you can enable certain settings. If `multisampling` or  `depth buffering` is disabled, the corresponding parameters will not work
+
+## Shapes at launch
+
+In order for the figures to be immediately spawned at start. Configure file `data/figures.json`
