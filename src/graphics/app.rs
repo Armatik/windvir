@@ -98,6 +98,7 @@ impl App {
     pub fn render_frame<T>(
         &self,
         display: &Display,
+        params: &mut glium::DrawParameters,
         positions: &VertexBuffer<super::Vertex>,
         field_positions: &VertexBuffer<super::ShaderVertex>,
         indices: &app::FigureIndices<T>,
@@ -110,142 +111,139 @@ impl App {
             self.p_j.background_color.b,
             self.p_j.background_color.a,
         );
-        let multisampling_on = self.p_j.graphics.multisampling_on;
-        let dithering_on = self.p_j.graphics.dithering_on;
+
+        if self.cam.display_type != super::DisplayType::ObjectSpawn {
+            // ============================ Отрисовка поля ============================
+            params.polygon_mode = glium::draw_parameters::PolygonMode::Fill;
+
+            let field_uniforms = uniform! {
+                matrix: self.cam.transform_matrix,
+                x_off: self.cam.offset_x - self.p_j.map_offset.x,
+                y_off: self.cam.offset_y - self.p_j.map_offset.y,
+            };
+            target.draw(field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &params)
+                .expect("Ошибка! Не удлаось отрисовать поле!");
+            // ---------------------------- Отрисовка поля ----------------------------
+            // ============================ Отрисовка зданий ============================
+            params.polygon_mode = match self.cam.display_type {
+                super::DisplayType::TrianglesFill => glium::draw_parameters::PolygonMode::Fill,
+                super::DisplayType::TrianglesFillLines => glium::draw_parameters::PolygonMode::Line,
+                super::DisplayType::Lines => glium::draw_parameters::PolygonMode::Line,
+                _ => unreachable!("Невозможна отрисовка зданий в песочнице!"),
+            };
+            let indices_buildings = match self.cam.display_type {
+                super::DisplayType::TrianglesFill | super::DisplayType::TrianglesFillLines => &indices.buildings_indices_triangulate,
+                super::DisplayType::Lines => &indices.buildings_indices_line,
+                _ => unreachable!("Невозможна отрисовка зданий в песочнице"),
+            };
+
+            let buildings_uniforms = uniform! {
+                matrix: self.cam.transform_matrix,
+                x_off: self.cam.offset_x,
+                y_off: self.cam.offset_y,
+            };
+            target.draw(positions, indices_buildings, &shaders.default_shader, &buildings_uniforms, &params)
+                .expect("Ошибка! Не удалось отрисовать объект(ы)!");
+            // ---------------------------- Отрисовка зданий ----------------------------
+        }
+
+        // ============================ Отрисовка синтетических фигур ============================
+        let mut rgb = (0., 0., 0.);
         
-        let (polygon_mode, indices_buildings) = match self.cam.display_type.clone() {
-            super::DisplayType::TrianglesFill => (glium::draw_parameters::PolygonMode::Fill, &indices.buildings_indices_triangulate),
-            super::DisplayType::TrianglesFillLines => (glium::draw_parameters::PolygonMode::Line, &indices.buildings_indices_triangulate),
-            super::DisplayType::Lines => (glium::draw_parameters::PolygonMode::Line, &indices.buildings_indices_line),
-            super::DisplayType::ObjectSpawn => {
-                let mut params = glium::DrawParameters {
-                    polygon_mode: glium::draw_parameters::PolygonMode::Fill,
-                    multisampling: multisampling_on,
-                    dithering: dithering_on,
-                    smooth: Some(glium::draw_parameters::Smooth::Nicest),
-                    point_size: None,
-                    ..Default::default()
-                };
-                let mut rgb = (f32::default(), f32::default(), f32::default());
+        for figure in &self.synthetic_data {
+            rgb = figure.get_rgb();
+            
+            let uniforms = uniform! {
+                matrix: self.cam.transform_matrix,
+                x_off: self.cam.offset_x,
+                y_off: self.cam.offset_y,
+                r_rand: rgb.0,
+                g_rand: rgb.1,
+                b_rand: rgb.2,
+            };
+            
+            let (positions, indices) = figure.get_vertices_and_indices();
+            let primitive = figure.get_primitive();
+            let polygon_mode = match primitive {
+                glium::index::PrimitiveType::TrianglesList => glium::draw_parameters::PolygonMode::Fill,
+                glium::index::PrimitiveType::LineLoop => glium::draw_parameters::PolygonMode::Line,
+                _ => unreachable!("Попался невозможный примитив!"),
+            };
+            params.polygon_mode = polygon_mode;
+            let positions = glium::VertexBuffer::new(display, &positions)
+                .expect("Ошибка! Не удалось создать буффер вершин для объекта!");
 
-                for figure in &self.synthetic_data {
-                    rgb = figure.get_rgb();
-                    
-                    let uniforms = uniform! {
-                        matrix: self.cam.transform_matrix,
-                        x_off: self.cam.offset_x,
-                        y_off: self.cam.offset_y,
-                        r_rand: rgb.0,
-                        g_rand: rgb.1,
-                        b_rand: rgb.2,
-                    };
-                    
-                    let (positions, indices) = figure.get_vertices_and_indices();
-                    let primitive = figure.get_primitive();
-                    let polygon_mode = match primitive {
-                        glium::index::PrimitiveType::TrianglesList => glium::draw_parameters::PolygonMode::Fill,
-                        glium::index::PrimitiveType::LineLoop => glium::draw_parameters::PolygonMode::Line,
-                        _ => unreachable!("Попался невозможный примитив!"),
-                    };
-                    params.polygon_mode = polygon_mode;
-                    let positions = glium::VertexBuffer::new(display, &positions)
-                        .expect("Ошибка! Не удалось создать буффер вершин для объекта!");
-
-                    if let Some(indices) = indices {
-                        let indices = glium::IndexBuffer::new(
-                            display,
-                            primitive,
-                            &indices,
-                        ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
-                        target.draw(&positions, &indices, &shaders.random_shader, &uniforms, &params)
-                            .expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
-                    } else {
-                        target.draw(
-                            &positions,
-                            &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
-                            &shaders.random_shader,
-                            &uniforms,
-                            &params
-                        ).expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
-                    }
-                }
-
-                params.polygon_mode = glium::draw_parameters::PolygonMode::Point;
-                params.smooth = None;
-                params.point_size = Some(self.p_j.aim.aim_size / 2.);
-                let figure_point_uniforms = uniform! {
-                    matrix: self.cam.transform_matrix,
-                    x_off: self.cam.offset_x,
-                    y_off: self.cam.offset_y,
-                    r_rand: rgb.0,
-                    g_rand: rgb.1,
-                    b_rand: rgb.2,
-                };
-                for point in &self.synthetic_datas_points {
-                    let figure_points = glium::VertexBuffer::new(display, &[
-                        super::Vertex { position: [point.x, point.y] },
-                    ]).expect("Ошибка! Не удалось задать позицию для прицела!");
-                    target.draw(
-                        &figure_points,
-                        &glium::index::NoIndices(glium::index::PrimitiveType::Points),
-                        &shaders.random_shader,
-                        &figure_point_uniforms,
-                        &params,
-                    ).expect("Ошибка! Не удалось отрисовать точку для задания фигуры!");
-                }
-
-                params.point_size = Some(self.p_j.aim.aim_size);
-                let aim_uniforms = uniform! {
-                    matrix: self.cam.transform_matrix,
-                    x_off: self.cam.offset_x,
-                    y_off: self.cam.offset_y,
-                    r_rand: 1.0_f32,
-                    g_rand: 0.0_f32,
-                    b_rand: 0.0_f32,
-                };
-                
-                let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.x, self.aim.y] }])
-                    .expect("Ошибка! Не удалось задать позицию для прицела!");
+            if let Some(indices) = indices {
+                let indices = glium::IndexBuffer::new(
+                    display,
+                    primitive,
+                    &indices,
+                ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
+                target.draw(&positions, &indices, &shaders.random_shader, &uniforms, &params)
+                    .expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
+            } else {
                 target.draw(
-                    &aim_position,
-                    &glium::index::NoIndices(glium::index::PrimitiveType::Points),
+                    &positions,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
                     &shaders.random_shader,
-                    &aim_uniforms,
-                    &params,
-                ).expect("Ошибка! Не удалось отрисовать прицел!");
+                    &uniforms,
+                    &params
+                ).expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
+            }
+        }
+        // ---------------------------- Отрисовка синтетических фигур ----------------------------
 
-                target.finish()
-                    .expect("Ошибка! Не удалось закончить отрисовку кадра!");
-
-                return;
-            },
-        };
-
-        
-        let mut params = glium::DrawParameters {
-            polygon_mode: glium::draw_parameters::PolygonMode::Fill,
-            multisampling: multisampling_on,
-            dithering: dithering_on,
-            smooth: Some(glium::draw_parameters::Smooth::Nicest),
-            ..Default::default()
-        };
-        let field_uniforms = uniform! {
-            matrix: self.cam.transform_matrix,
-            x_off: self.cam.offset_x - self.p_j.map_offset.x,
-            y_off: self.cam.offset_y - self.p_j.map_offset.y,
-        };
-        target.draw(field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &Default::default())
-            .expect("Ошибка! Не удлаось отрисовать поле!");
-        params.polygon_mode = polygon_mode;
-        let uniforms = uniform! {
+        // ============================ Отрисовка синтетических точек ============================
+        params.smooth = None;
+        params.point_size = Some(self.p_j.aim.aim_size / 2.);
+        params.polygon_mode = glium::draw_parameters::PolygonMode::Point;
+        let figure_point_uniforms = uniform! {
             matrix: self.cam.transform_matrix,
             x_off: self.cam.offset_x,
             y_off: self.cam.offset_y,
+            r_rand: rgb.0,
+            g_rand: rgb.1,
+            b_rand: rgb.2,
         };
-        target.draw(positions, indices_buildings, &shaders.default_shader, &uniforms, &params)
-            .expect("Ошибка! Не удалось отрисовать объект(ы)!");
-        target.finish()
-            .expect("Ошибка! Не удалось закончить отрисовку кадра!");
+
+        for point in &self.synthetic_datas_points {
+            let figure_points = glium::VertexBuffer::new(display, &[
+                super::Vertex { position: [point.x, point.y] },
+            ]).expect("Ошибка! Не удалось задать позицию для прицела!");
+            target.draw(
+                &figure_points,
+                &glium::index::NoIndices(glium::index::PrimitiveType::Points),
+                &shaders.random_shader,
+                &figure_point_uniforms,
+                &params,
+            ).expect("Ошибка! Не удалось отрисовать точку для задания фигуры!");
+        }
+        // ---------------------------- Отрисовка синтетических точек ----------------------------
+        // ============================ Отрисовка прицела ============================
+        params.point_size = Some(self.p_j.aim.aim_size);
+        let aim_uniforms = uniform! {
+            matrix: self.cam.transform_matrix,
+            x_off: self.cam.offset_x,
+            y_off: self.cam.offset_y,
+            r_rand: 1.0_f32,
+            g_rand: 0.0_f32,
+            b_rand: 0.0_f32,
+        };
+
+        let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.x, self.aim.y] }])
+            .expect("Ошибка! Не удалось задать позицию для прицела!");
+        target.draw(
+            &aim_position,
+            &glium::index::NoIndices(glium::index::PrimitiveType::Points),
+            &shaders.random_shader,
+            &aim_uniforms,
+            &params,
+        ).expect("Ошибка! Не удалось отрисовать прицел!");
+
+        params.smooth = Some(glium::draw_parameters::Smooth::Nicest);
+        // ---------------------------- Отрисовка прицела ----------------------------
+
+        target.finish().expect("Ошибка! Не удалось отрисовать кадр!");
     }
 
     pub fn move_aim(&mut self, action: control::MoveAim) {
