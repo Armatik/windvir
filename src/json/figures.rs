@@ -93,10 +93,10 @@ impl Default for Polygon {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PersistentF {
-    pub circles: Vec<Circle>,
-    pub rectangles: Vec<Rectangle>,
-    pub lines: Vec<Line>,
-    pub polygons: Vec<Polygon>,
+    pub circles: Option<Vec<Circle>>,
+    pub rectangles: Option<Vec<Rectangle>>,
+    pub lines: Option<Vec<Line>>,
+    pub polygons: Option<Vec<Polygon>>,
 }
 
 
@@ -123,7 +123,10 @@ impl Default for PersistentF {
             data
         } else {
             Self {
-                ..Default::default()
+                circles: None,
+                rectangles: None,
+                lines: None,
+                polygons: None,
             }
         }
     }

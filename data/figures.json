@@ -1,37 +1,6 @@
 {
-    "circles": [
-        {
-            "x": 0.0,
-            "y": 0.0,
-            "radius": 0.0,
-            "is_fill": true,
-            "rgb": [0.0, 0.0, 0.0]
-        }
-    ],
-    "rectangles": [
-        {
-            "left_up_angle_x": 0.0,
-            "left_up_angle_y": 0.0,
-            "right_down_angle_x": 0.0,
-            "right_down_angle_y": 0.0,
-            "is_fill": true,
-            "rgb": [0.0, 0.0, 0.0]
-        }
-    ],
-    "lines": [
-        {
-            "p0_x": 0.0,
-            "p0_y": 0.0,
-            "p1_x": 0.0,
-            "p1_y": 0.0,
-            "rgb": [0.0, 0.0, 0.0]
-        }
-    ],
-    "polygons": [
-        {
-            "points": [[0.0, 0.0]],
-            "is_fill": true,
-            "rgb": [0.0, 0.0, 0.0]
-        }
-    ]
+    "circles": [],
+    "rectangles": [],
+    "lines": [],
+    "polygons": []
 }
