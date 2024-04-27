@@ -36,6 +36,7 @@ typedef struct
 } BuildingsVec;
 
 
+/// `main` функция
 BuildingsVec
 changeVertex(BuildingsVec data);
 
