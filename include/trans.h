@@ -42,6 +42,9 @@ changeVertex(BuildingsVec data);
 bool
 is_lefter(PointC* a, PointC* b, PointC* main); // Говорит находится ли точка b левее точки a относительно точки main
 
+int
+compare_buildings(const void *b1, const void *b2); // Для сортировки зданий по левой границе
+
 void
 swap_points(PointC* a, PointC* b); // Меняет местами значения точек a и b
 

@@ -1,9 +1,25 @@
 //#include <trans.h>
 #include "../../include/trans.h"
+#include <stdio.h>
 
 bool
 is_lefter(PointC *a, PointC *b, PointC *main){
 	return ( ((a->y - main->y) / (a->x - main->x) > (b->y - main->y) / (b->x - main->x)) );
+}
+
+int
+compare_buildings(const void *b1, const void *b2){
+	double x1 = ((BuildingC*)b1)->startPoint.x;
+	double x2 = ((BuildingC*)b2)->startPoint.x;
+
+	if(x1 < x2){
+		return -1;
+	}
+	else{
+		return 1;
+	}
+
+	return 0;
 }
 
 void
@@ -126,6 +142,9 @@ changeVertex(BuildingsVec data)
 	for(uint64_t i = 0; i < data.lenBuildings; ++i){
 		grahams_algorithm(&(data.buildings[i]));
 	}
+
+	// Сортировка зданий по левой границе
+	qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
 
 	return data;
 }
