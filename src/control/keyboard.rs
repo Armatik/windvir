@@ -105,23 +105,23 @@ impl App {
             E_KEY => self.transform_map(graphics::TransformAction::RotateRight),
             Z_KEY => self.transform_map(graphics::TransformAction::Increase),
             X_KEY => self.transform_map(graphics::TransformAction::Reduce),
-            C_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+            C_KEY => {
                 check_last_for_default!(self);
                 self.define_figure(synthetic::Circle::new(), "Выберите размер для окружности, используя цифры 1..=9");
 
                 need_rerender = false;
             },
-            R_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
+            R_KEY => if input.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
                 self.define_figure(synthetic::Rectangle::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
                 self.spawn_point(false);
             },
-            L_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
+            L_KEY => if input.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
                 self.define_figure(synthetic::Segment::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
                 self.spawn_point(false);
             },
-            F_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn && input.state == glutin::event::ElementState::Released {
+            F_KEY => if input.state == glutin::event::ElementState::Released {
                 if self.is_start_polygon() {
                     check_last_for_default!(self);
                     self.define_figure(synthetic::Polygon::new(), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
@@ -131,30 +131,16 @@ impl App {
                 }
             },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
-            value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) =>
-                if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                    self.spawn_circle(value as f32);                               
-            },
-            PLUS_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Top);
-            },
-            LEFT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Left);
-            },
-            RIGHT_BRACKET => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Right);
-            },
-            QUOTE_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Down);
-            },
-            DOT_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Default);
-            },
-            RETURN_KEY => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
-                input.state == glutin::event::ElementState::Released {
-                    check_last_for_default!(point self);
+            value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f32),
+            PLUS_KEY => self.move_aim(super::MoveAim::Top),
+            LEFT_BRACKET => self.move_aim(super::MoveAim::Left),
+            RIGHT_BRACKET => self.move_aim(super::MoveAim::Right),
+            QUOTE_KEY => self.move_aim(super::MoveAim::Down),
+            DOT_KEY => self.move_aim(super::MoveAim::Default),
+            RETURN_KEY => if input.state == glutin::event::ElementState::Released {
+                check_last_for_default!(point self);
 
-                    self.spawn_point(false);
+                self.spawn_point(false);
             },
             _ => {},
         }
@@ -185,7 +171,7 @@ impl App {
                     };
 
                     match data.change_primitive() {
-                        None => log::warn!("Нельзя изменить режим отображения для последней созданной фигуры"),
+                        Err(_) => log::warn!("Нельзя изменить режим отображения для последней созданной фигуры"),
                         _ => {},
                     };
                 } else {
@@ -203,52 +189,46 @@ impl App {
             glutin::event::VirtualKeyCode::E => self.transform_map(graphics::TransformAction::RotateRight),
             glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
             glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
-            glutin::event::VirtualKeyCode::C => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+            glutin::event::VirtualKeyCode::C => {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Circle::new(None), "Выберите размер для окружности, используя цифры 1..=9");
+                self.define_figure(synthetic::Circle::new(), "Выберите размер для окружности, используя цифры 1..=9");
 
                 need_rerender = false;
             },
-            glutin::event::VirtualKeyCode::R => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+            glutin::event::VirtualKeyCode::R => if key.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Rectangle::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
-
-                need_rerender = false
+                self.define_figure(synthetic::Rectangle::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
+                self.spawn_point(false);
             },
-            glutin::event::VirtualKeyCode::L => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
+            glutin::event::VirtualKeyCode::L => if key.state == glutin::event::ElementState::Released {
                 check_last_for_default!(self);
-                self.define_figure(synthetic::Segment::new(None), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
-
-                need_rerender = false;
+                self.define_figure(synthetic::Segment::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
+                self.spawn_point(false);
+            },
+            glutin::event::VirtualKeyCode::F => if key.state == glutin::event::ElementState::Released {
+                if self.is_start_polygon() {
+                    check_last_for_default!(self);
+                    self.define_figure(synthetic::Polygon::new(), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
+                    self.spawn_point(false);
+                } else if self.is_polygon() {
+                    self.spawn_point(true);
+                }
             },
             glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
             value @ (glutin::event::VirtualKeyCode::Key1 | glutin::event::VirtualKeyCode::Key2 | 
                 glutin::event::VirtualKeyCode::Key3 | glutin::event::VirtualKeyCode::Key4 |
                 glutin::event::VirtualKeyCode::Key5 | glutin::event::VirtualKeyCode::Key6 |
                 glutin::event::VirtualKeyCode::Key7 | glutin::event::VirtualKeyCode::Key8 |
-                glutin::event::VirtualKeyCode::Key9) =>  if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                    self.spawn_circle(value as u32 as f32);
-            },
-            glutin::event::VirtualKeyCode::Plus => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Top);
-            },
-            glutin::event::VirtualKeyCode::LBracket => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Left);
-            },
-            glutin::event::VirtualKeyCode::RBracket => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Right);
-            },
-            glutin::event::VirtualKeyCode::Apostrophe => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Down);
-            },
-            glutin::event::VirtualKeyCode::Period => if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
-                self.move_aim(super::MoveAim::Default);
-            },
-            glutin::event::VirtualKeyCode::Return => if self.cam.display_type == graphics::DisplayType::ObjectSpawn &&
-                key.state == glutin::event::ElementState::Released {
-                    check_last_for_default!(point self);
+                glutin::event::VirtualKeyCode::Key9) =>  self.spawn_circle(value as u32 as f32),
+            glutin::event::VirtualKeyCode::Plus => self.move_aim(super::MoveAim::Top),
+            glutin::event::VirtualKeyCode::LBracket => self.move_aim(super::MoveAim::Left),
+            glutin::event::VirtualKeyCode::RBracket => self.move_aim(super::MoveAim::Right),
+            glutin::event::VirtualKeyCode::Apostrophe => self.move_aim(super::MoveAim::Down),
+            glutin::event::VirtualKeyCode::Period => self.move_aim(super::MoveAim::Default),
+            glutin::event::VirtualKeyCode::Return => if key.state == glutin::event::ElementState::Released {
+                check_last_for_default!(point self);
 
-                    self.spawn_point();
+                self.spawn_point(false);
             },
             _ => {},
         };
