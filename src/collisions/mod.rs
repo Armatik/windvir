@@ -10,7 +10,7 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 #[inline]
 fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f32 {
-	(&first.offset - &second.offset).cross_product(&second.offset)/Vector::cross_product(first,second)
+	(&second.position - &first.position).cross_product(&second.offset)/Vector::cross_product(first,second)
 }
 
 
@@ -73,7 +73,8 @@ fn check_building_intersection(first: &Building, second: &Building) -> bool {
 
 // Оптимизировано
 fn optimize_map(sorted_map: &Vec<Building>) -> () {
-	for i in 0usize..sorted_map.len().saturating_sub(1usize) {
+	if sorted_map.len() < 2usize { return; }
+	for i in 0usize..sorted_map.len() - 1usize {
 		for n in i + 1usize..sorted_map.len() {
 			if &sorted_map[i].end_point.x < &sorted_map[n].start_point.x { break; }
 			if check_building_intersection(&sorted_map[i], &sorted_map[n]) {
