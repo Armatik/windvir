@@ -5,14 +5,13 @@ use std::fs;
 use glium::{
     Display,
     Surface,
-    VertexBuffer,
 };
 
 
 pub struct Shaders {
-    pub default_shader: glium::Program,
-    pub random_shader: glium::Program,
-    pub field_shader: glium::Program,
+    default_shader: glium::Program,
+    random_shader: glium::Program,
+    field_shader: glium::Program,
 }
 
 
@@ -99,8 +98,7 @@ impl App {
         &self,
         display: &Display,
         params: &mut glium::DrawParameters,
-        positions: &VertexBuffer<super::Vertex>,
-        field_positions: &VertexBuffer<super::ShaderVertex>,
+        positions: &app::Positions,
         indices: &app::FigureIndices<T>,
         shaders: &Shaders,
     ) where T: glium::index::Index {
@@ -121,7 +119,7 @@ impl App {
                 x_off: self.cam.offset_x - self.p_j.map_offset.x,
                 y_off: self.cam.offset_y - self.p_j.map_offset.y,
             };
-            target.draw(field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &params)
+            target.draw(&positions.field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &params)
                 .expect("Ошибка! Не удлаось отрисовать поле!");
             // ---------------------------- Отрисовка поля ----------------------------
             // ============================ Отрисовка зданий ============================
@@ -131,9 +129,11 @@ impl App {
                 super::DisplayType::Lines => glium::draw_parameters::PolygonMode::Line,
                 _ => unreachable!("Невозможна отрисовка зданий в песочнице!"),
             };
-            let indices_buildings = match self.cam.display_type {
-                super::DisplayType::TrianglesFill | super::DisplayType::TrianglesFillLines => &indices.buildings_indices_triangulate,
-                super::DisplayType::Lines => &indices.buildings_indices_line,
+            let (indices_buildings, positions_buildings) = match self.cam.display_type {
+                super::DisplayType::TrianglesFill | super::DisplayType::TrianglesFillLines => (
+                    &indices.buildings_indices_triangulate, &positions.change_positions,
+                ),
+                super::DisplayType::Lines => (&indices.buildings_indices_line, &positions.default_positions),
                 _ => unreachable!("Невозможна отрисовка зданий в песочнице"),
             };
 
@@ -142,7 +142,7 @@ impl App {
                 x_off: self.cam.offset_x,
                 y_off: self.cam.offset_y,
             };
-            target.draw(positions, indices_buildings, &shaders.default_shader, &buildings_uniforms, &params)
+            target.draw(positions_buildings, indices_buildings, &shaders.default_shader, &buildings_uniforms, &params)
                 .expect("Ошибка! Не удалось отрисовать объект(ы)!");
             // ---------------------------- Отрисовка зданий ----------------------------
         }

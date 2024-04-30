@@ -23,20 +23,65 @@ impl<T> FigureIndices<T> where T: glium::index::Index {
 }
 
 
+pub struct Positions {
+    pub change_positions: glium::VertexBuffer<graphics::Vertex>,
+    pub field_positions: glium::VertexBuffer<graphics::ShaderVertex>,
+    pub default_positions: glium::VertexBuffer<graphics::Vertex>,
+}
+
+
+impl Positions {
+    pub fn new(
+        change_positions: glium::VertexBuffer<graphics::Vertex>,
+        field_positions: glium::VertexBuffer<graphics::ShaderVertex>,
+        default_positions: glium::VertexBuffer<graphics::Vertex>,
+    ) -> Self {
+        Self {
+            change_positions,
+            field_positions,
+            default_positions,
+        }
+    }
+}
+
+
 impl App {
-    pub fn get_buildings_vertices(&self) -> Vec<graphics::Vertex> {
+    fn get_buildings_vertices(&self) -> Vec<graphics::Vertex> {
         let mut shape = Vec::<graphics::Vertex>::with_capacity(self.buildings.len());
 
-        for build in &self.buildings {
-            for side in &build.sides {
-                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x, side.position.y]) })
+        for building in &self.buildings {
+            for side in &building.sides {
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x, side.position.y]) });
             }
         }
 
         shape
     }
 
-    pub fn init_field(
+    fn get_default_buildings_vertices(default_buildings: &Vec<super::Building>) -> Vec<graphics::Vertex> {
+        let mut shape = Vec::<graphics::Vertex>::with_capacity(default_buildings.len());
+
+        for building in default_buildings {
+            for side in &building.sides {
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x, side.position.y]) });
+            }
+        }
+
+        shape
+    }
+
+    pub fn init_positions(&self, display: &glium::Display, default_buildings: &Vec<super::Building>) -> Result<Positions, Box<dyn std::error::Error>> {
+        let shape = self.get_buildings_vertices();
+        let building_vertices = glium::VertexBuffer::new(display, &shape)?;
+        let default_shape = Self::get_default_buildings_vertices(default_buildings);
+        let default_building_vertices = glium::VertexBuffer::new(display, &default_shape)?;
+
+        let field_positions = self.init_field(self.rainbow_field, display)?;
+
+        Ok(Positions::new(building_vertices, field_positions, default_building_vertices))
+    }
+
+    fn init_field(
         &self,
         is_color_rainbow: bool,
         display: &glium::Display,
@@ -61,8 +106,8 @@ impl App {
         ])
     }
 
-    pub fn init_indices(&self, display: &glium::Display) -> Result<FigureIndices<u16>, glium::index::BufferCreationError> {
-        let indices_line = graphics::get_line_indices(&self.buildings);
+    pub fn init_indices(&self, display: &glium::Display, default_buildings: Vec<super::Building>) -> Result<FigureIndices<u16>, glium::index::BufferCreationError> {
+        let indices_line = graphics::get_line_indices(&default_buildings);
         let indices_triangulate = graphics::get_triangulation_indices(&self.buildings);
 
         let indices_line = glium::IndexBuffer::new(

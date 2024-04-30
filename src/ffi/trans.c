@@ -1,5 +1,6 @@
 //#include <trans.h>
 #include "../../include/trans.h"
+#include <stdint.h>
 #include <stdio.h>
 
 bool
@@ -154,13 +155,10 @@ changeVertex(BuildingsVec data)
 void
 freeBuildings(BuildingsVec data)
 {
-	for (unsigned i = 0; i < data.lenBuildings; ++i)
-	{
-		for (unsigned j = 0; j < data.buildings[i].lenVertex; ++j)
-		{
-			free((void *)data.buildings[i].sides);
-		}		
-	}
+	// for (uint64_t i = 0; i < data.lenBuildings; ++i)
+	// {
+		// free((void *)data.buildings[i].sides);
+	// }
 
-	free((void *)data.buildings);
+	free(data.buildings);
 }

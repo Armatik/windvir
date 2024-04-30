@@ -128,17 +128,14 @@ impl App {
         
     }
 
-    pub fn start_app(mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn start_app(mut self, default_buildings: Vec<defs::Building>) -> Result<(), Box<dyn std::error::Error>> {
         let (display, event_loop) = self.init_window()?;
 
         // ================================ Инициализация индексов и вершин ================================
-        let shape = self.get_buildings_vertices();
-        let building_vertices = glium::VertexBuffer::new(&display, &shape)?;
-        
-        let field_positions = self.init_field(self.rainbow_field, &display)?;
+        let positions = self.init_positions(&display, &default_buildings)?;
         let shaders = self.init_shaders(&display)?;
 
-        let indices = self.init_indices(&display)?;
+        let indices = self.init_indices(&display, default_buildings)?;
 
         self.init_figures_cfg();
         // =================================================================================================
@@ -148,8 +145,7 @@ impl App {
         self.window_loop(
             event_loop,
             display,
-            building_vertices,
-            field_positions,
+            positions,
             shaders,
             indices,
         )
@@ -210,6 +206,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let p_j = default_json::PersistentJ::default();
     let mut ffi_buildigs = Vec::<defs::Building>::with_capacity(p_g.features.len());
     let mut ffi_out = ffi::BuildingsVec::default();
+    let default_buildings = crate::App::trans_persistent(&p_g);
 
     for arg in args {
         if args_len > 1 {
@@ -244,11 +241,11 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         App::new(p_g, p_j, Some(ffi_buildigs), rainbow)
     };
 
-    app.start_app()?;
+    app.start_app(default_buildings)?;
 
     if !ffi_out.buildings.is_null() {
         unsafe { ffi::freeBuildings(ffi_out); };
     }
-    
+
     Ok(())
 }

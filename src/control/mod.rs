@@ -2,11 +2,11 @@ mod keyboard;
 
 use crate::{
     App,
-    graphics::{self, Vertex, app as graphics_app},
+    graphics::app as graphics_app,
     defs::app as defs_app,
 };
 use glium::{
-    glutin::{self, event_loop::ControlFlow}, Display, VertexBuffer
+    glutin::{self, event_loop::ControlFlow}, Display,
 };
 
 
@@ -24,8 +24,7 @@ impl App {
         mut self,
         event_loop: glutin::event_loop::EventLoop<()>,
         display: Display,
-        positions: VertexBuffer<Vertex>,
-        field_positions: VertexBuffer<graphics::ShaderVertex>,
+        positions: defs_app::Positions,
         shaders: graphics_app::Shaders,
         indices: defs_app::FigureIndices<T>,
     ) -> ! where T: glium::index::Index {
@@ -54,7 +53,6 @@ impl App {
                             &display,
                             &mut params,
                             &positions,
-                            &field_positions,
                             &indices,
                             &shaders,
                         );
@@ -63,7 +61,6 @@ impl App {
                         &display,
                         &mut params,
                         &positions,
-                        &field_positions,
                         &indices,
                         &shaders,
                     ),
@@ -74,7 +71,6 @@ impl App {
                                 &display,
                                 &mut params,
                                 &positions,
-                                &field_positions,
                                 &indices,
                                 &shaders,
                             );
@@ -90,7 +86,6 @@ impl App {
                             &display,
                             &mut params,
                             &positions,
-                            &field_positions,
                             &indices,
                             &shaders,
                         );

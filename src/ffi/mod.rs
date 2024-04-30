@@ -156,7 +156,6 @@ pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -
     }
 
     Ok(out)
-
 }
 
 
