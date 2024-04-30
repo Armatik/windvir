@@ -155,10 +155,10 @@ changeVertex(BuildingsVec data)
 void
 freeBuildings(BuildingsVec data)
 {
-	// for (uint64_t i = 0; i < data.lenBuildings; ++i)
-	// {
-		// free((void *)data.buildings[i].sides);
-	// }
+	for (uint64_t i = 0; i < data.lenBuildings; ++i)
+	{
+		free((void *)data.buildings[i].sides);
+	}
 
 	free(data.buildings);
 }
