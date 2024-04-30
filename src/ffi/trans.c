@@ -10,8 +10,8 @@ is_lefter(PointC *a, PointC *b, PointC *main){
 
 int
 compare_buildings(const void *b1, const void *b2){
-	double x1 = ((BuildingC*)b1)->startPoint.x;
-	double x2 = ((BuildingC*)b2)->startPoint.x;
+	float x1 = ((BuildingC*)b1)->startPoint.x;
+	float x2 = ((BuildingC*)b2)->startPoint.x;
 
 	if(x1 < x2){
 		return -1;
