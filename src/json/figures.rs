@@ -118,7 +118,7 @@ impl Default for PersistentF {
                 .expect(&format!("Ошибка! Не удалось прочитать файл по пути {}", path));
 
             let data: PersistentF = serde_json::from_slice(&data)
-                .expect(&format!("Ошибка! Не удалось прочитать GEOJSON по пути {}", path));
+                .expect(&format!("Ошибка! Не удалось прочитать JSON по пути {}", path));
 
             data
         } else {
