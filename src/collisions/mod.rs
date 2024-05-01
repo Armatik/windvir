@@ -11,7 +11,7 @@ fn _check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
     let position_difference = &second.position - &first.position;
-    let cross_product = Vector::cross_product(first,second);
+    let cross_product = Vector::cross(first,second);
     let s1 = position_difference.cross(&second.offset);
     let s2 = position_difference.cross(&first.offset);
     s1*s1 < s1*cross_product && s2*s2 < s2*cross_product
@@ -20,7 +20,7 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 #[inline]
 fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f32 {
-    (&second.position - &first.position).cross(&second.offset)/Vector::cross_product(first,second)
+    (&second.position - &first.position).cross(&second.offset)/Vector::cross(first,second)
 }
 
 

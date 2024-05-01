@@ -96,7 +96,7 @@ impl Vector {
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> f32 {
+    pub fn cross(&self, other: &Self) -> f32 {
         PositionVector::cross(&self.offset, &other.offset)
     }
 
