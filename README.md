@@ -1,16 +1,28 @@
 # WINDVIR
 The simplest 2D simulation of wind currents
-For compile and run project you must use command
+For compile and run project you must use command on UNIX-like
 ```
 RUST_LOG=windvir cargo run --release
 ```
-If you want to use `FFI` protocol, then you need compile with command
+On Windows
+```
+cargo run --release
+```
+If you want to use `FFI` protocol, then you need compile with command on UNIX-like
 ```
 RUST_LOG=windvir cargo run --release -- -c
 ```
-If you want to start application with rainbow field, then you need compile with command
+On Windows
+```
+cargo run --release -- -c
+```
+If you want to start application with rainbow field, then you need compile with command on UNIX-like
 ```
 RUST_LOG=windvir cargo run --release -- -r
+```
+On Windows
+```
+cargo run --release -- -r
 ```
 ## Controls
 `W | ArrowUp` - move up
