@@ -1,7 +1,7 @@
 use crate::defs::{Building, Vector};
 
 
-fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
+fn check_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
 	let s1 = get_segment_division_parameter(first, second);
 	let s2 = get_segment_division_parameter(second, first);
 	s1*s1 < s1 && s2*s2 < s2
@@ -9,7 +9,7 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 
 #[inline]
-fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f32 {
+fn get_segment_division_parameter(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
 	(&first.offset - &second.offset).cross_product(&second.offset)/Vector::cross_product(first,second)
 }
 

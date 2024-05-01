@@ -14,6 +14,7 @@ simple_logger = "4.3.3"
 earcutr = "0.4.2"
 rand = "0.8.5"
 image = "0.25.1"
+num = "0.4.2"
 
 
 [build-dependencies]

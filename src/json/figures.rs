@@ -3,9 +3,9 @@ use super::{Serialize, Deserialize, path, fs, PathBuf};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Circle {
-    pub x: f32,
-    pub y: f32,
-    pub radius: f32,
+    pub x: f64,
+    pub y: f64,
+    pub radius: f64,
     pub is_fill: bool,
     pub rgb: [f32; 3],
 }
@@ -26,10 +26,10 @@ impl Default for Circle {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Rectangle {
-    pub left_up_angle_x: f32,
-    pub left_up_angle_y: f32,
-    pub right_down_angle_x: f32,
-    pub right_down_angle_y: f32,
+    pub left_up_angle_x: f64,
+    pub left_up_angle_y: f64,
+    pub right_down_angle_x: f64,
+    pub right_down_angle_y: f64,
     pub is_fill: bool,
     pub rgb: [f32; 3],
 }
@@ -51,10 +51,10 @@ impl Default for Rectangle {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Line {
-    pub p0_x: f32,
-    pub p0_y: f32,
-    pub p1_x: f32,
-    pub p1_y: f32,
+    pub p0_x: f64,
+    pub p0_y: f64,
+    pub p1_x: f64,
+    pub p1_y: f64,
     pub rgb: [f32; 3],
 }
 
@@ -74,7 +74,7 @@ impl Default for Line {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Polygon {
-    pub points: Vec<Vec<f32>>,
+    pub points: Vec<Vec<f64>>,
     pub is_fill: bool,
     pub rgb: [f32; 3],
 }

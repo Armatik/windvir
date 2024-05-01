@@ -26,8 +26,8 @@ pub struct App {
     window_size: (WindowWidth, WindowHeight),
     buildings: Vec<defs::Building>,
     synthetic_data: LinkedList<Box<dyn synthetic::SyntheticData>>,
-    synthetic_datas_points: Vec<defs::Point>,
-    aim: defs::Point,
+    synthetic_datas_points: Vec<defs::Point<f64>>,
+    aim: defs::Point<f32>,
     rainbow_field: bool,
 }
 
@@ -67,8 +67,8 @@ impl App {
 
     fn init_figures_cfg(&mut self) {
         let json = figures::PersistentF::default();
-        let x_off = self.p_j.map_offset.x;
-        let y_off = self.p_j.map_offset.y;
+        let x_off = self.p_j.map_offset.x as f64;
+        let y_off = self.p_j.map_offset.y as f64;
 
         if let Some(circles) = json.circles {
             circles.iter().for_each(|x| {
@@ -116,7 +116,7 @@ impl App {
         
         if let Some(polygons) = json.polygons {
             polygons.iter().for_each(|x| {
-                let points = x.points.clone().iter().map(|x| vec![x[0] - x_off, x[1] - y_off]).collect::<Vec<Vec<f32>>>();
+                let points = x.points.clone().iter().map(|x| vec![x[0] - x_off, x[1] - y_off]).collect::<Vec<Vec<f64>>>();
                 let rgb = x.rgb;
     
                 self.define_figure(

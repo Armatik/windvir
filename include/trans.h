@@ -8,8 +8,8 @@ extern "C" {
 
 typedef struct
 {
-	float x;
-	float y;
+	double x;
+	double y;
 } PointC;
 
 
