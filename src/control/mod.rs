@@ -93,7 +93,7 @@ impl App {
                     _ => {},
                 }
             },
-            // #[cfg(windows)]
+            #[cfg(windows)]
             glutin::event::Event::DeviceEvent { event, .. } => {
                 match event {
                     glutin::event::DeviceEvent::Key(key) => {
