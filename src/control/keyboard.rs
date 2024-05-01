@@ -219,7 +219,7 @@ impl App {
                 glutin::event::VirtualKeyCode::Key3 | glutin::event::VirtualKeyCode::Key4 |
                 glutin::event::VirtualKeyCode::Key5 | glutin::event::VirtualKeyCode::Key6 |
                 glutin::event::VirtualKeyCode::Key7 | glutin::event::VirtualKeyCode::Key8 |
-                glutin::event::VirtualKeyCode::Key9) =>  self.spawn_circle(value as u32 as f32),
+                glutin::event::VirtualKeyCode::Key9) =>  self.spawn_circle(value as u32 as f64),
             glutin::event::VirtualKeyCode::Plus => self.move_aim(super::MoveAim::Top),
             glutin::event::VirtualKeyCode::LBracket => self.move_aim(super::MoveAim::Left),
             glutin::event::VirtualKeyCode::RBracket => self.move_aim(super::MoveAim::Right),

@@ -93,7 +93,7 @@ impl App {
                     _ => {},
                 }
             },
-            #[cfg(windows)]
+            // #[cfg(windows)]
             glutin::event::Event::DeviceEvent { event, .. } => {
                 match event {
                     glutin::event::DeviceEvent::Key(key) => {
@@ -103,7 +103,7 @@ impl App {
                         };
 
                         if need_rerender {
-                            self.render_frame(&display, &positions, &field_positions, &indices, &shaders);
+                            self.render_frame(&display, &mut params, &positions, &indices, &shaders);
                         }
                     },
                     _ => {},
