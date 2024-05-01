@@ -2,7 +2,7 @@ pub mod synthetic;
 pub mod app;
 pub mod error;
 
-use std::ops::{Add,Sub};
+use std::ops::{Add, Sub, Mul};
 
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -97,7 +97,7 @@ impl Vector {
 
     #[inline]
     pub fn cross_product(&self, other: &Self) -> f32 {
-        PositionVector::cross_product(&self.offset, &other.offset)
+        PositionVector::cross(&self.offset, &other.offset)
     }
 
     pub fn get_right_normal(&self) -> PositionVector {
@@ -172,6 +172,21 @@ impl Sub for &PositionVector {
     }
 }
 
+impl Mul<f32> for &PositionVector {
+    type Output = PositionVector;
+
+    fn mul(self, multiplier: f32) -> Self::Output {
+        PositionVector::new(multiplier*self.x, multiplier*self.y)
+    }
+}
+
+impl Mul<&PositionVector> for f32 {
+    type Output = PositionVector;
+
+    fn mul(self, multiplicand: &PositionVector) -> Self::Output {
+        PositionVector::new(self*multiplicand.x, self*multiplicand.y)
+    }
+}
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct PositionVector {
@@ -189,64 +204,84 @@ impl PositionVector {
         }
     }
 
+    pub fn multiply_by_scalar(&self, multiplier: f32) -> Self {
+        PositionVector::new(multiplier*self.x, multiplier*self.y)
+    }
+
     pub fn center_point(&self, other: &Self) -> Self {
         Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> f32 {
+    pub fn cross(&self, other: &Self) -> f32 {
         other.x*self.y - self.x*other.y
     }
 
     #[inline]
-    pub fn dot_product(&self, other: &Self) -> f32 {
+    pub fn dot(&self, other: &Self) -> f32 {
         other.x*self.x + self.x*other.x
     }
 
     // Если можно не использовать, лучше не использовать
     #[inline]
-    pub fn get_length(&self) -> f32 {
+    pub fn get_magnitude(&self) -> f32 {
         f32::sqrt(self.x * self.x + self.y * self.y)
     }
 
     #[inline]
-    pub fn get_squared_length(&self) -> f32 {
+    pub fn get_squared_magnitude(&self) -> f32 {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
     pub fn get_cos(&self) -> f32 {
-        self.x/self.get_length()
+        self.x/self.get_magnitude()
     }
 
     #[inline]
     pub fn get_sin(&self) -> f32 {
-        self.y/self.get_length()
+        self.y/self.get_magnitude()
     }
 
     pub fn get_cos_sin(&self) -> (f32, f32) {
-        let length = self.get_length();
+        let length = self.get_magnitude();
         (self.x/length,self.y/length)
+    }
+
+    pub fn get_unit_vector(&self) -> Self {
+        let length = self.get_magnitude();
+        Self::new(self.x/length,self.y/length)
     }
 
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
     #[inline]
     pub fn get_square(&self, other: &Self) -> f32 {
-        f32::abs(Self::cross_product(self, other)) / 2.
+        f32::abs(Self::cross(self, other)) / 2.
     }
 
     #[inline]
     pub fn get_double_square(&self, other: &Self) -> f32 {
-        Self::cross_product(self, other).abs()
+        Self::cross(self, other).abs()
     }
 
     #[inline]
     pub fn get_cos_between_vectors(&self, other: &Self) -> f32 {
-        Self::dot_product(self, other)/(self.get_length()*other.get_length())
+        Self::dot(self, other)/(self.get_magnitude()*other.get_magnitude())
     }
 
     #[inline]
     pub fn get_sin_between_vectors(&self, other: &Self) -> f32 {
-        Self::cross_product(self, other)/(self.get_length()*other.get_length())
+        Self::cross(self, other)/(self.get_magnitude()*other.get_magnitude())
     }
+
+    #[inline]
+    pub fn project_vector_on_vector(&self, other: &Self) -> PositionVector {
+        Self::dot(self, other)/other.get_squared_magnitude()*other
+    }
+    
+    #[inline]
+    pub fn project_vector_on_axis(&self, unit_vector: &Self) -> PositionVector {
+        Self::dot(self, unit_vector)*unit_vector
+    }
+
 }
