@@ -1,5 +1,6 @@
 # WINDVIR
 The simplest 2D simulation of wind currents
+
 For compile and run project you must use command on UNIX-like
 ```
 RUST_LOG=windvir cargo run --release
