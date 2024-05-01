@@ -5,21 +5,21 @@ use crate::defs;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-struct PointC {
-    x: f32,
-    y: f32,
+struct PointC<T> where T: num::Float + Default {
+    x: T,
+    y: T,
 }
 
 
-impl PointC {
-    fn new(x: f32, y: f32) -> Self {
+impl<T> PointC<T> where T: num::Float + Default {
+    fn new(x: T, y: T) -> Self {
         Self {
             x,
             y,
         }
     }
 
-    pub fn repr_rust(self) -> defs::PositionVector {
+    pub fn repr_rust(self) -> defs::PositionVector<T> {
         defs::PositionVector {
             x: self.x,
             y: self.y,
@@ -31,17 +31,17 @@ impl PointC {
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct BuildingC {
-    start_point: PointC,
-    end_point: PointC,
-    sides: *mut VectorC,
+    start_point: PointC<f64>,
+    end_point: PointC<f64>,
+    sides: *mut VectorC<f64>,
     len_vertex: u64,
 }
 
 
 impl BuildingC {
     unsafe fn new(data: &mut defs::Building) -> Self {
-        let layout = Layout::array::<VectorC>(data.sides.len()).expect("Выделено неверное кол-во памяти");
-        let out_data = unsafe { alloc(layout).cast::<VectorC>() };
+        let layout = Layout::array::<VectorC<f64>>(data.sides.len()).expect("Выделено неверное кол-во памяти");
+        let out_data = unsafe { alloc(layout).cast::<VectorC<f64>>() };
 
         if out_data.is_null() {
             panic!("Произошло переполнение памяти!");
@@ -67,22 +67,22 @@ impl BuildingC {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-struct VectorC {
-    position: PointC,
-    offset: PointC,
+struct VectorC<T> where T: num::Float + Default {
+    position: PointC<T>,
+    offset: PointC<T>,
 }
 
 
-impl VectorC {
+impl<T> VectorC<T> where T: num::Float + Default {
 
-    fn new(position: PointC, offset: PointC) -> Self {
+    fn new(position: PointC<T>, offset: PointC<T>) -> Self {
         Self {
             position,
             offset
         }
     }
 
-    pub fn repr_rust(self) -> defs::Vector {
+    pub fn repr_rust(self) -> defs::Vector<T> {
         defs::Vector { 
             position: self.position.repr_rust(),
             offset: self.offset.repr_rust()
@@ -139,7 +139,7 @@ pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -
     let buildings = unsafe { Vec::from_raw_parts(out.buildings, out.len_buildings as usize, out.len_buildings as usize) };
     
     for building in buildings {
-        let mut buildings_vertex = Vec::<defs::Vector>::with_capacity(building.len_vertex as usize);
+        let mut buildings_vertex = Vec::<defs::Vector<f64>>::with_capacity(building.len_vertex as usize);
         let building_points = unsafe { Vec::from_raw_parts(
             building.sides, building.len_vertex as usize, building.len_vertex as usize
         ) };

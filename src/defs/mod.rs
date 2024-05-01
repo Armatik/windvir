@@ -6,14 +6,14 @@ use std::ops::{Add,Sub};
 
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct Point {
-    pub x: f32,
-    pub y: f32,
+pub struct Point<T> where T: num::Float + Default {
+    pub x: T,
+    pub y: T,
 }
 
 
-impl Point {
-    pub fn new(x: f32, y: f32) -> Self {
+impl<T> Point<T> where T: num::Float + Default {
+    pub fn new(x: T, y: T) -> Self {
         Self {
             x,
             y,
@@ -21,7 +21,9 @@ impl Point {
     }
 
     pub fn center_point(&self, other: &Self) -> Self {
-        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
+        let half = num::cast(2.).unwrap();
+
+        Self::new((self.x + other.x) / half, (self.y + other.y) / half)
     }
 
     pub fn is_point_default(&self) -> bool {
@@ -32,18 +34,18 @@ impl Point {
 
 #[derive(Debug, PartialEq)]
 pub struct Building {
-    pub start_point: PositionVector,
-    pub end_point: PositionVector,
-    pub sides: Vec<Vector>
+    pub start_point: PositionVector<f64>,
+    pub end_point: PositionVector<f64>,
+    pub sides: Vec<Vector<f64>>
 }
 
 
 impl Building {
-    pub fn new(build: Vec<Vec<f32>>) -> Self {
+    pub fn new(build: Vec<Vec<f64>>) -> Self {
         let vertex = build.iter().map(
             |x| Vector::new(
                         PositionVector::new(x[0], x[1]),PositionVector::new(0., 0.)
-                    )).collect::<Vec<Vector>>();
+                    )).collect::<Vec<Vector<f64>>>();
         
         Self {
             start_point: PositionVector::new(0.,0.),
@@ -53,14 +55,14 @@ impl Building {
     }
 
     pub fn triangulate(&self) -> Vec<usize> {
-        let mut points = Vec::<f32>::with_capacity(self.sides.len()*2usize);
+        let mut points = Vec::<f64>::with_capacity(self.sides.len()*2usize);
         for vertex in &self.sides {
             points.append(&mut vec![vertex.position.x, vertex.position.y]);
         }
         earcutr::earcut(&points, &[], 2).unwrap()
     }
 
-    pub fn get_square(&self) -> f32 {
+    pub fn get_square(&self) -> f64 {
         let triangulation_indices = self.triangulate();
         let mut square = 0.;
         for i in 0..triangulation_indices.len()/3usize {
@@ -69,7 +71,7 @@ impl Building {
         square
     }
 
-    pub fn get_double_square(&self) -> f32 {
+    pub fn get_double_square(&self) -> f64 {
         let triangulation_indices = self.triangulate();
         let mut square = 0.;
         for i in 0..triangulation_indices.len()/3usize {
@@ -81,14 +83,14 @@ impl Building {
 
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct Vector {
-    pub position: PositionVector,
-    pub offset: PositionVector
+pub struct Vector<T> where T: num::Float + Default {
+    pub position: PositionVector<T>,
+    pub offset: PositionVector<T>,
 }
 
 
-impl Vector {
-    pub fn new(position: PositionVector, offset: PositionVector) -> Self {
+impl<T> Vector<T> where T: num::Float + Default {
+    pub fn new(position: PositionVector<T>, offset: PositionVector<T>) -> Self {
         Self { 
             position,
             offset
@@ -96,18 +98,18 @@ impl Vector {
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> f32 {
+    pub fn cross_product(&self, other: &Self) -> T {
         PositionVector::cross_product(&self.offset, &other.offset)
     }
 
-    pub fn get_right_normal(&self) -> PositionVector {
+    pub fn get_right_normal(&self) -> PositionVector<T> {
         PositionVector { 
             x: self.offset.y,
             y: -self.offset.x
         }
     }
 
-    pub fn get_left_normal(&self) -> PositionVector {
+    pub fn get_left_normal(&self) -> PositionVector<T> {
         PositionVector { 
             x: -self.offset.y,
             y: self.offset.x
@@ -116,8 +118,8 @@ impl Vector {
 }
 
 
-impl Sub for Point {
-    type Output = PositionVector;
+impl<T> Sub for Point<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn sub(self, end_point: Self) -> Self::Output {
         PositionVector::new(
@@ -128,8 +130,8 @@ impl Sub for Point {
 }
 
 
-impl Add for &Point {
-    type Output = PositionVector;
+impl<T> Add for &Point<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn add(self, other: Self) -> Self::Output {
         PositionVector::new(
@@ -140,8 +142,8 @@ impl Add for &Point {
 }
 
 
-impl Sub for &Point {
-    type Output = PositionVector;
+impl<T> Sub for &Point<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn sub(self, start_point: Self) -> Self::Output {
         PositionVector::new(
@@ -152,8 +154,8 @@ impl Sub for &Point {
 }
 
 
-impl Sub for &Vector {
-    type Output = PositionVector;
+impl<T> Sub for &Vector<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn sub(self, subtractor_vector: Self) -> Self::Output {
         &self.offset - &subtractor_vector.offset
@@ -161,8 +163,8 @@ impl Sub for &Vector {
 }
 
 
-impl Sub for &PositionVector {
-    type Output = PositionVector;
+impl<T> Sub for &PositionVector<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn sub(self, subtractor_vector: Self) -> Self::Output {
         PositionVector::new(
@@ -174,15 +176,15 @@ impl Sub for &PositionVector {
 
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct PositionVector {
-    pub x: f32,
-    pub y: f32,
+pub struct PositionVector<T> where T: num::Float + Default {
+    pub x: T,
+    pub y: T,
 }
 
 
-impl PositionVector {
+impl<T> PositionVector<T> where T: num::Float + Default {
 
-    pub fn new(x: f32, y: f32) -> Self {
+    pub fn new(x: T, y: T) -> Self {
         Self { 
             x,
             y
@@ -190,63 +192,65 @@ impl PositionVector {
     }
 
     pub fn center_point(&self, other: &Self) -> Self {
-        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
+        let half = num::cast(2.).unwrap();
+
+        Self::new((self.x + other.x) / half, (self.y + other.y) / half)
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> f32 {
+    pub fn cross_product(&self, other: &Self) -> T {
         other.x*self.y - self.x*other.y
     }
 
     #[inline]
-    pub fn dot_product(&self, other: &Self) -> f32 {
+    pub fn dot_product(&self, other: &Self) -> T {
         other.x*self.x + self.x*other.x
     }
 
     // Если можно не использовать, лучше не использовать
     #[inline]
-    pub fn get_length(&self) -> f32 {
-        f32::sqrt(self.x * self.x + self.y * self.y)
+    pub fn get_length(&self) -> T {
+        T::sqrt(self.x * self.x + self.y * self.y)
     }
 
     #[inline]
-    pub fn get_squared_length(&self) -> f32 {
+    pub fn get_squared_length(&self) -> T {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
-    pub fn get_cos(&self) -> f32 {
+    pub fn get_cos(&self) -> T {
         self.x/self.get_length()
     }
 
     #[inline]
-    pub fn get_sin(&self) -> f32 {
+    pub fn get_sin(&self) -> T {
         self.y/self.get_length()
     }
 
-    pub fn get_cos_sin(&self) -> (f32, f32) {
+    pub fn get_cos_sin(&self) -> (T, T) {
         let length = self.get_length();
         (self.x/length,self.y/length)
     }
 
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
     #[inline]
-    pub fn get_square(&self, other: &Self) -> f32 {
-        f32::abs(Self::cross_product(self, other)) / 2.
+    pub fn get_square(&self, other: &Self) -> T {
+        T::abs(Self::cross_product(self, other)) / num::cast(2.).unwrap()
     }
 
     #[inline]
-    pub fn get_double_square(&self, other: &Self) -> f32 {
-        Self::cross_product(self, other).abs()
+    pub fn get_double_square(&self, other: &Self) -> T {
+        T::abs(Self::cross_product(self, other))
     }
 
     #[inline]
-    pub fn get_cos_between_vectors(&self, other: &Self) -> f32 {
+    pub fn get_cos_between_vectors(&self, other: &Self) -> T {
         Self::dot_product(self, other)/(self.get_length()*other.get_length())
     }
 
     #[inline]
-    pub fn get_sin_between_vectors(&self, other: &Self) -> f32 {
+    pub fn get_sin_between_vectors(&self, other: &Self) -> T {
         Self::cross_product(self, other)/(self.get_length()*other.get_length())
     }
 }

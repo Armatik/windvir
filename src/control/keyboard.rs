@@ -131,7 +131,7 @@ impl App {
                 }
             },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
-            value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f32),
+            value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f64),
             PLUS_KEY => self.move_aim(super::MoveAim::Top),
             LEFT_BRACKET => self.move_aim(super::MoveAim::Left),
             RIGHT_BRACKET => self.move_aim(super::MoveAim::Right),

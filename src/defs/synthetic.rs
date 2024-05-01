@@ -4,18 +4,18 @@ use super::error::{self, WrongFigure};
 
 
 const RED_ADJUSMENT: f32 = 0.8;
-const SEGMENTS: f32 = 25.;
-const DELTA_PHI: f32 = std::f32::consts::PI / SEGMENTS;
+const SEGMENTS: f64 = 25.;
+const DELTA_PHI: f64 = std::f64::consts::PI / SEGMENTS;
 const SEGMENTS_NUM: usize = SEGMENTS as usize * 2 + 1;
 
 
 pub enum SyntheticVariant {
     /// Первый аргумент `центр`. Второй аргумент `радиус`
-	Circle(super::Point, f32),
+	Circle(super::Point<f64>, f64),
     /// Первый аргумент `самая левая верхняя точка`. Второй аргумент `самая правая нижняя точка`
-	Rectangle(super::Point, super::Point),
+	Rectangle(super::Point<f64>, super::Point<f64>),
     /// Первый аргумент `первая точка` отрезка. Второй аргумент `второя точка` отрезка
-	Segment(super::Point, super::Point),
+	Segment(super::Point<f64>, super::Point<f64>),
     /// Рандомная фигура, содержит в себе вектор вершин
     Polygon(Vec<graphics::Vertex>),
 }
@@ -36,7 +36,7 @@ pub trait SyntheticData {
 	fn is_value_default(&self) -> bool;
 	fn set_value(&mut self, data: SyntheticVariant);
     /// Возвращается ошибка в случае если у структуры присутсвует != 2 точки
-    fn set_points(&mut self, points: Vec<super::Point>) -> error::Result<()>;
+    fn set_points(&mut self, points: Vec<super::Point<f64>>) -> error::Result<()>;
     fn get_rgb(&self) -> (f32, f32, f32);
     #[allow(dead_code)]
     fn set_rgb(&mut self, r: f32, g: f32, b: f32);
@@ -48,8 +48,8 @@ pub trait SyntheticData {
 
 
 pub struct Circle {
-    center: super::Point,
-	radius: f32,
+    center: super::Point<f64>,
+	radius: f64,
     is_fill: bool,
     rgb: (f32, f32, f32),
 }
@@ -61,13 +61,13 @@ impl Circle {
 
         Self {
             center: super::Point::default(),
-            radius: f32::default(),
+            radius: 0.,
             is_fill: true,
             rgb: (rng.gen::<f32>() * RED_ADJUSMENT, rng.gen::<f32>(), rng.gen::<f32>()),
         }
     }
 
-    pub fn init(x: f32, y: f32, radius: f32, is_fill: bool, rgb: [f32; 3]) -> Self {
+    pub fn init(x: f64, y: f64, radius: f64, is_fill: bool, rgb: [f32; 3]) -> Self {
         Self {
             center: super::Point::new(x, y),
             radius,
@@ -88,7 +88,7 @@ impl SyntheticData for Circle {
     }
 
 	fn is_value_default(&self) -> bool {
-		self.radius == f32::default() || self.center == super::Point::default()
+		self.radius == 0. || self.center == super::Point::default()
 	}
 
 	fn set_value(&mut self, data: SyntheticVariant) {
@@ -100,7 +100,7 @@ impl SyntheticData for Circle {
         }
 	}
 
-    fn set_points(&mut self, _points: Vec<super::Point>) -> error::Result<()> {
+    fn set_points(&mut self, _points: Vec<super::Point<f64>>) -> error::Result<()> {
         Err(error::WrongFigure)
     }
 
@@ -120,13 +120,13 @@ impl SyntheticData for Circle {
         let y = self.center.y;
         let r = self.radius;
         
-        vertices.push(graphics::Vertex { position: [x, y] });
+        vertices.push(graphics::Vertex { position: [x as f32, y as f32] });
 
-        while phi < 2. * std::f32::consts::PI + DELTA_PHI {
-            let x = x + r * f32::cos(phi);
-            let y = y + r * f32::sin(phi);
+        while phi < 2. * std::f64::consts::PI + DELTA_PHI {
+            let x = x + r * f64::cos(phi);
+            let y = y + r * f64::sin(phi);
 
-            vertices.push(graphics::Vertex { position: [x, y] });
+            vertices.push(graphics::Vertex { position: [x as f32, y as f32] });
 
             phi += DELTA_PHI;
         }
@@ -161,8 +161,8 @@ impl SyntheticData for Circle {
 
 
 pub struct Rectangle {
-    left_up_point: super::Point,
-    right_down_point: super::Point,
+    left_up_point: super::Point<f64>,
+    right_down_point: super::Point<f64>,
     is_fill: bool,
     rgb: (f32, f32, f32),
 }
@@ -180,7 +180,7 @@ impl Rectangle {
         }
     }
 
-    pub fn init(lu_x: f32, lu_y: f32, rd_x: f32, rd_y: f32, is_fill: bool, rgb: [f32; 3]) -> Self {
+    pub fn init(lu_x: f64, lu_y: f64, rd_x: f64, rd_y: f64, is_fill: bool, rgb: [f32; 3]) -> Self {
         Self {
             left_up_point: super::Point::new(lu_x, lu_y),
             right_down_point: super::Point::new(rd_x, rd_y),
@@ -213,7 +213,7 @@ impl SyntheticData for Rectangle {
         }
 	}
 
-    fn set_points(&mut self, points: Vec<super::Point>) -> error::Result<()> {
+    fn set_points(&mut self, points: Vec<super::Point<f64>>) -> error::Result<()> {
         if points.len() != 2 {
             log::error!("Для прямоуольника задано кол-во точек != 2!");
 
@@ -240,10 +240,10 @@ impl SyntheticData for Rectangle {
         let rd_x = self.right_down_point.x;
         let rd_y = self.right_down_point.y;
 
-        let vertices = vec![graphics::Vertex { position: [lu_x, lu_y] },
-            graphics::Vertex { position: [rd_x, lu_y] },
-            graphics::Vertex { position: [rd_x, rd_y] },
-            graphics::Vertex { position: [lu_x, rd_y] }];
+        let vertices = vec![graphics::Vertex { position: [lu_x as f32, lu_y as f32] },
+            graphics::Vertex { position: [rd_x as f32, lu_y as f32] },
+            graphics::Vertex { position: [rd_x as f32, rd_y as f32] },
+            graphics::Vertex { position: [lu_x as f32, rd_y as f32] }];
 
         return if self.is_fill {
             (vertices, Some(vec![0, 1, 2, 0, 3, 2]))
@@ -269,8 +269,8 @@ impl SyntheticData for Rectangle {
 
 
 pub struct Segment {
-	p0: super::Point,
-	p1: super::Point,
+	p0: super::Point<f64>,
+	p1: super::Point<f64>,
     rgb: (f32, f32, f32),
 }
 
@@ -286,7 +286,7 @@ impl Segment {
         }
     }
 
-    pub fn init(p0_x: f32, p0_y: f32, p1_x: f32, p1_y: f32, rgb: [f32; 3]) -> Self {
+    pub fn init(p0_x: f64, p0_y: f64, p1_x: f64, p1_y: f64, rgb: [f32; 3]) -> Self {
         Self {
             p0: super::Point::new(p0_x, p0_y),
             p1: super::Point::new(p1_x, p1_y),
@@ -318,7 +318,7 @@ impl SyntheticData for Segment {
         }
 	}
 
-    fn set_points(&mut self, points: Vec<super::Point>) -> error::Result<()> {
+    fn set_points(&mut self, points: Vec<super::Point<f64>>) -> error::Result<()> {
         if points.len() != 2 {
             log::error!("Для отрезка задано кол-во точек != 2!");
 
@@ -344,7 +344,7 @@ impl SyntheticData for Segment {
         let p1_x = self.p1.x;
         let p1_y = self.p1.y;
 
-        (vec![graphics::Vertex { position: [p0_x, p0_y] }, graphics::Vertex { position: [p1_x, p1_y] }], None)
+        (vec![graphics::Vertex { position: [p0_x as f32, p0_y as f32] }, graphics::Vertex { position: [p1_x as f32, p1_y as f32] }], None)
     }
 
     fn get_primitive(&self) -> glium::index::PrimitiveType {
@@ -375,8 +375,8 @@ impl Polygon {
         } 
     }
 
-    pub fn init(points: Vec<Vec<f32>>, is_fill: bool, rgb: [f32; 3]) -> Self {
-        let points = points.iter().map(|x| graphics::Vertex { position: [x[0], x[1]] }).collect::<Vec<graphics::Vertex>>();
+    pub fn init(points: Vec<Vec<f64>>, is_fill: bool, rgb: [f32; 3]) -> Self {
+        let points = points.iter().map(|x| graphics::Vertex { position: [x[0] as f32, x[1] as f32] }).collect::<Vec<graphics::Vertex>>();
 
         Self {
             points,
@@ -440,8 +440,8 @@ impl SyntheticData for Polygon {
         self.points == Vec::new()
     }
 
-    fn set_points(&mut self, points: Vec<super::Point>) -> error::Result<()> {
-        self.points = points.iter().map(|x| graphics::Vertex { position: [x.x, x.y] }).collect::<Vec<graphics::Vertex>>();
+    fn set_points(&mut self, points: Vec<super::Point<f64>>) -> error::Result<()> {
+        self.points = points.iter().map(|x| graphics::Vertex { position: [x.x as f32, x.y as f32] }).collect::<Vec<graphics::Vertex>>();
 
         Ok(())
     }

@@ -208,7 +208,7 @@ impl App {
 
         for point in &self.synthetic_datas_points {
             let figure_points = glium::VertexBuffer::new(display, &[
-                super::Vertex { position: [point.x, point.y] },
+                super::Vertex { position: [point.x as f32, point.y as f32] },
             ]).expect("Ошибка! Не удалось задать позицию для прицела!");
             target.draw(
                 &figure_points,
@@ -230,7 +230,7 @@ impl App {
             b_rand: 0.0_f32,
         };
 
-        let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.x, self.aim.y] }])
+        let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.x as f32, self.aim.y as f32] }])
             .expect("Ошибка! Не удалось задать позицию для прицела!");
         target.draw(
             &aim_position,

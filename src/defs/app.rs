@@ -51,7 +51,7 @@ impl App {
 
         for building in &self.buildings {
             for side in &building.sides {
-                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x, side.position.y]) });
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x as f32, side.position.y as f32]) });
             }
         }
 
@@ -63,7 +63,7 @@ impl App {
 
         for building in default_buildings {
             for side in &building.sides {
-                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x, side.position.y]) });
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x as f32, side.position.y as f32]) });
             }
         }
 
@@ -143,13 +143,13 @@ impl App {
 
     pub fn spawn_point(&mut self, is_end_of_polygon: bool) {
         if self.synthetic_datas_points.get(0).is_none() {
-            self.synthetic_datas_points.push(super::Point::new(self.aim.x, self.aim.y));
+            self.synthetic_datas_points.push(super::Point::new(self.aim.x as f64, self.aim.y as f64));
 
             log::info!("Первая точка была успешно отмечена!");
         } else {
             match self.synthetic_data.back().unwrap().get_data_simply() {
                 synthetic::SimplySyntheticVariant::Rectangle | synthetic::SimplySyntheticVariant::Segment => {
-                    self.synthetic_datas_points.push(super::Point::new(self.aim.x, self.aim.y));
+                    self.synthetic_datas_points.push(super::Point::new(self.aim.x as f64, self.aim.y as f64));
                     self.synthetic_data.back_mut().unwrap().set_points(self.synthetic_datas_points.clone())
                         .expect("Произошла ошибка! Данные точки начали задаваться для окружности!");
                 },
@@ -157,7 +157,7 @@ impl App {
                         self.synthetic_data.back_mut().unwrap().set_points(self.synthetic_datas_points.clone())
                             .expect("Произошла ошибка! Данные точки начали задаваться для окружности!");
                     } else {
-                        self.synthetic_datas_points.push(super::Point::new(self.aim.x, self.aim.y));
+                        self.synthetic_datas_points.push(super::Point::new(self.aim.x as f64, self.aim.y as f64));
 
                         log::info!("Точка для многоугольника была успешно задана!");
                         return;
@@ -170,12 +170,12 @@ impl App {
         }
     }
 
-    pub fn spawn_circle(&mut self, value: f32) {
+    pub fn spawn_circle(&mut self, value: f64) {
         if let Some(figure) = self.synthetic_data.back() {
             if figure.is_value_default() {
-                let size = self.p_j.aim.aim_adjusment * value;
+                let size = self.p_j.aim.aim_adjusment as f64 * value;
                 self.synthetic_data.back_mut().unwrap()
-                    .set_value(synthetic::SyntheticVariant::Circle(self.aim.clone(), size));
+                    .set_value(synthetic::SyntheticVariant::Circle(super::Point::new(self.aim.x as f64, self.aim.y as f64), size));
 
                 log::info!("Окружность размером {size} была успешно задана!");
             }
