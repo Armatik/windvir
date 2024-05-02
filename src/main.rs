@@ -117,16 +117,26 @@ impl App {
         if let Some(polygons) = json.polygons {
 
             // TEST
-            // let buildings = Self::convert_polygon_vec_into_building_vec(&polygons);
-            // for building in buildings.iter() {
-            //     println!("{:#?}\n", building);
-            // }
+            let buildings = Self::_convert_polygon_vec_into_building_vec(&polygons);
+            for building in buildings.iter() {
+                println!("{:#?}\n", building);
+            }
+            let mut z = 0usize;
             // TEST
 
             polygons.iter().for_each(|x| {
                 let points = x.points.clone().iter().map(|x| vec![x[0] - x_off, x[1] - y_off]).collect::<Vec<Vec<f32>>>();
-                let rgb = x.rgb;
+                let mut rgb = x.rgb;
 
+                    for n in 0usize..buildings.len() {
+                        if z == n { continue; }
+                        if collisions::test_building_intersection(&buildings[z], &buildings[n]) {
+                            rgb = [1., 0., 8.];
+                        }
+                    }
+
+                println!("\n");
+                z += 1usize;
                 self.define_figure(
                     synthetic::Polygon::init(points.clone(), x.is_fill, rgb),
                     &format!("Многоугольник был задан с точками {:?} и цветом {:?}", points, rgb),

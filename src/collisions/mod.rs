@@ -37,7 +37,7 @@ fn test_if_point_inside_building(point: &PositionVector, building: &Building) ->
     for side in building.sides.iter() {
         count += test_if_positive_infinity_vector_crosses_side(point, side);
     }
-    count == 0isize
+    count != 0isize
 }
 
 #[inline]
@@ -97,6 +97,7 @@ pub fn test_building_intersection(first: &Building, second: &Building) -> bool {
                 }
             }
         }
+        return test_if_point_inside_building(&first.sides[0].position, second); 
     }
     false
 }
