@@ -115,6 +115,15 @@ impl App {
         }
         
         if let Some(polygons) = json.polygons {
+
+            // TEST
+            let buildings = Self::_convert_polygon_vec_into_building_vec(&polygons);
+            for building in buildings.iter() {
+                println!("{:#?}\n", building);
+            }
+            let mut z = 0usize;
+            // TEST
+
             polygons.iter().for_each(|x| {
                 let points = x.points.clone().iter().map(|x| vec![x[0] - x_off, x[1] - y_off]).collect::<Vec<Vec<f64>>>();
                 let rgb = x.rgb;
@@ -126,6 +135,12 @@ impl App {
             });
         }
         
+    } 
+
+    fn _convert_polygon_vec_into_building_vec(polygons: &Vec<figures::Polygon> ) -> Vec<defs::Building> {
+        polygons.iter().map(|element| {
+            defs::Building::new_complete(element.points.clone())
+        }).collect::<Vec<defs::Building>>()
     }
 
     pub fn start_app(mut self, default_buildings: Vec<defs::Building>) -> Result<(), Box<dyn std::error::Error>> {
