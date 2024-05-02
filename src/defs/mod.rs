@@ -139,6 +139,16 @@ impl Add for &Point {
     }
 }
 
+impl Add for &PositionVector {
+    type Output = PositionVector;
+
+    fn add(self, other: Self) -> Self::Output {
+        PositionVector::new(
+            self.x + other.x, 
+            self.y + other.y
+        )
+    }
+}
 
 impl Sub for &Point {
     type Output = PositionVector;
@@ -208,8 +218,12 @@ impl PositionVector {
         PositionVector::new(multiplier*self.x, multiplier*self.y)
     }
 
-    pub fn center_point(&self, other: &Self) -> Self {
+    pub fn center_between_vectors(&self, other: &Self) -> Self {
         Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
+    }
+
+    pub fn center(&self) -> Self {
+        Self::new(self.x/ 2., self.y / 2.)
     }
 
     #[inline]
