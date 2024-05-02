@@ -37,7 +37,7 @@ impl App {
         const NUM8_KEY: u32 = 0x09;
         const NUM9_KEY: u32 = 0x0a;
         const NUM0_KEY: u32 = 0x0b;
-        const PLUS_KEY: u32 = 0x0d;
+        const EQUAL_KEY: u32 = 0x0d;
         const Q_KEY: u32 = 0x10;
         const W_KEY: u32 = 0x11;
         const E_KEY: u32 = 0x12;
@@ -132,7 +132,7 @@ impl App {
             },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
             value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f64),
-            PLUS_KEY => self.move_aim(super::MoveAim::Top),
+            EQUAL_KEY => self.move_aim(super::MoveAim::Top),
             LEFT_BRACKET => self.move_aim(super::MoveAim::Left),
             RIGHT_BRACKET => self.move_aim(super::MoveAim::Right),
             QUOTE_KEY => self.move_aim(super::MoveAim::Down),
@@ -178,6 +178,9 @@ impl App {
                     self.cam.display_type.change_visible_regime();
                 }
             },
+            glutin::event::VirtualKeyCode::P => if key.state == glutin::event::ElementState::Released {
+                self.cam.display_type.switch();
+            },
             glutin::event::VirtualKeyCode::W | glutin::event::VirtualKeyCode::Up => self.transform_map(graphics::TransformAction::MoveUp),
             glutin::event::VirtualKeyCode::A | glutin::event::VirtualKeyCode::Left =>
                 self.transform_map(graphics::TransformAction::MoveLeft),
@@ -220,7 +223,7 @@ impl App {
                 glutin::event::VirtualKeyCode::Key5 | glutin::event::VirtualKeyCode::Key6 |
                 glutin::event::VirtualKeyCode::Key7 | glutin::event::VirtualKeyCode::Key8 |
                 glutin::event::VirtualKeyCode::Key9) =>  self.spawn_circle(value as u32 as f64),
-            glutin::event::VirtualKeyCode::Plus => self.move_aim(super::MoveAim::Top),
+            glutin::event::VirtualKeyCode::Equals => self.move_aim(super::MoveAim::Top),
             glutin::event::VirtualKeyCode::LBracket => self.move_aim(super::MoveAim::Left),
             glutin::event::VirtualKeyCode::RBracket => self.move_aim(super::MoveAim::Right),
             glutin::event::VirtualKeyCode::Apostrophe => self.move_aim(super::MoveAim::Down),
