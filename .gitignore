@@ -8,3 +8,6 @@ Cargo.lock
 .vscode
 /lib
 /libwindvir/target
+/default_settings.json
+/data/*.geojson
+/data/*.json
