@@ -17,27 +17,6 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
     s1*s1 < s1*cross_product && s2*s2 < s2*cross_product
 }
 
-fn check_for_possible_separate_axis(first: &Vector, second: &Vector) -> bool {
-    let first = Vector::new(
-        PositionVector::new(2.,2.),
-        PositionVector::new(3., 3.)        
-    );
-    let second = Vector::new(
-        PositionVector::new(1.,1.),
-        PositionVector::new(1., 0.)   
-    );
-    let first_projection = first.position.project_vector_on_vector(&second.offset);
-    let second_projection = first.offset.project_vector_on_vector(&second.offset);
-    println!("{:#?}\n{:#?}\n{}\n", &first_projection,&second_projection,
-    (first_projection.x - second.position.x - second.offset.x)*(first_projection.x + second_projection.x - second.position.x) > 0.
-
-);
-    (first_projection.x - second.position.x - second.offset.x)*(first_projection.x + second_projection.x - second.position.x) > 0.
-    ||
-    (first_projection.y - second.position.y - second.offset.y)*(first_projection.y + second_projection.y - second.position.y) > 0.
-}
-
-
 
 #[inline]
 fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f32 {
@@ -93,7 +72,7 @@ fn _optimize_map(sorted_map: &Vec<Building>) -> () {
 
 
 pub fn check_building_intersection(first: &Building, second: &Building) -> bool {
-    // if check_bounding_box_intersection(first, second) {
+    if check_bounding_box_intersection(first, second) {
         for first_building_side in first.sides.iter() {
             for second_building_side in second.sides.iter() {
                 if check_vector_intersection(first_building_side, second_building_side) {
@@ -101,22 +80,7 @@ pub fn check_building_intersection(first: &Building, second: &Building) -> bool 
                 }
             }
         }
-    // }
-    false
-}
-
-pub fn check_building_intersection_using_sat(first: &Building, second: &Building) -> bool {
-    // if check_bounding_box_intersection(first, second) {
-        for first_building_side in first.sides.iter() {
-            for second_building_side in second.sides.iter() {
-                if check_for_possible_separate_axis(first_building_side, second_building_side) || check_for_possible_separate_axis(second_building_side, first_building_side) 
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-    // }
+    }
     false
 }
 
