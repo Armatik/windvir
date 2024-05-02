@@ -126,6 +126,12 @@ impl App {
             });
         }
         
+    } 
+
+    fn convert_polygon_vec_into_building_vec(polygons: &Vec<figures::Polygon> ) -> Vec<defs::Building> {
+        polygons.iter().map(|element| {
+            defs::Building::new(element.points.clone())
+        }).collect::<Vec<defs::Building>>()
     }
 
     pub fn start_app(mut self) -> Result<(), Box<dyn std::error::Error>> {
