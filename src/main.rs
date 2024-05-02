@@ -14,6 +14,8 @@ use std::{env, collections::LinkedList};
 use json::{geojson, default_json, figures};
 use defs::synthetic;
 
+use crate::defs::PositionVector;
+
 
 type WindowWidth = f32;
 type WindowHeight = f32;
@@ -115,9 +117,56 @@ impl App {
         }
         
         if let Some(polygons) = json.polygons {
+            let buildings = Self::convert_polygon_vec_into_building_vec(&polygons);
+            for building in buildings.iter() {
+                println!("{:#?}\n", building);
+            }
+            let mut i = 0usize;
             polygons.iter().for_each(|x| {
                 let points = x.points.clone().iter().map(|x| vec![x[0] - x_off, x[1] - y_off]).collect::<Vec<Vec<f32>>>();
-                let rgb = x.rgb;
+                let mut rgb = x.rgb;
+                rgb = x.rgb;
+                for n in 0usize..buildings.len() {
+                    if n == i {continue;}
+                    let l1 = collisions::check_building_intersection(&buildings[i],&buildings[n]);
+                    let l2 = collisions::check_building_intersection_using_sat(&buildings[i],&buildings[n]);
+                    // println!("{l1} && {l2} == {}", l1 && l2);
+                    let center1 = PositionVector::center_between_vectors(&buildings[i].end_point,&buildings[i].start_point);
+                    let center2 = PositionVector::center_between_vectors(&buildings[n].end_point,&buildings[n].start_point);
+                    if l1 {
+                        self.define_figure(
+                            synthetic::Segment::init(center1.x - x_off, center1.y - y_off, center2.x - x_off, center2.y - y_off, [0.,1.,0.]),
+                            &format!(""),
+                        );
+                    }
+
+                    if l2 {
+                        self.define_figure(
+                            synthetic::Segment::init(center1.x - x_off, center1.y - y_off, center2.x - x_off, center2.y - y_off, [0.,0.,1.]),
+                            &format!(""),
+                        );
+                    }
+
+                    if l1 && l2 {
+                        self.define_figure(
+                            synthetic::Segment::init(center1.x - x_off, center1.y - y_off, center2.x - x_off, center2.y - y_off, [1., 0., 1.]),
+                            &format!(""),
+                        );
+                    }
+                    
+                    if l1 && l2 {
+                        rgb = [1., 0., 1.];
+                        break;
+                    }
+                    else if l1 {
+                        rgb = [0.,1.,0.];
+                    }
+                    else if l2 {
+                        rgb = [0.,0.,1.];
+                    }
+                }
+                i += 1usize;
+                // let rgb = 
     
                 self.define_figure(
                     synthetic::Polygon::init(points.clone(), x.is_fill, rgb),
@@ -130,7 +179,7 @@ impl App {
 
     fn convert_polygon_vec_into_building_vec(polygons: &Vec<figures::Polygon> ) -> Vec<defs::Building> {
         polygons.iter().map(|element| {
-            defs::Building::new(element.points.clone())
+            defs::Building::new_complete(element.points.clone())
         }).collect::<Vec<defs::Building>>()
     }
 

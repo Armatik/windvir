@@ -272,7 +272,7 @@ impl PositionVector {
 
     #[inline]
     pub fn dot(&self, other: &Self) -> f32 {
-        other.x*self.x + self.x*other.x
+        other.x*self.x + self.y*other.y
     }
 
     // Если можно не использовать, лучше не использовать

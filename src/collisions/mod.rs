@@ -1,4 +1,4 @@
-use crate::defs::{Building, Vector};
+use crate::defs::{Building, PositionVector, Vector};
 
 
 // Не пременимо для паралелельных отрезков, более медленный
@@ -18,11 +18,23 @@ fn check_vector_intersection(first: &Vector, second: &Vector) -> bool {
 }
 
 fn check_for_possible_separate_axis(first: &Vector, second: &Vector) -> bool {
+    let first = Vector::new(
+        PositionVector::new(2.,2.),
+        PositionVector::new(3., 3.)        
+    );
+    let second = Vector::new(
+        PositionVector::new(1.,1.),
+        PositionVector::new(1., 0.)   
+    );
     let first_projection = first.position.project_vector_on_vector(&second.offset);
     let second_projection = first.offset.project_vector_on_vector(&second.offset);
-    (first_projection.x - second.position.x - second.offset.x)*(first_projection.x + second_projection.x - second.position.x) < 0.
-    &&
-    (first_projection.y - second.position.y - second.offset.y)*(first_projection.y + second_projection.y - second.position.y) < 0.
+    println!("{:#?}\n{:#?}\n{}\n", &first_projection,&second_projection,
+    (first_projection.x - second.position.x - second.offset.x)*(first_projection.x + second_projection.x - second.position.x) > 0.
+
+);
+    (first_projection.x - second.position.x - second.offset.x)*(first_projection.x + second_projection.x - second.position.x) > 0.
+    ||
+    (first_projection.y - second.position.y - second.offset.y)*(first_projection.y + second_projection.y - second.position.y) > 0.
 }
 
 
@@ -80,8 +92,8 @@ fn _optimize_map(sorted_map: &Vec<Building>) -> () {
 }
 
 
-fn check_building_intersection(first: &Building, second: &Building) -> bool {
-    if check_bounding_box_intersection(first, second) {
+pub fn check_building_intersection(first: &Building, second: &Building) -> bool {
+    // if check_bounding_box_intersection(first, second) {
         for first_building_side in first.sides.iter() {
             for second_building_side in second.sides.iter() {
                 if check_vector_intersection(first_building_side, second_building_side) {
@@ -89,20 +101,22 @@ fn check_building_intersection(first: &Building, second: &Building) -> bool {
                 }
             }
         }
-    }
+    // }
     false
 }
 
-fn check_building_intersection_using_sat(first: &Building, second: &Building) -> bool {
-    if check_bounding_box_intersection(first, second) {
+pub fn check_building_intersection_using_sat(first: &Building, second: &Building) -> bool {
+    // if check_bounding_box_intersection(first, second) {
         for first_building_side in first.sides.iter() {
             for second_building_side in second.sides.iter() {
-                if check_for_possible_separate_axis(first_building_side, second_building_side) || check_for_possible_separate_axis(second_building_side, first_building_side) {
-                    return true
+                if check_for_possible_separate_axis(first_building_side, second_building_side) || check_for_possible_separate_axis(second_building_side, first_building_side) 
+                {
+                    return false;
                 }
             }
+            return true;
         }
-    }
+    // }
     false
 }
 
