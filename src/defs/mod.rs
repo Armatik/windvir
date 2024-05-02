@@ -52,6 +52,30 @@ impl Building {
         }
     }
 
+    pub fn new_complete(build: Vec<Vec<f32>>) -> Self {
+        let mut vertex = build.iter().map(
+            |x| Vector::new(
+                        PositionVector::new(x[0], x[1]),PositionVector::new(0., 0.)
+                    )).collect::<Vec<Vector>>();
+
+        if vertex.len() < 3usize { panic!("У переданного здания меньше трёх сторон!\n{:?}",build); }
+        for i in 0usize..vertex.len() - 1usize {
+            vertex[i].offset = &vertex[i + 1usize].position - &vertex[i].position;
+        }
+        let last_index = vertex.len() - 1usize;
+        vertex[last_index].offset = &vertex[0usize].position - &vertex[last_index].position;
+
+        Self {
+            start_point: PositionVector::new(0.,0.),
+            end_point: PositionVector::new(0.,0.),
+            sides: vertex,
+        }
+    }
+
+    fn caclulate_and_setup_bounding_box_points(&mut self) -> () {
+
+    }
+
     pub fn triangulate(&self) -> Vec<usize> {
         let mut points = Vec::<f32>::with_capacity(self.sides.len()*2usize);
         for vertex in &self.sides {
