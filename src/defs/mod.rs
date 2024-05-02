@@ -67,13 +67,28 @@ impl Building {
 
         Self {
             start_point: PositionVector::new(0.,0.),
-            end_point: PositionVector::new(0.,0.),
+            end_point: PositionVector::new(0., 0.),
             sides: vertex,
-        }
+        }.caclulate_and_setup_bounding_box_points()
     }
 
-    fn caclulate_and_setup_bounding_box_points(&mut self) -> () {
+    fn caclulate_and_setup_bounding_box_points(mut self) -> Self {
+        self.start_point = self.sides[0usize].position.clone();
+        self.end_point = self.sides[0usize].position.clone();
+        for side in self.sides.iter() {
+            if side.position.x < self.start_point.x {
+                self.start_point.x = side.position.x;
+            } else if side.position.x > self.end_point.x {
+                self.end_point.x = side.position.x;
+            }
 
+            if side.position.y < self.start_point.y {
+                self.start_point.y = side.position.y;
+            } else if side.position.y > self.end_point.y {
+                self.end_point.y = side.position.y;
+            }
+        }
+        self
     }
 
     pub fn triangulate(&self) -> Vec<usize> {
