@@ -2,14 +2,14 @@ use crate::defs::{Building, PositionVector, Vector};
 
 
 // Не пременимо для паралелельных отрезков, более медленный
-fn _test_vector_intersection(first: &Vector, second: &Vector) -> bool {
+fn _test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
     let s1 = get_segment_division_parameter(first, second);
     let s2 = get_segment_division_parameter(second, first);
     s1*s1 < s1 && s2*s2 < s2
 }
 
 
-fn test_vector_intersection(first: &Vector, second: &Vector) -> bool {
+fn test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
     let position_difference = &second.position - &first.position;
     let cross_product = Vector::cross(first,second);
     let s1 = position_difference.cross(&second.offset);
@@ -17,7 +17,7 @@ fn test_vector_intersection(first: &Vector, second: &Vector) -> bool {
     s1*s1 < s1*cross_product && s2*s2 < s2*cross_product
 }
 
-fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector, side: &Vector) -> isize {
+fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector<f64>, side: &Vector<f64>) -> isize {
     if side.offset.y == 0. { return 0isize; }
     let s = (point.y - side.position.y)/side.offset.y;
     if 
@@ -32,7 +32,7 @@ fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector, side: &
 
 }
 
-fn test_if_point_inside_building(point: &PositionVector, building: &Building) -> bool {
+fn test_if_point_inside_building(point: &PositionVector<f64>, building: &Building) -> bool {
     let mut count = 0isize;
     for side in building.sides.iter() {
         count += test_if_positive_infinity_vector_crosses_side(point, side);
@@ -41,7 +41,7 @@ fn test_if_point_inside_building(point: &PositionVector, building: &Building) ->
 }
 
 #[inline]
-fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f32 {
+fn get_segment_division_parameter(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
     (&second.position - &first.position).cross(&second.offset)/Vector::cross(first,second)
 }
 

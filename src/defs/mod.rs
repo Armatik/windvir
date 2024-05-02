@@ -54,11 +54,11 @@ impl Building {
         }
     }
 
-    pub fn new_complete(build: Vec<Vec<f32>>) -> Self {
+    pub fn new_complete(build: Vec<Vec<f64>>) -> Self {
         let mut vertex = build.iter().map(
             |x| Vector::new(
                         PositionVector::new(x[0], x[1]),PositionVector::new(0., 0.)
-                    )).collect::<Vec<Vector>>();
+                    )).collect::<Vec<Vector<f64>>>();
 
         if vertex.len() < 3usize { panic!("У переданного здания меньше трёх сторон!\n{:?}",build); }
         for i in 0usize..vertex.len() - 1usize {
@@ -137,9 +137,10 @@ impl<T> Vector<T> where T: num::Float + Default {
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> T {
-        PositionVector::cross_product(&self.offset, &other.offset)
+    pub fn cross(&self, other: &Self) -> T {
+        PositionVector::cross(&self.offset, &other.offset)
     }
+
 
     pub fn get_right_normal(&self) -> PositionVector<T> {
         PositionVector { 
@@ -180,8 +181,8 @@ impl<T> Add for &Point<T> where T: num::Float + Default {
     }
 }
 
-impl Add for &PositionVector {
-    type Output = PositionVector;
+impl<T> Add for &PositionVector<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn add(self, other: Self) -> Self::Output {
         PositionVector::new(
@@ -191,8 +192,8 @@ impl Add for &PositionVector {
     }
 }
 
-impl Sub for &Point {
-    type Output = PositionVector;
+impl<T> Sub for &Point<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
     fn sub(self, start_point: Self) -> Self::Output {
         PositionVector::new(
@@ -223,19 +224,23 @@ impl<T> Sub for &PositionVector<T> where T: num::Float + Default {
     }
 }
 
-impl Mul<f32> for &PositionVector {
-    type Output = PositionVector;
+impl<T> Mul<f64> for &PositionVector<T> where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
-    fn mul(self, multiplier: f32) -> Self::Output {
-        PositionVector::new(multiplier*self.x, multiplier*self.y)
+    fn mul(self, multiplier: f64) -> Self::Output {
+        let multiplier = num::cast::<f64, T>(multiplier).unwrap();
+
+        PositionVector::new(multiplier * self.x, multiplier * self.y)
     }
 }
 
-impl Mul<&PositionVector> for f32 {
-    type Output = PositionVector;
+impl<T> Mul<&PositionVector<T>> for f64 where T: num::Float + Default {
+    type Output = PositionVector<T>;
 
-    fn mul(self, multiplicand: &PositionVector) -> Self::Output {
-        PositionVector::new(self*multiplicand.x, self*multiplicand.y)
+    fn mul(self, multiplicand: &PositionVector<T>) -> Self::Output {
+        let multiplier = num::cast::<f64, T>(self).unwrap();
+
+        PositionVector::<T>::new(multiplier * multiplicand.x, multiplier * multiplicand.y)
     }
 }
 
@@ -255,16 +260,43 @@ impl<T> PositionVector<T> where T: num::Float + Default {
         }
     }
 
-    pub fn multiply_by_scalar(&self, multiplier: f32) -> Self {
-        PositionVector::new(multiplier*self.x, multiplier*self.y)
+    pub fn multiply_by_scalar(&self, multiplier: f64) -> Self {
+        let multiplier = num::cast::<f64, T>(multiplier).unwrap();
+
+        PositionVector::new(multiplier * self.x, multiplier * self.y)
     }
 
     pub fn center_between_vectors(&self, other: &Self) -> Self {
-        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
+        let half = num::cast(2.).unwrap();
+        
+        Self::new((self.x + other.x) / half, (self.y + other.y) / half)
+    }
+    
+    #[inline]
+    pub fn cross(&self, other: &Self) -> T {
+        other.x*self.y - self.x*other.y
     }
 
     pub fn center(&self) -> Self {
-        Self::new(self.x/ 2., self.y / 2.)
+        let half = num::cast(2.).unwrap();
+
+        Self::new(self.x/ half, self.y / half)
+    }
+
+    #[inline]
+    pub fn dot(&self, other: &Self) -> T {
+        other.x*self.x + self.y*other.y
+    }
+
+    // Если можно не использовать, лучше не использовать
+    #[inline]
+    pub fn get_magnitude(&self) -> T {
+        T::sqrt(self.x * self.x + self.y * self.y)
+    }
+
+    #[inline]
+    pub fn get_squared_magnitude(&self) -> T {
+        self.x*self.x + self.y*self.y
     }
 
     #[inline]
@@ -289,16 +321,16 @@ impl<T> PositionVector<T> where T: num::Float + Default {
     }
 
     #[inline]
-    pub fn get_cos(&self) -> f32 {
+    pub fn get_cos(&self) -> T {
         self.x/self.get_magnitude()
     }
 
     #[inline]
-    pub fn get_sin(&self) -> f32 {
+    pub fn get_sin(&self) -> T {
         self.y/self.get_magnitude()
     }
 
-    pub fn get_cos_sin(&self) -> (f32, f32) {
+    pub fn get_cos_sin(&self) -> (T, T) {
         let length = self.get_magnitude();
         (self.x/length,self.y/length)
     }
@@ -320,23 +352,28 @@ impl<T> PositionVector<T> where T: num::Float + Default {
     }
 
     #[inline]
-    pub fn get_cos_between_vectors(&self, other: &Self) -> f32 {
+    pub fn get_cos_between_vectors(&self, other: &Self) -> T {
         Self::dot(self, other)/(self.get_magnitude()*other.get_magnitude())
     }
 
     #[inline]
-    pub fn get_sin_between_vectors(&self, other: &Self) -> f32 {
+    pub fn get_sin_between_vectors(&self, other: &Self) -> T {
         Self::cross(self, other)/(self.get_magnitude()*other.get_magnitude())
     }
 
     #[inline]
-    pub fn project_vector_on_vector(&self, other: &Self) -> PositionVector {
-        Self::dot(self, other)/other.get_squared_magnitude()*other
+    pub fn project_vector_on_vector(&self, other: &Self) -> Self {
+        let dot = Self::dot(self, other);
+        let denominator = Self::new(other.get_squared_magnitude() * other.x, other.get_squared_magnitude() * other.y);
+
+        Self::new(dot / denominator.x, dot / denominator.y)
     }
     
     #[inline]
-    pub fn project_vector_on_axis(&self, unit_vector: &Self) -> PositionVector {
-        Self::dot(self, unit_vector)*unit_vector
+    pub fn project_vector_on_axis(&self, unit_vector: &Self) -> Self {
+        let dot = Self::dot(self, unit_vector);
+        
+        Self::new(unit_vector.x * dot, unit_vector.y * dot)
     }
 
 }
