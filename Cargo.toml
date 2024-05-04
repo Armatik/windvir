@@ -19,3 +19,6 @@ num = "0.4.2"
 
 [build-dependencies]
 cc = "1.0.90"
+
+[profile.dev]
+debug-assertions = false
