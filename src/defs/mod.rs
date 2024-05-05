@@ -141,6 +141,11 @@ impl<T> Vector<T> where T: num::Float + Default {
         PositionVector::cross(&self.offset, &other.offset)
     }
 
+    #[inline]
+    pub fn dot(&self, other: &Self) -> T {
+        PositionVector::dot(&self.offset, &other.offset)
+    }
+
     pub fn get_right_normal(&self) -> PositionVector<T> {
         PositionVector { 
             x: self.offset.y,
@@ -283,30 +288,26 @@ impl<T> PositionVector<T> where T: num::Float + Default {
         Self::new(self.x/ half, self.y / half)
     }
 
-    #[inline]
-    pub fn dot(&self, other: &Self) -> T {
-        other.x*self.x + self.y*other.y
-    }
-
+    
     // Если можно не использовать, лучше не использовать
     #[inline]
     pub fn get_magnitude(&self) -> T {
         T::sqrt(self.x * self.x + self.y * self.y)
     }
-
+    
     #[inline]
     pub fn get_squared_magnitude(&self) -> T {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
-    pub fn cross(&self, other: &Self) -> T {
-        other.x*self.y - self.x*other.y
+    pub fn dot(&self, other: &Self) -> T {
+        other.x*self.x + self.y*other.y
     }
 
     #[inline]
-    pub fn dot_product(&self, other: &Self) -> T {
-        other.x*self.x + self.x*other.x
+    pub fn cross(&self, other: &Self) -> T {
+        other.x*self.y - self.x*other.y
     }
 
     #[inline]

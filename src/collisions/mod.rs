@@ -43,13 +43,13 @@ fn _test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool 
 
 // На базе скалярного произведения
 fn get_distance_for_parallel_segments(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
-    let position_difference = &second.position - &first.position;
-    let first_squared_magnitude = first.offset.get_squared_magnitude();
+    let position_difference = &first.position - &second.position;
     let second_squared_magnitude = second.offset.get_squared_magnitude();
-    let s_s = -PositionVector::dot_product(&position_difference,&second.offset)/second_sqared_magnitude;
-    let s_e = s_s + first_squared_magnitude/second_squared_magnitude;
-
+    let s_s = PositionVector::dot(&position_difference,&second.offset)/second_squared_magnitude;
+    let s_e = s_s + Vector::dot(first,second)/second_squared_magnitude;
     
+    
+    // let first_squared_magnitude = first.offset.get_squared_magnitude();
     let distance = if s_s < 0.0 {
         position_difference.get_squared_magnitude()
     } else if s_s > 1.0 {
