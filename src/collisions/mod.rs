@@ -9,6 +9,74 @@ fn _test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool 
 }
 
 
+// На базе векторного произведения
+// fn get_distance_for_parallel_segments(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
+//     let position_difference = &second.position - &first.position;
+//     let normal = first.get_left_normal();
+//     let cross_product = PositionVector::cross(&normal,&second.offset);
+//     let s_s = PositionVector::cross(&position_difference,&normal)/cross_product;
+//     let s_e = s_s - first.offset.get_squared_magnitude()/cross_product;
+    
+//     let distance = if s_s < 0.0 {
+//         position_difference.get_squared_magnitude()
+//     } else if s_s > 1.0 {
+//         (&position_difference + &second.offset).get_squared_magnitude()
+//     } else {
+//         return first.position.get_normal_magnitude_to_vector(second)
+//     };
+
+//     let second_distance = if s_e < 0.0 {
+//         (&position_difference - &first.offset).get_squared_magnitude()
+//     } else if s_e > 1.0 {
+//         (&position_difference + &(&second.offset - &first.offset)).get_squared_magnitude()
+//     } else {
+//         return first.position.get_normal_magnitude_to_vector(second)
+//     };
+
+//     if distance < second_distance {
+//         distance
+//     } else { 
+//         second_distance 
+//     }
+// }
+
+
+// На базе скалярного произведения
+fn get_distance_for_parallel_segments(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
+    let position_difference = &second.position - &first.position;
+    let first_squared_magnitude = first.offset.get_squared_magnitude();
+    let second_squared_magnitude = second.offset.get_squared_magnitude();
+    let s_s = -PositionVector::dot_product(&position_difference,&second.offset)/second_sqared_magnitude;
+    let s_e = s_s + first_squared_magnitude/second_squared_magnitude;
+
+    
+    let distance = if s_s < 0.0 {
+        position_difference.get_squared_magnitude()
+    } else if s_s > 1.0 {
+        (&position_difference + &second.offset).get_squared_magnitude()
+    } else {
+        return first.position.get_normal_magnitude_to_vector(second)
+    };
+
+    let second_distance = if s_e < 0.0 {
+        (&position_difference - &first.offset).get_squared_magnitude()
+    } else if s_e > 1.0 {
+        (&position_difference + &(&second.offset - &first.offset)).get_squared_magnitude()
+    } else {
+        return first.position.get_normal_magnitude_to_vector(second)
+    };
+
+    if distance < second_distance {
+        distance
+    } else { 
+        second_distance 
+    }
+}
+
+fn get_distance_for_crossing_segments(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
+    0.0
+}
+
 fn test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
     let position_difference = &second.position - &first.position;
     let cross_product = Vector::cross(first,second);

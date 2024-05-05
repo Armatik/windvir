@@ -141,7 +141,6 @@ impl<T> Vector<T> where T: num::Float + Default {
         PositionVector::cross(&self.offset, &other.offset)
     }
 
-
     pub fn get_right_normal(&self) -> PositionVector<T> {
         PositionVector { 
             x: self.offset.y,
@@ -260,6 +259,12 @@ impl<T> PositionVector<T> where T: num::Float + Default {
         }
     }
 
+    pub fn get_normal_magnitude_to_vector(&self, vector: &Vector<T>) -> T {
+        let position_difference = self - &vector.position;
+        let cross_product = Self::cross(&position_difference, &vector.position);
+        cross_product*cross_product/vector.offset.get_squared_magnitude()
+    }
+
     pub fn multiply_by_scalar(&self, multiplier: f64) -> Self {
         let multiplier = num::cast::<f64, T>(multiplier).unwrap();
 
@@ -270,11 +275,6 @@ impl<T> PositionVector<T> where T: num::Float + Default {
         let half = num::cast(2.).unwrap();
         
         Self::new((self.x + other.x) / half, (self.y + other.y) / half)
-    }
-    
-    #[inline]
-    pub fn cross(&self, other: &Self) -> T {
-        other.x*self.y - self.x*other.y
     }
 
     pub fn center(&self) -> Self {
@@ -300,24 +300,13 @@ impl<T> PositionVector<T> where T: num::Float + Default {
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> T {
+    pub fn cross(&self, other: &Self) -> T {
         other.x*self.y - self.x*other.y
     }
 
     #[inline]
     pub fn dot_product(&self, other: &Self) -> T {
         other.x*self.x + self.x*other.x
-    }
-
-    // Если можно не использовать, лучше не использовать
-    #[inline]
-    pub fn get_length(&self) -> T {
-        T::sqrt(self.x * self.x + self.y * self.y)
-    }
-
-    #[inline]
-    pub fn get_squared_length(&self) -> T {
-        self.x*self.x + self.y*self.y
     }
 
     #[inline]
@@ -343,12 +332,12 @@ impl<T> PositionVector<T> where T: num::Float + Default {
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
     #[inline]
     pub fn get_square(&self, other: &Self) -> T {
-        T::abs(Self::cross_product(self, other)) / num::cast(2.).unwrap()
+        T::abs(Self::cross(self, other)) / num::cast(2.).unwrap()
     }
 
     #[inline]
     pub fn get_double_square(&self, other: &Self) -> T {
-        T::abs(Self::cross_product(self, other))
+        T::abs(Self::cross(self, other))
     }
 
     #[inline]
