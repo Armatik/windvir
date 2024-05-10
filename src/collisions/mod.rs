@@ -48,22 +48,20 @@ fn get_distance_for_parallel_segments(first: &Vector<f64>, second: &Vector<f64>)
     let s_s = PositionVector::dot(&position_difference,&second.offset)/second_squared_magnitude;
     let s_e = s_s + Vector::dot(first,second)/second_squared_magnitude;
     
-    
-    // let first_squared_magnitude = first.offset.get_squared_magnitude();
     let distance = if s_s < 0.0 {
         position_difference.get_squared_magnitude()
     } else if s_s > 1.0 {
-        (&position_difference + &second.offset).get_squared_magnitude()
+        (&position_difference - &second.offset).get_squared_magnitude()
     } else {
-        return first.position.get_normal_magnitude_to_vector(second)
+        return position_difference.get_normal_magnitude_to_vector(second)
     };
 
     let second_distance = if s_e < 0.0 {
-        (&position_difference - &first.offset).get_squared_magnitude()
+        (&position_difference + &first.offset).get_squared_magnitude()
     } else if s_e > 1.0 {
-        (&position_difference + &(&second.offset - &first.offset)).get_squared_magnitude()
+        (&position_difference - &(&second.offset - &first.offset)).get_squared_magnitude()
     } else {
-        return first.position.get_normal_magnitude_to_vector(second)
+        return position_difference.get_normal_magnitude_to_vector(second)
     };
 
     if distance < second_distance {
