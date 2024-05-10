@@ -265,8 +265,7 @@ impl<T> PositionVector<T> where T: num::Float + Default {
     }
 
     pub fn get_normal_magnitude_to_vector(&self, vector: &Vector<T>) -> T {
-        let position_difference = self - &vector.position;
-        let cross_product = Self::cross(&position_difference, &vector.position);
+        let cross_product = Self::cross(self, &vector.offset);
         cross_product*cross_product/vector.offset.get_squared_magnitude()
     }
 
