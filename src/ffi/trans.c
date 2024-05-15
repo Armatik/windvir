@@ -194,9 +194,9 @@ nc_hull_maker(BuildingsVec *buildings_vec)
 	}
 	insides->lenVertex = inside_points;
 
-	for (uint64_t i = 0; i < get_w_param()*chull_points; i++) {
+	// for (uint64_t i = 0; i < get_w_param()*chull_points; i++) {
 		 
-	}
+	// }
 
 	return init_chull;
 }
