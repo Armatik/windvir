@@ -30,10 +30,10 @@ test_if_positive_infinity_vectror_crosess_side(const PointC* point, const Vector
 }
 
 bool
-test_if_point_inside_building(const PointC* point){
+test_if_point_inside_building(const PointC* point, const BuildingC* building){
     int64_t count = 0;
-    for ( uint64_t i = 0; i < 0; ++i ){
-        count += test_if_positive_infinity_vectror_crosess_side(point, &);
+    for ( uint64_t i = 0; i < building->lenVertex; ++i ){
+        count += test_if_positive_infinity_vectror_crosess_side(point, &building->sides[i]);
     }   
     return count != 0;
 }
