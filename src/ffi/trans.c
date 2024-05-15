@@ -156,6 +156,23 @@ merge_buildings(BuildingsVec *buildings_vec)
 	return result_building;
 }
 
+void
+set_w_param(int n) 
+{  int w = n; }
+
+int
+get_w_param(void)
+{  return w; }
+
+int
+compare_sides(const void * s1, const void * s2){
+	double o1 = (*(VectorC*)s1).offset.x;
+	double o2 = (*(VectorC*)b2).offset.x;
+
+	printf("%f %f\n", o1, o2);
+	return (int)(o1 - o2);
+}
+
 BuildingC*
 nc_hull_maker(BuildingsVec *buildings_vec)
 {
@@ -168,7 +185,18 @@ nc_hull_maker(BuildingsVec *buildings_vec)
 	init_chull->sides = malloc(chull_points * sizeof(VectorC));
 	init_chull->lenVertex = chull_points;
 
-	
+	BuildingC *entirety_of_points = malloc(sizeof(BuildingC));
+	BuildingC *insides = malloc(sizeof(BuildingC));
+
+	uint64_t inside_points = 0;
+	for (uint64_t i = 0; entirety_of_points[i] != init_chull[i]; i++){
+		inside_points += buildings_vec->buildings[i].lenVertex;
+	}
+	insides->lenVertex = inside_points;
+
+	for (uint64_t i = 0; i < get_w_param()*chull_points; i++) {
+		 
+	}
 
 	return init_chull;
 }
