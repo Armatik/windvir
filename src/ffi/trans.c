@@ -164,41 +164,58 @@ int
 get_w_param(void)
 {  return w; }
 
-int
-compare_sides(const void * s1, const void * s2){
-	double o1 = (*(VectorC*)s1).offset.x;
-	double o2 = (*(VectorC*)b2).offset.x;
-
-	printf("%f %f\n", o1, o2);
-	return (int)(o1 - o2);
-}
-
 BuildingC*
 nc_hull_maker(BuildingsVec *buildings_vec)
 {
-	BuildingC* init_chull = malloc(sizeof(merge_buildings(&buildings_vec)));
+	BuildingC* init_hull = malloc(sizeof(merge_buildings(buildings_vec)));
 	
 	uint64_t chull_points = 0;
 	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
 		chull_points += buildings_vec->buildings[i].lenVertex;
 	}
-	init_chull->sides = malloc(chull_points * sizeof(VectorC));
-	init_chull->lenVertex = chull_points;
+	init_hull->sides = malloc(chull_points * sizeof(VectorC));
+	init_hull->lenVertex = chull_points;
 
 	BuildingC *entirety_of_points = malloc(sizeof(BuildingC));
 	BuildingC *insides = malloc(sizeof(BuildingC));
 
 	uint64_t inside_points = 0;
-	for (uint64_t i = 0; entirety_of_points[i] != init_chull[i]; i++){
+	for (uint64_t i = 0; entirety_of_points[i] != init_hull[i]; i++){
 		inside_points += buildings_vec->buildings[i].lenVertex;
 	}
 	insides->lenVertex = inside_points;
 
 	// for (uint64_t i = 0; i < get_w_param()*chull_points; i++) {
-		 
+	// 	uint64_t ind_max = ;
+	// 	PointC* trip1 = ;
+	// 	PointC* trip2 = ;
+	// 	PointC* trip3;
+	// 	VectorC* side1 =
+	// 	// double side_quad1 = (trip2 - trip1) * (trip2 - trip1);
+	// 	double square_max = 0;
+	// 	uint64_t index_trip3 = ;
+
+	// 	for (uint64_t i = 0; trip3 == insides[i]; i++) {
+	// 		// double side_quad2 = (trip3 - trip1) * (trip3 - trip1);
+	// 		// double side_quad3 = (trip3 - trip2) * (trip3 - trip2);
+
+	// 		if (side_quad1 > abs(side_quad2 - side_quad3)) {
+	// 			// double p = ((trip2 - trip1) + (trip3 - trip1) + (trip3 - trip2)) / 2;
+	// 			// double square_of_tri = sqrt(p*(p-(trip2 - trip1))*(p-(trip3 - trip1))*(p-(trip3 - trip2)));
+	// 			if (square_of_tri < square_max) continue;
+	// 			if (test_if_point_inside_building(trip3, insides)) continue;
+	// 			if (test_vector_intersection()) continue;
+	// 			int index_trip3 = &insides[trip3] - &insides[0];
+	// 			square_max = square_of_tri;
+	// 		}
+	// 	}
+	// 	if (index_trip3 >= 0) {
+
+	// 	}
+	// 	else break
 	// }
 
-	return init_chull;
+	return init_hull;
 }
 
 BuildingsVec
