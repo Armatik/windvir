@@ -20,7 +20,7 @@ test_vector_intersection(const VectorC* first, const VectorC* second) {
 }
 
 int64_t
-test_if_positive_infinity_vectror_crosess_side(const PointC* point, const VectorC* side){
+test_if_positive_infinity_vector_crosess_side(const PointC* point, const VectorC* side){
     if ( side->offset.y == 0.0 ){ return 0; }
     const double s = (point->y - side->position.y)/side->offset.y;
     if (
@@ -35,10 +35,10 @@ test_if_positive_infinity_vectror_crosess_side(const PointC* point, const Vector
 }
 
 bool
-test_if_point_inside_building(const PointC* point, const BuildingC* building){
+test_if_point_inside_building(const PointC* point, const PointC* triangle){
     int64_t count = 0;
-    for ( uint64_t i = 0; i < building->lenVertex; ++i ){
-        count += test_if_positive_infinity_vectror_crosess_side(point, &building->sides[i]);
+    for ( uint64_t i = 0; i < 3; ++i ){
+        count += test_if_positive_infinity_vector_crosess_side(point, triangle + i);
     }   
     return count != 0;
 }

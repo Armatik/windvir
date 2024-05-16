@@ -64,14 +64,19 @@ merge_buildings(BuildingsVec *buildings_vec); // Функция объединя
 //int
 //get_w_param(void);
 
-//BuildingC*
-//nc_hull_maker(BuildingsVec *buildings_vec);
+BuildingC*
+nc_hull_maker(BuildingsVec *buildings_vec);
 
 void
 freeBuildings(BuildingsVec data);
 
 uint64_t
 get_leftmost_biggest_side_point(const BuildingC* building);
+
+//Длина стороны 
+double side_len(PointC *p1, PointC *p2);
+
+double triangle_area(PointC *triangle);
 
 #ifdef __cplusplus
 }

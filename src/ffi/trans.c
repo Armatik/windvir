@@ -1,12 +1,22 @@
 //#include <trans.h>
-#include "../../include/trans.h"
+//#include "../../include/trans.h"
 #include "../../include/collision detection.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 bool
 is_lefter(const PointC *a, const PointC *b, const PointC *main){
 	return ( ((a->y - main->y) / (a->x - main->x) > (b->y - main->y) / (b->x - main->x)) );
+}
+
+double side_len(PointC *p1, PointC *p2){
+	return sqrt(pow(p2->x - p1->x, 2) + pow(p2->y - p1->y, 2));
+}
+
+double triangle_area(PointC *triangle){
+	return 0.5 * fabs((triangle[1].x - triangle[0].x) * (triangle[2].y - triangle[0].y) -
+						(triangle[2].x - triangle[0].x) * (triangle[1].y - triangle[0].y) );
 }
 
 uint64_t
@@ -189,7 +199,7 @@ merge_buildings(BuildingsVec *buildings_vec)
 // BuildingC*											//Функция которая делает невыпуклую оболочку
 // nc_hull_maker(BuildingsVec *buildings_vec)
 // {
-// 	BuildingC* init_hull = malloc(sizeof(merge_buildings(buildings_vec)));			//Здесь я объявляю саму оболочку (сначала она выпуклая)
+// 	BuildingC* init_hull = malloc(sizeof(BuildingC));			//Здесь я объявляю саму оболочку (сначала она выпуклая)
 	
 // 	uint64_t hull_points = 0;
 // 	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
@@ -241,6 +251,77 @@ merge_buildings(BuildingsVec *buildings_vec)
 
 // 	return init_hull;
 // }
+
+BuildingC*
+nc_hull_maker(BuildingsVec *buildings_vec) {
+	BuildingC *init_hull = merge_buildings(buildings_vec);
+
+	PointC *convex_hull = malloc(init_hull->lenVertex * sizeof(PointC));
+	PointC *inside_points;
+
+	uint64_t insides = 0;
+
+	for(uint64_t i = 0; i < init_hull->lenVertex; i++){
+		convex_hull[i] = init_hull->sides[i].position;
+	}
+
+	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
+		insides += buildings_vec->buildings[i].lenVertex;
+	}
+
+	inside_points = malloc(insides * sizeof(PointC));
+
+	for(uint64_t i = 0, k = insides; i < buildings_vec->lenBuildings, k != 0; i++){
+		for(uint64_t j = 0; j < buildings_vec->buildings[i].lenVertex; j++){
+			inside_points[--k] = buildings_vec->buildings[i].sides[j].position;
+		}
+	}
+
+	for(uint64_t i = 0; i < init_hull->lenVertex; i++){
+		for(uint64_t j = 0; j < insides; j++){
+			if(convex_hull[i] == inside_points[j]){
+				memmove(inside_points + j, inside_points + j + 1, insides - j - 1);
+				inside_points = realloc(inside_points, (--insides) * sizeof(PointC));
+			}
+		}
+	}
+
+	
+	for(uint64_t i = 0; i < init_hull->lenVertex - 1; i++){
+		PointC *fitting_points;
+		uint64_t fitting = 0;
+
+		for(uint64_t j = 0; j < insides; j++){
+			double d0 = side_len(init_hull[i], init_hull[i+1]);
+			double d1 = side_len(init_hull[i], inside_points[j]);
+			double d2 = side_len(init_hull[i+1], init_hull[i+1]);
+
+			if(pow(d0, 2) > fabs(pow(d1, 2) - pow(d2, 2))){
+				if(fitting != 0){
+					fitting_points = realloc(fitting_points, (++fitting) * sizeof(PointC));
+					fitting_points[fitting - 1] = inside_points[j];
+				}
+				else{PointC *fitting_points;
+					uint64_t fitting = 0;
+					fitting_points = malloc(sizeof(PointC));
+					fitting_points[0] = inside_points[j];
+				}
+			}
+		}
+
+		double smax = 0;
+		
+
+
+		free(fitting_points);
+		fitting = 0;
+	}
+
+	free(convex_hull);
+	free(inside_points);
+
+	return NULL;
+}
 
 BuildingsVec
 changeVertex(BuildingsVec data)
