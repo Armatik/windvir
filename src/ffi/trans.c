@@ -1,11 +1,28 @@
 //#include <trans.h>
 #include "../../include/trans.h"
+#include "../../include/collision detection.h"
 #include <stdint.h>
 #include <stdio.h>
 
 bool
 is_lefter(const PointC *a, const PointC *b, const PointC *main){
 	return ( ((a->y - main->y) / (a->x - main->x) > (b->y - main->y) / (b->x - main->x)) );
+}
+
+get_leftmost_biggest_side_point(const BuildingC* building) {
+	uint64_t index = 0;
+	double maxLength = 0.0;
+	for (uint64_t i = 0; i < building->lenVertex; ++i) {
+		const double magnitude = squared_magnitude(&building->sides[i].offset);
+		if (magnitude > maxLength) {
+			maxLength = magnitude;
+			index = i;
+		}
+	}
+	if (0.0 < building->sides[index].offset.x) {
+		return index;
+	}
+	return (index + 1)%building->lenVertex;
 }
 
 int

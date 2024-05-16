@@ -72,6 +72,9 @@ nc_hull_maker(BuildingsVec *buildings_vec);
 void
 freeBuildings(BuildingsVec data);
 
+uint64_t
+get_leftmost_biggest_side_point(const BuildingC* building);
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

@@ -5,6 +5,11 @@ cross(const PointC* first, const PointC* second){
     return first->x*second->y - first->y*second->x;
 }
 
+double
+squared_magnitude(const PointC* vector){
+    return vector->x*vector->x + vector->y*vector->y;
+}
+
 bool
 test_vector_intersection(const VectorC* first, const VectorC* second) {
     const PointC position_difference = { second->position.x - first->position.x, second->position.y - first->position.y }; 
