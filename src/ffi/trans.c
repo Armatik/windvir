@@ -156,118 +156,118 @@ merge_buildings(BuildingsVec *buildings_vec)
 	return result_building;
 }
 
-void
-set_w_param(int n) 
-{  int w = n; }
+// void
+// set_w_param(int n) 
+// {  int w = n; }
 
-int
-get_w_param(void)
-{  return w; }
+// int
+// get_w_param(void)
+// {  return w; }
 
-BuildingC*
-nc_hull_maker(BuildingsVec *buildings_vec)
-{
-	BuildingC* init_hull = malloc(sizeof(merge_buildings(buildings_vec)));
+// BuildingC*
+// nc_hull_maker(BuildingsVec *buildings_vec)
+// {
+// 	BuildingC* init_hull = malloc(sizeof(merge_buildings(buildings_vec)));
 	
-	uint64_t chull_points = 0;
-	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
-		chull_points += buildings_vec->buildings[i].lenVertex;
-	}
-	init_hull->sides = malloc(chull_points * sizeof(VectorC));
-	init_hull->lenVertex = chull_points;
+// 	uint64_t chull_points = 0;
+// 	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
+// 		chull_points += buildings_vec->buildings[i].lenVertex;
+// 	}
+// 	init_hull->sides = malloc(chull_points * sizeof(VectorC));
+// 	init_hull->lenVertex = chull_points;
 
-	BuildingC *entirety_of_points = malloc(sizeof(BuildingC));
-	BuildingC *insides = malloc(sizeof(BuildingC));
+// 	BuildingC *entirety_of_points = malloc(sizeof(BuildingC));
+// 	BuildingC *insides = malloc(sizeof(BuildingC));
 
-	uint64_t inside_points = 0;
-	for (uint64_t i = 0; entirety_of_points[i] != init_hull[i]; i++){
-		inside_points += buildings_vec->buildings[i].lenVertex;
-	}
-	insides->lenVertex = inside_points;
+// 	uint64_t inside_points = 0;
+// 	for (uint64_t i = 0; entirety_of_points[i] != init_hull[i]; i++){
+// 		inside_points += buildings_vec->buildings[i].lenVertex;
+// 	}
+// 	insides->lenVertex = inside_points;
 
-	// for (uint64_t i = 0; i < get_w_param()*chull_points; i++) {
-	// 	uint64_t ind_max = ;
-	// 	PointC* trip1 = ;
-	// 	PointC* trip2 = ;
-	// 	PointC* trip3;
-	// 	VectorC* side1 =
-	// 	// double side_quad1 = (trip2 - trip1) * (trip2 - trip1);
-	// 	double square_max = 0;
-	// 	uint64_t index_trip3 = ;
+// 	// for (uint64_t i = 0; i < get_w_param()*chull_points; i++) {
+// 	// 	uint64_t ind_max = ;
+// 	// 	PointC* trip1 = ;
+// 	// 	PointC* trip2 = ;
+// 	// 	PointC* trip3;
+// 	// 	VectorC* side1 =
+// 	// 	// double side_quad1 = (trip2 - trip1) * (trip2 - trip1);
+// 	// 	double square_max = 0;
+// 	// 	uint64_t index_trip3 = ;
 
-	// 	for (uint64_t i = 0; trip3 == insides[i]; i++) {
-	// 		// double side_quad2 = (trip3 - trip1) * (trip3 - trip1);
-	// 		// double side_quad3 = (trip3 - trip2) * (trip3 - trip2);
+// 	// 	for (uint64_t i = 0; trip3 == insides[i]; i++) {
+// 	// 		// double side_quad2 = (trip3 - trip1) * (trip3 - trip1);
+// 	// 		// double side_quad3 = (trip3 - trip2) * (trip3 - trip2);
 
-	// 		if (side_quad1 > abs(side_quad2 - side_quad3)) {
-	// 			// double p = ((trip2 - trip1) + (trip3 - trip1) + (trip3 - trip2)) / 2;
-	// 			// double square_of_tri = sqrt(p*(p-(trip2 - trip1))*(p-(trip3 - trip1))*(p-(trip3 - trip2)));
-	// 			if (square_of_tri < square_max) continue;
-	// 			if (test_if_point_inside_building(trip3, insides)) continue;
-	// 			if (test_vector_intersection()) continue;
-	// 			int index_trip3 = &insides[trip3] - &insides[0];
-	// 			square_max = square_of_tri;
-	// 		}
-	// 	}
-	// 	if (index_trip3 >= 0) {
+// 	// 		if (side_quad1 > abs(side_quad2 - side_quad3)) {
+// 	// 			// double p = ((trip2 - trip1) + (trip3 - trip1) + (trip3 - trip2)) / 2;
+// 	// 			// double square_of_tri = sqrt(p*(p-(trip2 - trip1))*(p-(trip3 - trip1))*(p-(trip3 - trip2)));
+// 	// 			if (square_of_tri < square_max) continue;
+// 	// 			if (test_if_point_inside_building(trip3, insides)) continue;
+// 	// 			if (test_vector_intersection()) continue;
+// 	// 			int index_trip3 = &insides[trip3] - &insides[0];
+// 	// 			square_max = square_of_tri;
+// 	// 		}
+// 	// 	}
+// 	// 	if (index_trip3 >= 0) {
 
-	// 	}
-	// 	else break
-	// }
+// 	// 	}
+// 	// 	else break
+// 	// }
 
-	return init_hull;
-}
+// 	return init_hull;
+// }
 
-BuildingsVec
-changeVertex(BuildingsVec data)
-{
-	// Алгоритм Грэхема
-	for(uint64_t i = 0; i < data.lenBuildings; ++i){
-		grahams_algorithm(&(data.buildings[i]));
-	}
+// BuildingsVec
+// changeVertex(BuildingsVec data)
+// {
+// 	// Алгоритм Грэхема
+// 	for(uint64_t i = 0; i < data.lenBuildings; ++i){
+// 		grahams_algorithm(&(data.buildings[i]));
+// 	}
 
-	// Сортировка зданий по левой границе
-	//qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
+// 	// Сортировка зданий по левой границе
+// 	//qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
 	
-	for(uint64_t i = 0; i < data.lenBuildings; ++i){
-		for(uint64_t j = 0; j < data.lenBuildings - 1; ++j){
-			if(data.buildings[j].startPoint.x > data.buildings[j+1].startPoint.x){
-				BuildingC tmp = data.buildings[j];
-				data.buildings[j] = data.buildings[j + 1];
-				data.buildings[j + 1] = tmp;
-			}
-		}
-	}
+// 	for(uint64_t i = 0; i < data.lenBuildings; ++i){
+// 		for(uint64_t j = 0; j < data.lenBuildings - 1; ++j){
+// 			if(data.buildings[j].startPoint.x > data.buildings[j+1].startPoint.x){
+// 				BuildingC tmp = data.buildings[j];
+// 				data.buildings[j] = data.buildings[j + 1];
+// 				data.buildings[j + 1] = tmp;
+// 			}
+// 		}
+// 	}
 	
-	/* ---------- Проверка объединения зданий ---------- */
-/*
-	BuildingsVec vec;
-	uint64_t n = 5;
-	vec.lenBuildings = n;
-	vec.buildings = malloc(vec.lenBuildings * sizeof(BuildingC));
+// 	/* ---------- Проверка объединения зданий ---------- */
+// /*
+// 	BuildingsVec vec;
+// 	uint64_t n = 5;
+// 	vec.lenBuildings = n;
+// 	vec.buildings = malloc(vec.lenBuildings * sizeof(BuildingC));
 
-	for(uint64_t i = 0; i < vec.lenBuildings; i++){
-		vec.buildings[i] = data.buildings[i];
-	}
+// 	for(uint64_t i = 0; i < vec.lenBuildings; i++){
+// 		vec.buildings[i] = data.buildings[i];
+// 	}
 
-	BuildingC* result = merge_buildings(&vec);
+// 	BuildingC* result = merge_buildings(&vec);
 
-	free(vec.buildings);
+// 	free(vec.buildings);
 
-	BuildingsVec new_data;
-	new_data.lenBuildings = data.lenBuildings - n + 1;
-	new_data.buildings = malloc(new_data.lenBuildings * sizeof(BuildingC));
+// 	BuildingsVec new_data;
+// 	new_data.lenBuildings = data.lenBuildings - n + 1;
+// 	new_data.buildings = malloc(new_data.lenBuildings * sizeof(BuildingC));
 
-	new_data.buildings[0] = *result;
+// 	new_data.buildings[0] = *result;
 
-	for(uint64_t i = 1; i < new_data.lenBuildings; i++){
-		new_data.buildings[i] = data.buildings[i+n-1];
-	}
+// 	for(uint64_t i = 1; i < new_data.lenBuildings; i++){
+// 		new_data.buildings[i] = data.buildings[i+n-1];
+// 	}
 
-	return new_data;
-*/
-	return data;
-}
+// 	return new_data;
+// */
+// 	return data;
+// }
 
 
 /// Не трогать!
