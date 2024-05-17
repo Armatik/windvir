@@ -24,7 +24,9 @@ test_if_positive_infinity_vector_crosess_side(const PointC* point, const VectorC
     if ( side->offset.y == 0.0 ){ return 0; }
     const double s = (point->y - side->position.y)/side->offset.y;
     if (
-    s*s < s
+    s >= 0
+    &&
+    s < 1
     &&
     point->x < side->position.x + s*side->offset.x
     ) {
