@@ -65,7 +65,7 @@ merge_buildings(BuildingsVec *buildings_vec); // Функция объединя
 //get_w_param(void);
 
 BuildingC*
-nc_hull_maker(BuildingsVec *buildings_vec);
+nc_hull_maker(BuildingsVec *buildings_vec, uint64_t w);
 
 void
 freeBuildings(BuildingsVec data);

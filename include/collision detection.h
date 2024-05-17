@@ -38,7 +38,8 @@ test_if_positive_infinity_vector_crosess_side(const PointC* point, const VectorC
 
 bool
 test_if_point_inside_building(const PointC* point, const PointC* triangle){
-    int64_t count = 0;
+/*   
+	int64_t count = 0;
 	VectorC sides[3];
 
 	sides[0].position = triangle[0];
@@ -58,4 +59,15 @@ test_if_point_inside_building(const PointC* point, const PointC* triangle){
 	}   
 	
     return count != 0;
+*/	
+	double k1 = (triangle[0].x - point->x) * (triangle[1].y - triangle[0].y) - (triangle[1].x - triangle[0].x) * (triangle[0].y - point->y);
+	double k2 = (triangle[1].x - point->x) * (triangle[2].y - triangle[1].y) - (triangle[2].x - triangle[1].x) * (triangle[1].y - point->y);
+	double k3 = (triangle[2].x - point->x) * (triangle[0].y - triangle[2].y) - (triangle[0].x - triangle[2].x) * (triangle[2].y - point->y);
+	
+	if(k1 * k2 > 0 && k1 * k3 > 0){
+		return true;
+	}
+	
+	return false;
+	
 }
