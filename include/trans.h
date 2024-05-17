@@ -78,6 +78,10 @@ double side_len(PointC *p1, PointC *p2);
 
 double triangle_area(PointC *triangle);
 
+bool compare_points(PointC *p1, PointC *p2);
+
+BuildingC *make_building(PointC *points, uint64_t size);
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

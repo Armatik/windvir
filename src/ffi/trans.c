@@ -19,6 +19,10 @@ double triangle_area(PointC *triangle){
 						(triangle[2].x - triangle[0].x) * (triangle[1].y - triangle[0].y) );
 }
 
+bool compare_points(PointC *p1, PointC *p2){
+	return (p1->x == p2->x) && (p1->y == p2->y);
+}
+
 uint64_t
 get_leftmost_biggest_side_point(const BuildingC* building) {
 	uint64_t index = 0;
@@ -54,6 +58,29 @@ swap_points(PointC *a, PointC *b){
 
 	b->x = c.x;
 	b->y = c.y;
+}
+
+BuildingC *make_building(PointC *points, uint64_t size){
+	BuildingC *building = malloc(sizeof(BuildingC));
+	building->sides = malloc(size * sizeof(VectorC));
+	building->lenVertex = size;
+	
+	VectorC side;
+	for(uint64_t i = 0; i < size - 1; ++i){
+		side.position = points[i];
+		side.offset.x = points[i+1].x - points[i].x;
+		side.offset.y = points[i+1].y - points[i].y;
+
+		building->sides[i] = side;
+	}
+
+	side.position = points[size - 1];
+	side.offset.x = points[0].x - points[size - 1].x;
+	side.offset.y = points[0].y - points[size - 1].y;
+
+	building->sides[size - 1] = side;
+
+	return building;
 }
 
 void
@@ -184,86 +211,23 @@ merge_buildings(BuildingsVec *buildings_vec)
 	return result_building;
 }
 
-//Вот это надо раскомментить ахтунг!
-
-// void
-// set_w_param(int n) 
-// {  int w = n; }
-
-// int
-// get_w_param(void)
-// {  return w; }
-
-// //Все точки и функции ниже соответствуют всем точкам и вызовам в статье, в которой все описывалось
-
-// BuildingC*											//Функция которая делает невыпуклую оболочку
-// nc_hull_maker(BuildingsVec *buildings_vec)
-// {
-// 	BuildingC* init_hull = malloc(sizeof(BuildingC));			//Здесь я объявляю саму оболочку (сначала она выпуклая)
-	
-// 	uint64_t hull_points = 0;
-// 	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
-// 		hull_points += buildings_vec->buildings[i].lenVertex;
-// 	}
-// 	init_hull->sides = malloc(hull_points * sizeof(VectorC));
-// 	init_hull->lenVertex = hull_points;
-
-// 	BuildingC *entirety_of_points = malloc(sizeof(BuildingC));				//Тут точки всех зданий (по идее)
-// 	BuildingC *insides = malloc(sizeof(BuildingC));							//Внутренние точки, нужны для вырезания невыпуклой
-
-// 	uint64_t inside_points = 0;
-// 	for (uint64_t i = 0; entirety_of_points[i] != init_hull[i]; i++){
-// 		inside_points += buildings_vec->buildings[i].lenVertex;
-// 	}
-// 	insides->lenVertex = inside_points;
-
-// 	for (uint64_t i = 0; i < get_w_param()*hull_points; i++) {		//Цикл, в котором все происходит
-// 		uint64_t ind_max = ;										//Тут должен быть индекс самой левой точки максимальной стороны. Серега функцию написал
-
-// 		BuildingC *cutting_triangle = malloc(3 * sizeof(PointC));	//Тут я объявил треугольник с помощью которого вырезается оболочка как здание (возможно хуйня)
-// 		cutting_triangle->sides = malloc(3*sizeof(VectorC));
-// 		cutting_triangle->lenVertex = 3;
-
-		
-
-// 		double square_max = 0;
-// 		uint64_t index_trip3 = ;
-
-// 		for (uint64_t i = 0; trip3 == insides[i]; i++) {				//по идее реализация foreach из статьи (неизвестно насколько верная)
-// 			// double side_quad2 = (trip3 - trip1) * (trip3 - trip1);
-// 			// double side_quad3 = (trip3 - trip2) * (trip3 - trip2);
-
-// 			if (side_quad1 > abs(side_quad2 - side_quad3)) { 			//if с проверкой условий, выполняются ли функции из co
-// 				// double p = ((trip2 - trip1) + (trip3 - trip1) + (trip3 - trip2)) / 2;
-// 				// double square_of_tri = sqrt(p*(p-(trip2 - trip1))*(p-(trip3 - trip1))*(p-(trip3 - trip2)));
-// 				if (square_of_tri < square_max) continue;
-// 				if (test_if_point_inside_building(trip3, insides)) continue;
-// 				if (test_vector_intersection()) continue;
-// 				int index_trip3 = &insides[trip3] - &insides[0];
-// 				square_max = square_of_tri;
-// 			}
-// 		}							//тут по статье происходит запись trip3 (третья точка треугольника) в оболочку
-// 		if (index_trip3 >= 0) {
-// 			return 0;
-// 		}
-// 		else break
-// 	}
-
-// 	return init_hull;
-// }
-
 BuildingC*
 nc_hull_maker(BuildingsVec *buildings_vec) {
+	uint64_t w = 5;
 	BuildingC *init_hull = merge_buildings(buildings_vec);
 
-	PointC *convex_hull = malloc(init_hull->lenVertex * sizeof(PointC));
+	uint64_t convex_size = init_hull->lenVertex;
+	PointC *convex_hull = malloc(convex_size * sizeof(PointC));
 	PointC *inside_points;
 
 	uint64_t insides = 0;
 
-	for(uint64_t i = 0; i < init_hull->lenVertex; i++){
+	for(uint64_t i = 0; i < convex_size; i++){
 		convex_hull[i] = init_hull->sides[i].position;
 	}
+
+	uint64_t n = init_hull->lenVertex;
+	free(init_hull);
 
 	for(uint64_t i = 0; i < buildings_vec->lenBuildings; i++){
 		insides += buildings_vec->buildings[i].lenVertex;
@@ -271,68 +235,132 @@ nc_hull_maker(BuildingsVec *buildings_vec) {
 
 	inside_points = malloc(insides * sizeof(PointC));
 
-	for(uint64_t i = 0, k = insides; i < buildings_vec->lenBuildings, k != 0; i++){
+	for(uint64_t i = 0, k = insides; (i < buildings_vec->lenBuildings) && (k != 0); i++){
 		for(uint64_t j = 0; j < buildings_vec->buildings[i].lenVertex; j++){
 			inside_points[--k] = buildings_vec->buildings[i].sides[j].position;
 		}
 	}
 
-	for(uint64_t i = 0; i < init_hull->lenVertex; i++){
+	for(uint64_t i = 0; i < convex_size; i++){
 		for(uint64_t j = 0; j < insides; j++){
-			if(convex_hull[i] == inside_points[j]){
-				memmove(inside_points + j, inside_points + j + 1, insides - j - 1);
+			if(compare_points(convex_hull + i, inside_points + j)){
+				if(j != insides - 1){
+					memmove(inside_points + j, inside_points + j + 1, (insides - j - 1) * sizeof(PointC));
+				}
 				inside_points = realloc(inside_points, (--insides) * sizeof(PointC));
 			}
 		}
 	}
 
-	
-	for(uint64_t i = 0; i < init_hull->lenVertex - 1; i++){
-		PointC *fitting_points;
-		uint64_t fitting = 0;
+	for(uint64_t i = 0; i < w * n; i++){
+		uint64_t im = convex_size - 1;
+		uint64_t im1 = 0;
+		double d0 = side_len(convex_hull + im, convex_hull);
 
-		for(uint64_t j = 0; j < insides; j++){
-			double d0 = side_len(init_hull[i], init_hull[i+1]);
-			double d1 = side_len(init_hull[i], inside_points[j]);
-			double d2 = side_len(init_hull[i+1], init_hull[i+1]);
+		for(uint64_t j = 0; j < convex_size - 1; j++){
+			double d = side_len(convex_hull + j, convex_hull + j + 1);
 
-			if(pow(d0, 2) > fabs(pow(d1, 2) - pow(d2, 2))){
-				if(fitting != 0){
-					fitting_points = realloc(fitting_points, (++fitting) * sizeof(PointC));
-					fitting_points[fitting - 1] = inside_points[j];
-				}
-				else{PointC *fitting_points;
-					uint64_t fitting = 0;
-					fitting_points = malloc(sizeof(PointC));
-					fitting_points[0] = inside_points[j];
-				}
+			if(d > d0){
+				im = j;
+				im1 = im + 1;
+				d0 = d;
 			}
 		}
 
 		double smax = 0;
-		
 
+		for(uint64_t j = 0; j < insides; j++){
+			double d1 = side_len(convex_hull + im, inside_points + j);
+			double d2;
+			
+			d2 = side_len(inside_points + j, convex_hull + im1);
 
-		free(fitting_points);
-		fitting = 0;
+			if(pow(d0, 2) > fabs(pow(d1, 2) - pow(d2, 2))){
+				PointC triangle[3];
+
+				triangle[0] = convex_hull[im];
+				triangle[1] = convex_hull[im1];
+				triangle[2] = inside_points[j];
+
+				double s = triangle_area(triangle);
+
+				if(s < smax){ continue; }
+
+				bool has_points_inside = false;
+				
+				for(uint64_t k = 0; (k < insides) && (!has_points_inside); k++){
+					if((k != j) && test_if_point_inside_building(inside_points + k, triangle)){
+						has_points_inside = true;
+					}
+				}
+
+				if(has_points_inside){ continue; }
+				
+				bool has_crosses = false;
+
+				VectorC pb;
+				VectorC pe;
+
+				pb.position = convex_hull[im];
+				pb.offset.x = inside_points[j].x - convex_hull[im].x;
+				pb.offset.y = inside_points[j].y - convex_hull[im].y;
+				
+				pe.position = inside_points[j];
+				pe.offset.x = convex_hull[im1].x - inside_points[j].x;
+				pe.offset.y = convex_hull[im1].y - inside_points[j].y;
+
+				VectorC v;
+				for(uint64_t k = 0; (k < convex_size - 1) && (!has_crosses); k++){
+					v.position = convex_hull[k];
+					v.offset.x = convex_hull[k+1].x - convex_hull[k].x;
+					v.offset.y = convex_hull[k+1].y - convex_hull[k].y;
+
+					if(test_vector_intersection(&pb, &v)){ has_crosses = true; }
+					if(test_vector_intersection(&pe, &v)){ has_crosses = true; }
+				}
+
+				v.position = convex_hull[convex_size - 1];
+				v.offset.x = convex_hull[0].x - convex_hull[convex_size - 1].x;
+				v.offset.y = convex_hull[0].y - convex_hull[convex_size - 1].y;
+
+				if(test_vector_intersection(&pb, &v)){ has_crosses = true; }
+				if(test_vector_intersection(&pe, &v)){ has_crosses = true; }
+
+				if(has_crosses){ continue; }
+
+				smax = s;
+				
+				convex_hull = realloc(convex_hull, (convex_size + 1) * sizeof(PointC));
+				memmove(convex_hull + im1 + 1, convex_hull + im1, (convex_size - im1) * sizeof(PointC));
+				convex_hull[im1] = inside_points[j];
+				
+				convex_size++;
+				
+				if(j != insides - 1){
+					memmove(inside_points + j, inside_points + j + 1, (insides - j - 1) * sizeof(PointC));
+				}
+			
+				inside_points = realloc(inside_points, (--insides) * sizeof(PointC));
+			
+			}
+		}
 	}
+
+	BuildingC *result_building = make_building(convex_hull, convex_size);
 
 	free(convex_hull);
 	free(inside_points);
 
-	return NULL;
+	return result_building;
 }
 
 BuildingsVec
 changeVertex(BuildingsVec data)
 {
 	// Алгоритм Грэхема
-	for(uint64_t i = 0; i < data.lenBuildings; ++i){
-		grahams_algorithm(&(data.buildings[i]));
-	}
-
-	// Сортировка зданий по левой границе
-	//qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
+	//for(uint64_t i = 0; i < data.lenBuildings; ++i){
+	//	grahams_algorithm(&(data.buildings[i]));
+	//}
 	
 	for(uint64_t i = 0; i < data.lenBuildings; ++i){
 		for(uint64_t j = 0; j < data.lenBuildings - 1; ++j){
@@ -344,33 +372,21 @@ changeVertex(BuildingsVec data)
 		}
 	}
 	
-	/* ---------- Проверка объединения зданий ---------- */
-/*
-	BuildingsVec vec;
-	uint64_t n = 5;
-	vec.lenBuildings = n;
-	vec.buildings = malloc(vec.lenBuildings * sizeof(BuildingC));
+	BuildingC *b = nc_hull_maker(&data);
 
-	for(uint64_t i = 0; i < vec.lenBuildings; i++){
-		vec.buildings[i] = data.buildings[i];
+	for(uint64_t i = 0; i < data.lenBuildings; i++){
+		free(data.buildings[i].sides);
 	}
+	free(data.buildings);
 
-	BuildingC* result = merge_buildings(&vec);
+	data.buildings = b;
+	data.lenBuildings = 1;
 
-	free(vec.buildings);
+	PointC triangle[3] = {{1, 0}, {0, 1}, {-1, -1}};
+	PointC point = {0, 0};
 
-	BuildingsVec new_data;
-	new_data.lenBuildings = data.lenBuildings - n + 1;
-	new_data.buildings = malloc(new_data.lenBuildings * sizeof(BuildingC));
+	printf("%d\n", test_if_point_inside_building(&point, triangle));
 
-	new_data.buildings[0] = *result;
-
-	for(uint64_t i = 1; i < new_data.lenBuildings; i++){
-		new_data.buildings[i] = data.buildings[i+n-1];
-	}
-
-	return new_data;
-*/
 	return data;
 }
 
