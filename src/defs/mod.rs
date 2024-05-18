@@ -312,7 +312,7 @@ impl<T> PositionVector<T> where T: num::Float + Default {
 
     #[inline]
     pub fn cross(&self, other: &Self) -> T {
-        other.x*self.y - self.x*other.y
+        self.x*other.y - other.x*self.y
     }
 
     #[inline]
