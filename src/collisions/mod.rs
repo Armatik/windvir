@@ -32,7 +32,7 @@ fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector, side: &
 
 }
 
-fn test_if_point_inside_building(point: &PositionVector, building: &Building) -> bool {
+pub fn test_if_point_inside_building(point: &PositionVector, building: &Building) -> bool {
     let mut count = 0isize;
     for side in building.sides.iter() {
         count += test_if_positive_infinity_vector_crosses_side(point, side);
