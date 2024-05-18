@@ -47,8 +47,8 @@ pub struct Graphics {
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct Aim {
-    pub aim_adjusment: f32,
-    pub aim_speed: f32,
+    pub aim_adjusment: f64,
+    pub aim_speed: f64,
     pub aim_size: f32,
 }
 
