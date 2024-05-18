@@ -6,14 +6,14 @@ use std::ops::{Add, Sub, Mul};
 
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct Point<T> where T: num::Float + Default {
-    pub x: T,
-    pub y: T,
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
 }
 
 
-impl<T> Point<T> where T: num::Float + Default {
-    pub fn new(x: T, y: T) -> Self {
+impl Point {
+    pub fn new(x: f64, y: f64) -> Self {
         Self {
             x,
             y,
@@ -21,9 +21,7 @@ impl<T> Point<T> where T: num::Float + Default {
     }
 
     pub fn center_point(&self, other: &Self) -> Self {
-        let half = num::cast(2.).unwrap();
-
-        Self::new((self.x + other.x) / half, (self.y + other.y) / half)
+        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
     }
 
     pub fn is_point_default(&self) -> bool {
@@ -34,9 +32,9 @@ impl<T> Point<T> where T: num::Float + Default {
 
 #[derive(Debug, PartialEq)]
 pub struct Building {
-    pub start_point: PositionVector<f64>,
-    pub end_point: PositionVector<f64>,
-    pub sides: Vec<Vector<f64>>
+    pub start_point: PositionVector,
+    pub end_point: PositionVector,
+    pub sides: Vec<Vector>
 }
 
 
@@ -45,7 +43,7 @@ impl Building {
         let vertex = build.iter().map(
             |x| Vector::new(
                         PositionVector::new(x[0], x[1]),PositionVector::new(0., 0.)
-                    )).collect::<Vec<Vector<f64>>>();
+                    )).collect::<Vec<Vector>>();
         
         Self {
             start_point: PositionVector::new(0.,0.),
@@ -58,7 +56,7 @@ impl Building {
         let mut vertex = build.iter().map(
             |x| Vector::new(
                         PositionVector::new(x[0], x[1]),PositionVector::new(0., 0.)
-                    )).collect::<Vec<Vector<f64>>>();
+                    )).collect::<Vec<Vector>>();
 
         if vertex.len() < 3usize { panic!("У переданного здания меньше трёх сторон!\n{:?}",build); }
         for i in 0usize..vertex.len() - 1usize {
@@ -122,14 +120,14 @@ impl Building {
 
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct Vector<T> where T: num::Float + Default {
-    pub position: PositionVector<T>,
-    pub offset: PositionVector<T>,
+pub struct Vector {
+    pub position: PositionVector,
+    pub offset: PositionVector,
 }
 
 
-impl<T> Vector<T> where T: num::Float + Default {
-    pub fn new(position: PositionVector<T>, offset: PositionVector<T>) -> Self {
+impl Vector {
+    pub fn new(position: PositionVector, offset: PositionVector) -> Self {
         Self { 
             position,
             offset
@@ -137,19 +135,19 @@ impl<T> Vector<T> where T: num::Float + Default {
     }
 
     #[inline]
-    pub fn cross(&self, other: &Self) -> T {
+    pub fn cross(&self, other: &Self) -> f64 {
         PositionVector::cross(&self.offset, &other.offset)
     }
 
 
-    pub fn get_right_normal(&self) -> PositionVector<T> {
+    pub fn get_right_normal(&self) -> PositionVector {
         PositionVector { 
             x: self.offset.y,
             y: -self.offset.x
         }
     }
 
-    pub fn get_left_normal(&self) -> PositionVector<T> {
+    pub fn get_left_normal(&self) -> PositionVector {
         PositionVector { 
             x: -self.offset.y,
             y: self.offset.x
@@ -158,8 +156,8 @@ impl<T> Vector<T> where T: num::Float + Default {
 }
 
 
-impl<T> Sub for Point<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Sub for Point {
+    type Output = PositionVector;
 
     fn sub(self, end_point: Self) -> Self::Output {
         PositionVector::new(
@@ -170,8 +168,8 @@ impl<T> Sub for Point<T> where T: num::Float + Default {
 }
 
 
-impl<T> Add for &Point<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Add for &Point {
+    type Output = PositionVector;
 
     fn add(self, other: Self) -> Self::Output {
         PositionVector::new(
@@ -181,8 +179,8 @@ impl<T> Add for &Point<T> where T: num::Float + Default {
     }
 }
 
-impl<T> Add for &PositionVector<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Add for &PositionVector {
+    type Output = PositionVector;
 
     fn add(self, other: Self) -> Self::Output {
         PositionVector::new(
@@ -192,8 +190,8 @@ impl<T> Add for &PositionVector<T> where T: num::Float + Default {
     }
 }
 
-impl<T> Sub for &Point<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Sub for &Point {
+    type Output = PositionVector;
 
     fn sub(self, start_point: Self) -> Self::Output {
         PositionVector::new(
@@ -204,8 +202,8 @@ impl<T> Sub for &Point<T> where T: num::Float + Default {
 }
 
 
-impl<T> Sub for &Vector<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Sub for &Vector {
+    type Output = PositionVector;
 
     fn sub(self, subtractor_vector: Self) -> Self::Output {
         &self.offset - &subtractor_vector.offset
@@ -213,8 +211,8 @@ impl<T> Sub for &Vector<T> where T: num::Float + Default {
 }
 
 
-impl<T> Sub for &PositionVector<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Sub for &PositionVector {
+    type Output = PositionVector;
 
     fn sub(self, subtractor_vector: Self) -> Self::Output {
         PositionVector::new(
@@ -224,36 +222,32 @@ impl<T> Sub for &PositionVector<T> where T: num::Float + Default {
     }
 }
 
-impl<T> Mul<f64> for &PositionVector<T> where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Mul<f64> for &PositionVector {
+    type Output = PositionVector;
 
     fn mul(self, multiplier: f64) -> Self::Output {
-        let multiplier = num::cast::<f64, T>(multiplier).unwrap();
-
         PositionVector::new(multiplier * self.x, multiplier * self.y)
     }
 }
 
-impl<T> Mul<&PositionVector<T>> for f64 where T: num::Float + Default {
-    type Output = PositionVector<T>;
+impl Mul<&PositionVector> for f64 {
+    type Output = PositionVector;
 
-    fn mul(self, multiplicand: &PositionVector<T>) -> Self::Output {
-        let multiplier = num::cast::<f64, T>(self).unwrap();
-
-        PositionVector::<T>::new(multiplier * multiplicand.x, multiplier * multiplicand.y)
+    fn mul(self, multiplicand: &PositionVector) -> Self::Output {
+        PositionVector::new(self * multiplicand.x, self * multiplicand.y)
     }
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct PositionVector<T> where T: num::Float + Default {
-    pub x: T,
-    pub y: T,
+pub struct PositionVector {
+    pub x: f64,
+    pub y: f64,
 }
 
 
-impl<T> PositionVector<T> where T: num::Float + Default {
+impl PositionVector {
 
-    pub fn new(x: T, y: T) -> Self {
+    pub fn new(x: f64, y: f64) -> Self {
         Self { 
             x,
             y
@@ -261,76 +255,70 @@ impl<T> PositionVector<T> where T: num::Float + Default {
     }
 
     pub fn multiply_by_scalar(&self, multiplier: f64) -> Self {
-        let multiplier = num::cast::<f64, T>(multiplier).unwrap();
-
         PositionVector::new(multiplier * self.x, multiplier * self.y)
     }
 
     pub fn center_between_vectors(&self, other: &Self) -> Self {
-        let half = num::cast(2.).unwrap();
-        
-        Self::new((self.x + other.x) / half, (self.y + other.y) / half)
+        Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
     }
     
     #[inline]
-    pub fn cross(&self, other: &Self) -> T {
+    pub fn cross(&self, other: &Self) -> f64 {
         other.x*self.y - self.x*other.y
     }
 
     pub fn center(&self) -> Self {
-        let half = num::cast(2.).unwrap();
-
-        Self::new(self.x/ half, self.y / half)
+        Self::new(self.x/ 2., self.y / 2.)
     }
 
     #[inline]
-    pub fn dot(&self, other: &Self) -> T {
+    pub fn dot(&self, other: &Self) -> f64 {
         other.x*self.x + self.y*other.y
     }
 
     // Если можно не использовать, лучше не использовать
     #[inline]
-    pub fn get_magnitude(&self) -> T {
-        T::sqrt(self.x * self.x + self.y * self.y)
+    pub fn get_magnitude(&self) -> f64 {
+        f64::sqrt(self.x * self.x + self.y * self.y)
     }
 
     #[inline]
-    pub fn get_squared_magnitude(&self) -> T {
+    pub fn get_squared_magnitude(&self) -> f64 {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
-    pub fn cross_product(&self, other: &Self) -> T {
+    pub fn cross_product(&self, other: &Self) -> f64 {
         other.x*self.y - self.x*other.y
     }
 
     #[inline]
-    pub fn dot_product(&self, other: &Self) -> T {
+    pub fn dot_product(&self, other: &Self) -> f64 {
         other.x*self.x + self.x*other.x
     }
 
     // Если можно не использовать, лучше не использовать
     #[inline]
-    pub fn get_length(&self) -> T {
-        T::sqrt(self.x * self.x + self.y * self.y)
+    pub fn get_length(&self) -> f64 {
+        f64::sqrt(self.x * self.x + self.y * self.y)
     }
 
     #[inline]
-    pub fn get_squared_length(&self) -> T {
+    pub fn get_squared_length(&self) -> f64 {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
-    pub fn get_cos(&self) -> T {
+    pub fn get_cos(&self) -> f64 {
         self.x/self.get_magnitude()
     }
 
     #[inline]
-    pub fn get_sin(&self) -> T {
+    pub fn get_sin(&self) -> f64 {
         self.y/self.get_magnitude()
     }
 
-    pub fn get_cos_sin(&self) -> (T, T) {
+    pub fn get_cos_sin(&self) -> (f64, f64) {
         let length = self.get_magnitude();
         (self.x/length,self.y/length)
     }
@@ -342,22 +330,22 @@ impl<T> PositionVector<T> where T: num::Float + Default {
 
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
     #[inline]
-    pub fn get_square(&self, other: &Self) -> T {
-        T::abs(Self::cross_product(self, other)) / num::cast(2.).unwrap()
+    pub fn get_square(&self, other: &Self) -> f64 {
+        f64::abs(Self::cross_product(self, other)) / 2.
     }
 
     #[inline]
-    pub fn get_double_square(&self, other: &Self) -> T {
-        T::abs(Self::cross_product(self, other))
+    pub fn get_double_square(&self, other: &Self) -> f64 {
+        f64::abs(Self::cross_product(self, other))
     }
 
     #[inline]
-    pub fn get_cos_between_vectors(&self, other: &Self) -> T {
+    pub fn get_cos_between_vectors(&self, other: &Self) -> f64 {
         Self::dot(self, other)/(self.get_magnitude()*other.get_magnitude())
     }
 
     #[inline]
-    pub fn get_sin_between_vectors(&self, other: &Self) -> T {
+    pub fn get_sin_between_vectors(&self, other: &Self) -> f64 {
         Self::cross(self, other)/(self.get_magnitude()*other.get_magnitude())
     }
 
