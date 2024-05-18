@@ -163,7 +163,6 @@ impl App {
 
                     self.spawn_point(false);
                 }
-
             },
             _ => {},
         }
@@ -171,6 +170,7 @@ impl App {
         need_rerender
     }
 
+    #[allow(unreachable_code)]
     #[cfg(windows)]
     pub fn windows_keyboard_control(&mut self, key: event::KeyboardInput, cap: event::VirtualKeyCode) -> bool {
         let mut need_rerender = true;
@@ -240,6 +240,21 @@ impl App {
                     self.spawn_point(true);
                 }
             },
+            glutin::event::VirtualKeyCode::M => if key.state == glutin::event::ElementState::Released {
+                for (index, building) in self.buildings.iter().enumerate() {
+                    if collisions::test_if_point_inside_building(&defs::PositionVector::new(self.aim.x, self.aim.y), &building) {
+                        let mut points = Vec::<Vec<f64>>::with_capacity(building.sides.len());
+                        
+                        for point in &building.sides {
+                            points.push(vec![point.position.x, point.position.y]);
+                        }
+
+                        self.choosed_buildings.push((synthetic::Polygon::init(points, true, graphics::SELECTED_BUILDING_COLOR), index));
+                        
+                        break;
+                    }
+                }
+            },
             glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
             value @ (glutin::event::VirtualKeyCode::Key1 | glutin::event::VirtualKeyCode::Key2 | 
                 glutin::event::VirtualKeyCode::Key3 | glutin::event::VirtualKeyCode::Key4 |
@@ -252,9 +267,14 @@ impl App {
             glutin::event::VirtualKeyCode::Apostrophe => self.move_aim(super::MoveAim::Down),
             glutin::event::VirtualKeyCode::Period => self.move_aim(super::MoveAim::Default),
             glutin::event::VirtualKeyCode::Return => if key.state == glutin::event::ElementState::Released {
-                check_last_for_default!(point self);
+                if self.choosed_buildings.len() > 0 {
+                    todo!("Тут сделать объединение выделенных зданий");
+                    self.choosed_buildings = Vec::new();
+                } else {
+                    check_last_for_default!(point self);
 
-                self.spawn_point(false);
+                    self.spawn_point(false);
+                }
             },
             _ => {},
         };
