@@ -46,6 +46,8 @@ cargo run --release -- -r
 
 `0` – return to the center of the map
 
+`M` - select building and then use `Enter` to merge selected buildings
+
 ### Engine mode controls
 `+` – move the sight up
 
