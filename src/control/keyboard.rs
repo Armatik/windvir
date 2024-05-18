@@ -1,4 +1,4 @@
-use crate::{App, graphics, defs::synthetic};
+use crate::{App, graphics, defs::{self, synthetic}, collisions};
 use glium::glutin::{self, event};
 
 
@@ -25,6 +25,7 @@ macro_rules! check_last_for_default {
 
 
 impl App {
+    #[allow(unreachable_code)]
     #[cfg(unix)]
     pub fn unix_keyboard_control(&mut self, input: event::KeyboardInput, is_synthetic: bool) -> bool {
         const NUM1_KEY: u32 = 0x02;
@@ -56,6 +57,7 @@ impl App {
         const X_KEY: u32 = 0x2d;
         const C_KEY: u32 = 0x2e;
         const V_KEY: u32 = 0x2f;
+        const M_KEY: u32 = 0x32;
         const DOT_KEY: u32 = 0x34;
         const ARROW_UP_KEY: u32 = 0x67;
         const ARROW_LEFT_KEY: u32 = 0x69;
@@ -130,6 +132,21 @@ impl App {
                     self.spawn_point(true);
                 }
             },
+            M_KEY => if input.state == glutin::event::ElementState::Released {
+                for (index, building) in self.buildings.iter().enumerate() {
+                    if collisions::test_if_point_inside_building(&defs::PositionVector::new(self.aim.x, self.aim.y), &building) {
+                        let mut points = Vec::<Vec<f64>>::with_capacity(building.sides.len());
+                        
+                        for point in &building.sides {
+                            points.push(vec![point.position.x, point.position.y]);
+                        }
+
+                        self.choosed_buildings.push((synthetic::Polygon::init(points, true, graphics::SELECTED_BUILDING_COLOR), index));
+                        
+                        break;
+                    }
+                }
+            },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
             value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f64),
             EQUAL_KEY => self.move_aim(super::MoveAim::Top),
@@ -138,9 +155,15 @@ impl App {
             QUOTE_KEY => self.move_aim(super::MoveAim::Down),
             DOT_KEY => self.move_aim(super::MoveAim::Default),
             RETURN_KEY => if input.state == glutin::event::ElementState::Released {
-                check_last_for_default!(point self);
+                if self.choosed_buildings.len() > 0 {
+                    todo!("Тут сделать объединение выделенных зданий");
+                    self.choosed_buildings = Vec::new();
+                } else {
+                    check_last_for_default!(point self);
 
-                self.spawn_point(false);
+                    self.spawn_point(false);
+                }
+
             },
             _ => {},
         }
