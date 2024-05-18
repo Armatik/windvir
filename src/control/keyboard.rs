@@ -258,6 +258,19 @@ impl App {
             glutin::event::VirtualKeyCode::M => if key.state == glutin::event::ElementState::Released {
                 for (index, building) in self.buildings.iter().enumerate() {
                     if collisions::test_if_point_inside_building(&defs::PositionVector::new(self.aim.x, self.aim.y), &building) {
+                        let mut need_remove: Option<usize> = None;
+
+                        for (vec_index, (_, building_index)) in self.choosed_buildings.iter().enumerate() {
+                            if index == *building_index {
+                                need_remove = Some(vec_index);
+                            }
+                        }
+
+                        if let Some(index) = need_remove {
+                            self.choosed_buildings.remove(index);
+                            break;
+                        }
+
                         let mut points = Vec::<Vec<f64>>::with_capacity(building.sides.len());
                         
                         for point in &building.sides {
