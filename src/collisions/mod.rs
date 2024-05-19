@@ -31,6 +31,23 @@ fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector<f64>, si
     0isize
 }
 
+fn concave_interpolation(building: &Building) -> Building {
+    let mut interpolated_building = Building::clone(building);
+    let mut leftmost_point_index = 0usize;
+    let mut leftmost_point_x = interpolated_building.sides[0usize].position.x;
+    let mut sides = interpolated_building.sides.iter_mut();
+    for (index,side) in sides.enumerate() {
+        if side.position.x < leftmost_point_x {
+            leftmost_point_index = index;
+            leftmost_point_x = side.position.x;
+        }
+    }
+    interpolated_building.sides.rotate_left(leftmost_point_index);
+
+
+    interpolated_building
+}
+
 fn test_if_point_inside_building(point: &PositionVector<f64>, building: &Building) -> bool {
     let mut count = 0isize;
     for side in building.sides.iter() {

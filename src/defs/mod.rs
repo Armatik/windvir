@@ -73,7 +73,7 @@ impl Building {
             sides: vertex,
         }.caclulate_and_setup_bounding_box_points()
     }
-
+                                               
     fn caclulate_and_setup_bounding_box_points(mut self) -> Self {
         self.start_point = self.sides[0usize].position.clone();
         self.end_point = self.sides[0usize].position.clone();
@@ -117,6 +117,14 @@ impl Building {
             square +=  PositionVector::get_double_square(&(&self.sides[i].position - &self.sides[i + 1usize].position),&(&self.sides[i].position - &self.sides[i + 2usize].position));
         }
         square
+    }
+
+    pub fn clone(&self) -> Building {
+        Self {
+            sides: self.sides.clone(),
+            start_point: self.start_point.clone(),
+            end_point: self.end_point.clone()
+        }
     }
 }
 
