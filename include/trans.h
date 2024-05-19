@@ -58,14 +58,8 @@ grahams_algorithm(BuildingC *building);
 BuildingC*
 merge_buildings(BuildingsVec *buildings_vec); // Функция объединяет здания в массиве и возвращает указатель на здание, которое является объединением всех зданий
 
-//void
-//set_w_param(int n);
-
-//int
-//get_w_param(void);
-
 BuildingC*
-nc_hull_maker(BuildingsVec *buildings_vec, uint64_t w);
+nc_hull_maker(BuildingsVec *buildings_vec, double w);
 
 void
 freeBuildings(BuildingsVec data);
@@ -81,6 +75,10 @@ double triangle_area(PointC *triangle);
 bool compare_points(PointC *p1, PointC *p2);
 
 BuildingC *make_building(PointC *points, uint64_t size);
+
+double min(double n1, double n2);
+
+VectorC make_vector(PointC *p1, PointC *p2);
 
 #ifdef __cplusplus
 }

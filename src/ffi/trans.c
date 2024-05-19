@@ -5,6 +5,19 @@
 #include <stdio.h>
 #include <string.h>
 
+double min(double n1, double n2){ return (n1 < n2) ? n1 : n2; }
+
+VectorC make_vector(PointC *p1, PointC *p2){
+	VectorC vec;
+
+	vec.position = *p1;
+	
+	vec.offset.x = p2->x - p1->x;
+	vec.offset.y = p2->y - p1->y;
+	
+	return vec;
+}
+
 bool
 is_lefter(const PointC *a, const PointC *b, const PointC *main){
 	return ( ((a->y - main->y) / (a->x - main->x) > (b->y - main->y) / (b->x - main->x)) );
@@ -212,7 +225,7 @@ merge_buildings(BuildingsVec *buildings_vec)
 }
 
 BuildingC*
-nc_hull_maker(BuildingsVec *buildings_vec, uint64_t w) {
+nc_hull_maker(BuildingsVec *buildings_vec, double w) {
 	BuildingC *init_hull = merge_buildings(buildings_vec);
 
 	uint64_t convex_size = init_hull->lenVertex;
@@ -252,7 +265,7 @@ nc_hull_maker(BuildingsVec *buildings_vec, uint64_t w) {
 		}
 	}
 
-	for(uint64_t i = 0; i < w * n; i++){
+	while(true){
 		uint64_t im = convex_size - 1;
 		uint64_t im1 = 0;
 		double d0 = side_len(convex_hull + im, convex_hull);
@@ -267,61 +280,53 @@ nc_hull_maker(BuildingsVec *buildings_vec, uint64_t w) {
 			}
 		}
 
-		double smax = 0;
-		uint64_t jpt = -1;
+		d0 = pow(d0,2);
+
+		double smin = 4 * d0;
+		int64_t jpt = -1;
+		
+		//printf("im: %ld\tim1: %ld\n", im, im1);
 
 		for(uint64_t j = 0; j < insides; j++){
-			double d1 = side_len(convex_hull + im, inside_points + j);
-			double d2 = side_len(convex_hull + im1, inside_points + j);
 
-			if(pow(d0, 2) > fabs(pow(d1, 2) - pow(d2, 2))){
-				PointC triangle[3];
+			//printf("\tj: %ld\n", j);
 
-				triangle[0] = convex_hull[im];
-				triangle[1] = convex_hull[im1];
-				triangle[2] = inside_points[j];
+			double d1 = pow(side_len(convex_hull + im, inside_points + j), 2);
+			double d2 = pow(side_len(convex_hull + im1, inside_points + j), 2);
 
-				double s = triangle_area(triangle);
+			if(d1 + d2 - d0 > w * min(d1, d2)){ continue; }
+			
+			//printf("\tfirst condition\n");
 
-				if(s < smax){ continue; }
+			PointC triangle[3];
 
-				bool has_points_inside = false;
-				
-				for(uint64_t k = 0; (k < insides) && (!has_points_inside); k++){
-					if((k != j) && test_if_point_inside_building(inside_points + k, triangle)){
-						has_points_inside = true;
-					}
-				}
+			triangle[0] = convex_hull[im];
+			triangle[1] = convex_hull[im1];
+			triangle[2] = inside_points[j];
 
-				if(has_points_inside){ continue; }
-				
+			double s = triangle_area(triangle);
+
+			if(s < smin){
+
+				//printf("\t\ts < smin\n");
+
 				bool has_crosses = false;
 
-				VectorC pb;
-				VectorC pe;
-
-				pb.position = convex_hull[im];
-				pb.offset.x = inside_points[j].x - convex_hull[im].x;
-				pb.offset.y = inside_points[j].y - convex_hull[im].y;
-				
-				pe.position = convex_hull[im1];
-				pe.offset.x = inside_points[j].x - convex_hull[im1].x;
-				pe.offset.y = inside_points[j].y - convex_hull[im1].y;
+				VectorC pb = make_vector(convex_hull + im, inside_points + j);
+				VectorC pe = make_vector(inside_points + j, convex_hull + im1);
 
 				VectorC v;
-				for(uint64_t k = 0; (k < convex_size - 1) && (!has_crosses) && k != im && k != im1; k++){
-					v.position = convex_hull[k];
-					v.offset.x = convex_hull[k+1].x - convex_hull[k].x;
-					v.offset.y = convex_hull[k+1].y - convex_hull[k].y;
+				for(uint64_t k = 0; (k < convex_size - 1) && (!has_crosses); k++){
+					if(k != im && k != im1){
+						v = make_vector(convex_hull + k, convex_hull + k + 1);
 
-					if(test_vector_intersection(&pb, &v)){ has_crosses = true; }
-					if(test_vector_intersection(&pe, &v)){ has_crosses = true; }
+						if(test_vector_intersection(&pb, &v)){ has_crosses = true; }
+						if(test_vector_intersection(&pe, &v)){ has_crosses = true; }
+					}
 				}
 				
 				if(im1 != 0){
-					v.position = convex_hull[convex_size - 1];
-					v.offset.x = convex_hull[0].x - convex_hull[convex_size - 1].x;
-					v.offset.y = convex_hull[0].y - convex_hull[convex_size - 1].y;
+					v = make_vector(convex_hull + convex_size - 1, convex_hull);
 
 					if(test_vector_intersection(&pb, &v)){ has_crosses = true; }
 					if(test_vector_intersection(&pe, &v)){ has_crosses = true; }
@@ -329,27 +334,31 @@ nc_hull_maker(BuildingsVec *buildings_vec, uint64_t w) {
 				
 				if(has_crosses){ continue; }
 				
+				//printf("\t\thas no crosses\n");
+
 				jpt = j;
 
-				smax = s;
+				smin = s;
+				//printf("\t\tjpt: %ld\n", jpt);
 			}
-
-			if(j >= 0){
-				convex_hull = realloc(convex_hull, (convex_size + 1) * sizeof(PointC));
-				memmove(convex_hull + im1 + 1, convex_hull + im1, (convex_size - im1) * sizeof(PointC));
-				convex_hull[im1] = inside_points[j];
-				
-				convex_size++;
-				
-				if(j != insides - 1){
-					memmove(inside_points + j, inside_points + j + 1, (insides - j - 1) * sizeof(PointC));
-				}
-			
-				inside_points = realloc(inside_points, (insides - 1) * sizeof(PointC));
-				insides--;
-			}
-			else{ break; }
 		}
+
+		if(jpt >= 0){
+			convex_hull = realloc(convex_hull, (convex_size + 1) * sizeof(PointC));
+			memmove(convex_hull + im1 + 1, convex_hull + im1, (convex_size - im1) * sizeof(PointC));
+		
+			convex_hull[im1] = inside_points[jpt];
+	
+			convex_size++;
+	
+			if(jpt != insides - 1){
+				memmove(inside_points + jpt, inside_points + jpt + 1, (insides - jpt - 1) * sizeof(PointC));
+			}
+			
+			inside_points = (PointC*)realloc(inside_points, (insides - 1) * sizeof(PointC));
+			insides--;
+		}
+		else{ break; }
 	}
 
 	BuildingC *result_building = make_building(convex_hull, convex_size);
@@ -364,7 +373,7 @@ BuildingsVec
 changeVertex(BuildingsVec data)
 {
 	// Алгоритм Грэхема
-	
+	/*
 	for(uint64_t i = 0; i < data.lenBuildings; ++i){
 		grahams_algorithm(&(data.buildings[i]));
 	}
@@ -378,10 +387,11 @@ changeVertex(BuildingsVec data)
 			}
 		}
 	}
+	*/
 	
-	uint64_t w = 2;
-	printf("w = %ld\n", w);
-	BuildingC *b = nc_hull_maker(&data, 1);
+	double w = 2.5;
+	printf("w = %f\n", w);
+	BuildingC *b = nc_hull_maker(&data, w);
 
 	for(uint64_t i = 0; i < data.lenBuildings; i++){
 		free(data.buildings[i].sides);
