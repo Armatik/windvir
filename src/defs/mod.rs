@@ -139,6 +139,10 @@ impl Vector {
         PositionVector::cross(&self.offset, &other.offset)
     }
 
+    #[inline]
+    pub fn dot(&self, other: &Self) -> T {
+        PositionVector::dot(&self.offset, &other.offset)
+    }
 
     pub fn get_right_normal(&self) -> PositionVector {
         PositionVector { 
@@ -254,6 +258,17 @@ impl PositionVector {
         }
     }
 
+    // pub fn get_normal_magnitude_to_vector(&self, vector: &Vector<T>) -> T {
+    //     let position_difference =  self - vector;
+    //     let cross_product = Self::cross(position_difference, &vector.offset);
+    //     cross_product*cross_product/vector.offset.get_squared_magnitude()
+    // }
+    
+    pub fn get_normal_magnitude_to_vector(&self, vector: &Vector<T>) -> T {
+        let cross_product = Self::cross(self, &vector.offset);
+        cross_product*cross_product/vector.offset.get_squared_magnitude()
+    }
+
     pub fn multiply_by_scalar(&self, multiplier: f64) -> Self {
         PositionVector::new(multiplier * self.x, multiplier * self.y)
     }
@@ -281,13 +296,22 @@ impl PositionVector {
     pub fn get_magnitude(&self) -> f64 {
         f64::sqrt(self.x * self.x + self.y * self.y)
     }
-
+    
     #[inline]
     pub fn get_squared_magnitude(&self) -> f64 {
         self.x*self.x + self.y*self.y
     }
 
     #[inline]
+    pub fn dot(&self, other: &Self) -> f64 {
+        other.x*self.x + self.y*other.y
+    }
+
+    #[inline]
+    pub fn cross(&self, other: &Self) -> f64 {
+        self.x*other.y - other.x*self.y
+    }
+
     pub fn cross_product(&self, other: &Self) -> f64 {
         other.x*self.y - self.x*other.y
     }
@@ -330,6 +354,14 @@ impl PositionVector {
 
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
     #[inline]
+    pub fn get_square(&self, other: &Self) -> f64 {
+        f64::abs(Self::cross(self, other)) / 2.
+    }
+
+    #[inline]
+    pub fn get_double_square(&self, other: &Self) -> f64 {
+        f64::abs(Self::cross(self, other))
+
     pub fn get_square(&self, other: &Self) -> f64 {
         f64::abs(Self::cross_product(self, other)) / 2.
     }
