@@ -2,7 +2,7 @@ use crate::defs::{Building, PositionVector, Vector};
 
 
 // Не пременимо для паралелельных отрезков, более медленный
-fn _test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
+fn _test_vector_intersection(first: &Vector, second: &Vector) -> bool {
     let s1 = get_segment_division_parameter(first, second);
     let s2 = get_segment_division_parameter(second, first);
     s1*s1 < s1 && s2*s2 < s2
@@ -42,7 +42,7 @@ fn _test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool 
 
 
 // На базе скалярного произведения
-fn get_distance_for_parallel_segments(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
+fn get_distance_for_parallel_segments(first: &Vector, second: &Vector) -> f64 {
     let position_difference = &first.position - &second.position;
     let second_squared_magnitude = second.offset.get_squared_magnitude();
     let s_s = PositionVector::dot(&position_difference,&second.offset)/second_squared_magnitude;
@@ -71,7 +71,7 @@ fn get_distance_for_parallel_segments(first: &Vector<f64>, second: &Vector<f64>)
     }
 }
 
-fn get_distance_for_crossing_segments(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
+fn get_distance_for_crossing_segments(first: &Vector, second: &Vector) -> f64 {
     let position_difference = &first.position - &second.position;
     let first_squared_magnitude = first.offset.get_squared_magnitude();
     let second_squared_magnitude = second.offset.get_squared_magnitude();
@@ -128,7 +128,7 @@ fn get_distance_for_crossing_segments(first: &Vector<f64>, second: &Vector<f64>)
 
 }
 
-fn test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
+fn test_vector_intersection(first: &Vector, second: &Vector) -> bool {
     let position_difference = &second.position - &first.position;
     let cross_product = Vector::cross(first,second);
     let s1 = position_difference.cross(&second.offset);
@@ -136,7 +136,7 @@ fn test_vector_intersection(first: &Vector<f64>, second: &Vector<f64>) -> bool {
     s1*s1 < s1*cross_product && s2*s2 < s2*cross_product
 }
 
-fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector<f64>, side: &Vector<f64>) -> isize {
+fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector, side: &Vector) -> isize {
     if side.offset.y == 0. { return 0isize; }
     let s = (point.y - side.position.y)/side.offset.y;
     if 
@@ -151,7 +151,7 @@ fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector<f64>, si
 
 }
 
-fn test_if_point_inside_building(point: &PositionVector<f64>, building: &Building) -> bool {
+pub fn test_if_point_inside_building(point: &PositionVector, building: &Building) -> bool {
     let mut count = 0isize;
     for side in building.sides.iter() {
         count += test_if_positive_infinity_vector_crosses_side(point, side);
@@ -160,7 +160,7 @@ fn test_if_point_inside_building(point: &PositionVector<f64>, building: &Buildin
 }
 
 #[inline]
-fn get_segment_division_parameter(first: &Vector<f64>, second: &Vector<f64>) -> f64 {
+fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
     (&second.position - &first.position).cross(&second.offset)/Vector::cross(first,second)
 }
 
