@@ -140,7 +140,7 @@ impl Vector {
     }
 
     #[inline]
-    pub fn dot(&self, other: &Self) -> T {
+    pub fn dot(&self, other: &Self) -> f64 {
         PositionVector::dot(&self.offset, &other.offset)
     }
 
@@ -264,7 +264,7 @@ impl PositionVector {
     //     cross_product*cross_product/vector.offset.get_squared_magnitude()
     // }
     
-    pub fn get_normal_magnitude_to_vector(&self, vector: &Vector<T>) -> T {
+    pub fn get_normal_magnitude_to_vector(&self, vector: &Vector) -> f64 {
         let cross_product = Self::cross(self, &vector.offset);
         cross_product*cross_product/vector.offset.get_squared_magnitude()
     }
@@ -275,11 +275,6 @@ impl PositionVector {
 
     pub fn center_between_vectors(&self, other: &Self) -> Self {
         Self::new((self.x + other.x) / 2., (self.y + other.y) / 2.)
-    }
-    
-    #[inline]
-    pub fn cross(&self, other: &Self) -> f64 {
-        other.x*self.y - self.x*other.y
     }
 
     pub fn center(&self) -> Self {
@@ -300,11 +295,6 @@ impl PositionVector {
     #[inline]
     pub fn get_squared_magnitude(&self) -> f64 {
         self.x*self.x + self.y*self.y
-    }
-
-    #[inline]
-    pub fn dot(&self, other: &Self) -> f64 {
-        other.x*self.x + self.y*other.y
     }
 
     #[inline]
@@ -353,15 +343,6 @@ impl PositionVector {
     }
 
     // Бесполезный мусор, так как делить на два нет смысла для сравнения площадей, лол
-    #[inline]
-    pub fn get_square(&self, other: &Self) -> f64 {
-        f64::abs(Self::cross(self, other)) / 2.
-    }
-
-    #[inline]
-    pub fn get_double_square(&self, other: &Self) -> f64 {
-        f64::abs(Self::cross(self, other))
-
     pub fn get_square(&self, other: &Self) -> f64 {
         f64::abs(Self::cross_product(self, other)) / 2.
     }
