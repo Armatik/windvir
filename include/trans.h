@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -58,8 +59,10 @@ grahams_algorithm(BuildingC *building);
 BuildingC*
 merge_buildings(BuildingsVec *buildings_vec); // Функция объединяет здания в массиве и возвращает указатель на здание, которое является объединением всех зданий
 
+
 BuildingC*
 nc_hull_maker(BuildingsVec *buildings_vec, double w);
+
 
 void
 freeBuildings(BuildingsVec data);

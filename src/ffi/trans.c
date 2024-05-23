@@ -23,6 +23,7 @@ is_lefter(const PointC *a, const PointC *b, const PointC *main){
 	return ( ((a->y - main->y) / (a->x - main->x) > (b->y - main->y) / (b->x - main->x)) );
 }
 
+
 double side_len(PointC *p1, PointC *p2){
 	return sqrt(pow(p2->x - p1->x, 2) + pow(p2->y - p1->y, 2));
 }
@@ -198,9 +199,9 @@ grahams_algorithm(BuildingC *building){
 	free(result_points);
 }
 
+
 BuildingC*
-merge_buildings(BuildingsVec *buildings_vec)
-{
+merge_buildings(BuildingsVec *buildings_vec){
 	BuildingC *result_building = malloc(sizeof(BuildingC));
 	uint64_t points_len = 0; // Количество точек
 
@@ -223,6 +224,7 @@ merge_buildings(BuildingsVec *buildings_vec)
 
 	return result_building;
 }
+
 
 BuildingC*
 nc_hull_maker(BuildingsVec *buildings_vec, double w) {
@@ -369,6 +371,7 @@ nc_hull_maker(BuildingsVec *buildings_vec, double w) {
 	return result_building;
 }
 
+
 BuildingsVec
 changeVertex(BuildingsVec data)
 {
@@ -400,7 +403,46 @@ changeVertex(BuildingsVec data)
 
 	data.buildings = b;
 	data.lenBuildings = 1;
+	// Сортировка зданий по левой границе
+	//qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
+	
+	for(uint64_t i = 0; i < data.lenBuildings; ++i){
+		for(uint64_t j = 0; j < data.lenBuildings - 1; ++j){
+			if(data.buildings[j].startPoint.x > data.buildings[j+1].startPoint.x){
+				BuildingC tmp = data.buildings[j];
+				data.buildings[j] = data.buildings[j + 1];
+				data.buildings[j + 1] = tmp;
+			}
+		}
+	}
+	
+	/* ---------- Проверка объединения зданий ---------- */
+/*
+	BuildingsVec vec;
+	uint64_t n = 5;
+	vec.lenBuildings = n;
+	vec.buildings = malloc(vec.lenBuildings * sizeof(BuildingC));
 
+	for(uint64_t i = 0; i < vec.lenBuildings; i++){
+		vec.buildings[i] = data.buildings[i];
+	}
+
+	BuildingC* result = merge_buildings(&vec);
+
+	free(vec.buildings);
+
+	BuildingsVec new_data;
+	new_data.lenBuildings = data.lenBuildings - n + 1;
+	new_data.buildings = malloc(new_data.lenBuildings * sizeof(BuildingC));
+
+	new_data.buildings[0] = *result;
+
+	for(uint64_t i = 1; i < new_data.lenBuildings; i++){
+		new_data.buildings[i] = data.buildings[i+n-1];
+	}
+
+	return new_data;
+*/
 	return data;
 }
 

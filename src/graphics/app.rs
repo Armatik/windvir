@@ -1,5 +1,5 @@
 use crate::{
-    defs::{self, app}, json::geojson, App, control,
+    defs::{self, app}, json::geojson, App, control, synthetic::SyntheticData,
 };
 use std::fs;
 use glium::{
@@ -32,7 +32,7 @@ impl App {
         for building in &p_g.features {
             let mut temp_building = building.geometry.coordinates[0][0].clone();
             temp_building.pop();
-            buildings.push(defs::Building::new(temp_building));
+            buildings.push(defs::Building::new_complete(temp_building));
         }
 
         buildings
@@ -187,11 +187,53 @@ impl App {
                     &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
                     &shaders.random_shader,
                     &uniforms,
-                    &params
+                    &params,
                 ).expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
             }
         }
         // ---------------------------- Отрисовка синтетических фигур ----------------------------
+        
+        // ============================ Отрисовка выбранных зданий ============================
+        for (building, _) in &self.choosed_buildings {
+            let uniforms = uniform! {
+                matrix: self.cam.transform_matrix,
+                x_off: self.cam.offset_x,
+                y_off: self.cam.offset_y,
+                r_rand: super::SELECTED_BUILDING_COLOR[0],
+                g_rand: super::SELECTED_BUILDING_COLOR[1],
+                b_rand: super::SELECTED_BUILDING_COLOR[2],
+            };
+            
+            let (positions, indices) = building.get_vertices_and_indices();
+            let primitive = building.get_primitive();
+            let polygon_mode = match primitive {
+                glium::index::PrimitiveType::TrianglesList => glium::draw_parameters::PolygonMode::Fill,
+                glium::index::PrimitiveType::LineLoop => glium::draw_parameters::PolygonMode::Line,
+                _ => unreachable!("Попался невозможный примитив!"),
+            };
+            params.polygon_mode = polygon_mode;
+            let positions = glium::VertexBuffer::new(display, &positions)
+                .expect("Ошибка! Не удалось создать буффер вершин для объекта!");
+
+            if let Some(indices) = indices {
+                let indices = glium::IndexBuffer::new(
+                    display,
+                    primitive,
+                    &indices,
+                ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
+                target.draw(&positions, &indices, &shaders.random_shader, &uniforms, &params)
+                    .expect("Ошибка! Не удалось отрисовать выделенное здание!");
+            } else {
+                target.draw(
+                    &positions,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
+                    &shaders.random_shader,
+                    &uniforms,
+                    &params,
+                ).expect("Ошибка! Не удалось отрисовать выделенное здание!");
+            }
+        }
+        // ---------------------------- Отрисовка выбранных зданий ----------------------------
 
         // ============================ Отрисовка синтетических точек ============================
         params.smooth = None;
@@ -254,7 +296,7 @@ impl App {
             control::MoveAim::Right => self.aim.x += speed,
             control::MoveAim::Left => self.aim.x -= speed,
             control::MoveAim::Down => self.aim.y -= speed,
-            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x, -self.p_j.map_offset.y),
+            control::MoveAim::Default => self.aim = defs::Point::new(-self.p_j.map_offset.x as f64, -self.p_j.map_offset.y as f64),
         };
     }
 
