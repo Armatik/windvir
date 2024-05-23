@@ -1,5 +1,6 @@
-use crate::{App, graphics, defs::{self, synthetic}, collisions};
-use glium::glutin::{self, event};
+use crate::{App, graphics, defs::{self, synthetic, app}, collisions, ffi::{self, ReprRust}};
+use glium::{self, glutin::{self, event}};
+use std::alloc::{alloc, Layout};
 
 
 macro_rules! check_last_for_default {
@@ -27,9 +28,7 @@ macro_rules! check_last_for_default {
 impl App {
     #[allow(unreachable_code)]
     #[cfg(unix)]
-    pub fn unix_keyboard_control(&mut self, input: event::KeyboardInput, is_synthetic: bool) -> bool {
-        use std::vec;
-
+    pub fn unix_keyboard_control(&mut self, input: event::KeyboardInput, is_synthetic: bool, display: &glium::Display, positions: &mut app::Positions, indices: &mut app::FigureIndices<u16>) -> bool {
         const NUM1_KEY: u32 = 0x02;
         const NUM2_KEY: u32 = 0x03;
         const NUM3_KEY: u32 = 0x04;
@@ -171,7 +170,35 @@ impl App {
             DOT_KEY => self.move_aim(super::MoveAim::Default),
             RETURN_KEY => if input.state == glutin::event::ElementState::Released {
                 if self.choosed_buildings.len() > 0 {
-                    todo!("Тут сделать объединение выделенных зданий");
+                    let mut buildings = Vec::with_capacity(self.choosed_buildings.len());
+                    
+                    for (_, building_index) in &self.choosed_buildings {
+                        buildings.push(self.buildings[*building_index].clone());
+                    }
+
+                    let building = unsafe { ffi::BuildingsVec::new(buildings) };
+                    let layout = Layout::new::<ffi::BuildingsVec>();
+                    let building_vec = unsafe { alloc(layout).cast::<ffi::BuildingsVec>() };
+                    
+                    if building_vec.is_null() {
+                        panic!("Произошло переполнение памяти!");
+                    }
+
+                    unsafe { building_vec.write(building); };
+
+                    let building = unsafe { *ffi::merge_buildings(building_vec).offset(0) };
+                    let building = building.repr_rust();
+
+                    for (_, building_index) in &self.choosed_buildings {
+                        self.buildings.remove(*building_index);
+                    }
+
+                    println!("{building:?}");
+                    self.buildings.push(building);
+
+                    self.set_positions(display, positions).expect("Ошибка! Не удалось задать позици для зданий!");
+                    self.set_indices(display, indices).expect("Ошибка! Не удалось задать индексы для позиций зданий!");
+
                     self.choosed_buildings = Vec::new();
                 } else {
                     check_last_for_default!(point self);
