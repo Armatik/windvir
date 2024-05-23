@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,8 +59,29 @@ grahams_algorithm(BuildingC *building);
 BuildingC*
 merge_buildings(BuildingsVec *buildings_vec); // Функция объединяет здания в массиве и возвращает указатель на здание, которое является объединением всех зданий
 
+
+BuildingC*
+nc_hull_maker(BuildingsVec *buildings_vec, double w);
+
+
 void
 freeBuildings(BuildingsVec data);
+
+uint64_t
+get_leftmost_biggest_side_point(const BuildingC* building);
+
+//Длина стороны 
+double side_len(PointC *p1, PointC *p2);
+
+double triangle_area(PointC *triangle);
+
+bool compare_points(PointC *p1, PointC *p2);
+
+BuildingC *make_building(PointC *points, uint64_t size);
+
+double min(double n1, double n2);
+
+VectorC make_vector(PointC *p1, PointC *p2);
 
 #ifdef __cplusplus
 }

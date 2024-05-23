@@ -148,7 +148,6 @@ fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector, side: &
         else { return -1isize; }
     }
     0isize
-
 }
 
 pub fn test_if_point_inside_building(point: &PositionVector, building: &Building) -> bool {
