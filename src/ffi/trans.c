@@ -376,7 +376,6 @@ BuildingsVec
 changeVertex(BuildingsVec data)
 {
 	// Алгоритм Грэхема
-	/*
 	for(uint64_t i = 0; i < data.lenBuildings; ++i){
 		grahams_algorithm(&(data.buildings[i]));
 	}
@@ -390,31 +389,30 @@ changeVertex(BuildingsVec data)
 			}
 		}
 	}
-	*/
 	
-	double w = 2.5;
-	printf("w = %f\n", w);
-	BuildingC *b = nc_hull_maker(&data, w);
+	// double w = 2.5;
+	// printf("w = %f\n", w);
+	// BuildingC *b = nc_hull_maker(&data, w);
 
-	for(uint64_t i = 0; i < data.lenBuildings; i++){
-		free(data.buildings[i].sides);
-	}
-	free(data.buildings);
+	// for(uint64_t i = 0; i < data.lenBuildings; i++){
+	// 	free(data.buildings[i].sides);
+	// }
+	// free(data.buildings);
 
-	data.buildings = b;
-	data.lenBuildings = 1;
-	// Сортировка зданий по левой границе
-	//qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
+	// data.buildings = b;
+	// data.lenBuildings = 1;
+	// // Сортировка зданий по левой границе
+	// //qsort(data.buildings, data.lenBuildings, sizeof(BuildingC), compare_buildings);
 	
-	for(uint64_t i = 0; i < data.lenBuildings; ++i){
-		for(uint64_t j = 0; j < data.lenBuildings - 1; ++j){
-			if(data.buildings[j].startPoint.x > data.buildings[j+1].startPoint.x){
-				BuildingC tmp = data.buildings[j];
-				data.buildings[j] = data.buildings[j + 1];
-				data.buildings[j + 1] = tmp;
-			}
-		}
-	}
+	// for(uint64_t i = 0; i < data.lenBuildings; ++i){
+	// 	for(uint64_t j = 0; j < data.lenBuildings - 1; ++j){
+	// 		if(data.buildings[j].startPoint.x > data.buildings[j+1].startPoint.x){
+	// 			BuildingC tmp = data.buildings[j];
+	// 			data.buildings[j] = data.buildings[j + 1];
+	// 			data.buildings[j + 1] = tmp;
+	// 		}
+	// 	}
+	// }
 	
 	/* ---------- Проверка объединения зданий ---------- */
 /*
@@ -444,17 +442,4 @@ changeVertex(BuildingsVec data)
 	return new_data;
 */
 	return data;
-}
-
-
-/// Не трогать!
-void
-freeBuildings(BuildingsVec data)
-{
-	for (uint64_t i = 0; i < data.lenBuildings; ++i)
-	{
-		free(data.buildings[i].sides);
-	}
-
-	free(data.buildings);
 }

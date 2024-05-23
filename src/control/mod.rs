@@ -20,14 +20,14 @@ pub enum MoveAim {
 
 
 impl App {
-    pub fn window_loop<T>(
+    pub fn window_loop(
         mut self,
         event_loop: glutin::event_loop::EventLoop<()>,
         display: Display,
-        positions: defs_app::Positions,
+        mut positions: defs_app::Positions,
         shaders: graphics_app::Shaders,
-        indices: defs_app::FigureIndices<T>,
-    ) -> ! where T: glium::index::Index {
+        mut indices: defs_app::FigureIndices<u16>,
+    ) -> ! {
         let mut params = glium::DrawParameters {
             multisampling: self.p_j.graphics.multisampling_on,
             dithering: self.p_j.graphics.dithering_on,
@@ -66,7 +66,7 @@ impl App {
                     ),
                     #[cfg(unix)]
                     glutin::event::WindowEvent::KeyboardInput { input, is_synthetic, .. } => {
-                        if self.unix_keyboard_control(input, is_synthetic) {
+                        if self.unix_keyboard_control(input, is_synthetic, &display, &mut positions, &mut indices) {
                             self.render_frame(
                                 &display,
                                 &mut params,

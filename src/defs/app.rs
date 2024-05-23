@@ -81,6 +81,13 @@ impl App {
         Ok(Positions::new(building_vertices, field_positions, default_building_vertices))
     }
 
+    pub fn set_positions(&self, display: &glium::Display, positions: &mut Positions) -> Result<(), Box<dyn std::error::Error>> {
+        let shape = self.get_buildings_vertices();
+        positions.change_positions = glium::VertexBuffer::new(display, &shape)?;
+
+        Ok(())
+    }
+
     fn init_field(
         &self,
         is_color_rainbow: bool,
@@ -128,6 +135,21 @@ impl App {
         let indices = FigureIndices::new(indices_line, indices_triangulate, indices_field);
 
         Ok(indices)
+    }
+
+    pub fn set_indices(&self, display: &glium::Display, indices: &mut FigureIndices<u16>) -> Result<(), Box<dyn std::error::Error>> {
+        indices.buildings_indices_line = glium::IndexBuffer::new(
+            display,
+            glium::index::PrimitiveType::LinesList,
+            &graphics::get_line_indices(&self.buildings),
+        )?;
+        indices.buildings_indices_triangulate = glium::IndexBuffer::new(
+            display,
+            glium::index::PrimitiveType::TrianglesList,
+            &graphics::get_triangulation_indices(&self.buildings),
+        )?;
+        
+        Ok(())
     }
 
     pub fn is_start_polygon(&self) -> bool {

@@ -3,6 +3,13 @@ use crate::json::geojson::PersistentG;
 use crate::defs;
 
 
+pub trait ReprRust {
+    type RustOutput;
+
+    fn repr_rust(self) -> Self::RustOutput;
+}
+
+
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 struct PointC {
@@ -18,12 +25,14 @@ impl PointC {
             y,
         }
     }
+}
 
-    pub fn repr_rust(self) -> defs::PositionVector {
-        defs::PositionVector {
-            x: self.x,
-            y: self.y,
-        }
+
+impl ReprRust for PointC {
+    type RustOutput = defs::PositionVector;
+    
+    fn repr_rust(self) -> Self::RustOutput {
+        defs::PositionVector::new(self.x, self.y)
     }
 }
 
@@ -35,6 +44,22 @@ pub struct BuildingC {
     end_point: PointC,
     sides: *mut VectorC,
     len_vertex: u64,
+}
+
+
+impl ReprRust for BuildingC {
+    type RustOutput = defs::Building;
+
+    fn repr_rust(self) -> Self::RustOutput {
+        let sides = unsafe { Vec::from_raw_parts(self.sides, self.len_vertex as usize, self.len_vertex as usize) };
+        let sides = sides.iter().map(|x| x.repr_rust()).collect::<Vec<defs::Vector>>();
+
+        defs::Building {
+            start_point: self.start_point.repr_rust(),
+            end_point: self.end_point.repr_rust(),
+            sides,
+        }
+    }
 }
 
 
@@ -81,12 +106,14 @@ impl VectorC {
             offset
         }
     }
+}
 
-    pub fn repr_rust(self) -> defs::Vector {
-        defs::Vector { 
-            position: self.position.repr_rust(),
-            offset: self.offset.repr_rust()
-        }
+
+impl ReprRust for VectorC {
+    type RustOutput = defs::Vector;
+    
+    fn repr_rust(self) -> Self::RustOutput {
+        defs::Vector::new(self.position.repr_rust(), self.offset.repr_rust())
     }
 }
 
@@ -105,6 +132,17 @@ impl Default for BuildingsVec {
             buildings: std::ptr::null_mut(),
             len_buildings: u64::default(),
         }
+    }
+}
+
+
+impl ReprRust for BuildingsVec {
+    type RustOutput = Vec<defs::Building>;
+
+    fn repr_rust(self) -> Self::RustOutput {
+        let buildings = unsafe { Vec::from_raw_parts(self.buildings, self.len_buildings as usize, self.len_buildings as usize) };
+        
+        buildings.iter().map(|x| x.repr_rust()).collect::<Vec<defs::Building>>()
     }
 }
 
@@ -130,7 +168,7 @@ impl BuildingsVec {
 }
 
 
-pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -> Result<BuildingsVec, Box<dyn std::error::Error>> {
+pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -> Result<(), Box<dyn std::error::Error>> {
     let data = crate::App::trans_persistent(p_g);
     let data = unsafe { BuildingsVec::new(data) };
 
@@ -155,11 +193,12 @@ pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -
         })
     }
 
-    Ok(out)
+    Ok(())
 }
 
 
 extern "C" {
     fn changeVertex(_: BuildingsVec) -> BuildingsVec;
     pub fn freeBuildings(_: BuildingsVec);
+    pub fn merge_buildings(_: *mut BuildingsVec) -> *const BuildingC; 
 }

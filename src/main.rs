@@ -221,7 +221,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let p_g = geojson::PersistentG::default();
     let p_j = default_json::PersistentJ::default();
     let mut ffi_buildigs = Vec::<defs::Building>::with_capacity(p_g.features.len());
-    let mut ffi_out = ffi::BuildingsVec::default();
     let default_buildings = crate::App::trans_persistent(&p_g);
 
     for arg in args {
@@ -239,7 +238,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else if &arg == "-c" {
                 log::info!("Приложение запущено с FFI режимом");
 
-                ffi_out = ffi::ffi_loop(&mut ffi_buildigs, &p_g)?;
+                ffi::ffi_loop(&mut ffi_buildigs, &p_g)?;
             } else if &arg == "-r" {
                 log::info!("Приложение запущено с разноцветным полем");
 
@@ -258,10 +257,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     app.start_app(default_buildings)?;
-
-    if !ffi_out.buildings.is_null() {
-        unsafe { ffi::freeBuildings(ffi_out); };
-    }
 
     Ok(())
 }

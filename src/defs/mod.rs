@@ -30,7 +30,7 @@ impl Point {
 }
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Building {
     pub start_point: PositionVector,
     pub end_point: PositionVector,
