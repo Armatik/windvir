@@ -50,7 +50,6 @@ fn main() {
         cfg.include("./include")
             .file("./src/ffi/trans.c")
             .out_dir(dst.join("lib"))
-            .flag("-O3")
             .compile("libwindvir.a");
     }
 
