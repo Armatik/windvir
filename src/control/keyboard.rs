@@ -3,15 +3,15 @@ use glium::{self, glutin::{self, event}};
 
 
 macro_rules! check_last_for_default {
-    ($data:ident) => {
+    ($data:ident, $need_rerender:ident) => {
         match $data.synthetic_data.back() {
             Some(figure) => if figure.is_value_default() {
-                return false;
+                return $need_rerender;
             },
             _ => {},
         }
     };
-    (point $data:ident) => {
+    (point $data:ident, $need_rerender:ident) => {
         match $data.synthetic_data.back() {
             Some(figure) => if figure.get_data_simply() == synthetic::SimplySyntheticVariant::Circle {
                 return false;
@@ -116,24 +116,24 @@ impl App {
             Z_KEY => self.transform_map(graphics::TransformAction::Increase),
             X_KEY => self.transform_map(graphics::TransformAction::Reduce),
             C_KEY => {
-                check_last_for_default!(self);
+                check_last_for_default!(self, need_rerender);
                 self.define_figure(synthetic::Circle::new(), "Выберите размер для окружности, используя цифры 1..=9");
 
                 need_rerender = false;
             },
             R_KEY => if input.state == glutin::event::ElementState::Released {
-                check_last_for_default!(self);
+                check_last_for_default!(self, need_rerender);
                 self.define_figure(synthetic::Rectangle::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
                 self.spawn_point(false);
             },
             L_KEY => if input.state == glutin::event::ElementState::Released {
-                check_last_for_default!(self);
+                check_last_for_default!(self, need_rerender);
                 self.define_figure(synthetic::Segment::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
                 self.spawn_point(false);
             },
-            F_KEY => if input.state == glutin::event::ElementState::Released {
+            F_KEY => if input.state == glutin::event::ElementState::Released {                
                 if self.is_start_polygon() {
-                    check_last_for_default!(self);
+                    check_last_for_default!(self, need_rerender);
                     self.define_figure(synthetic::Polygon::new(), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
                     self.spawn_point(false);
                 } else if self.is_polygon() {
@@ -167,7 +167,7 @@ impl App {
 
                     self.merge_buildings(display, positions, indices, true);
                 } else {
-                    check_last_for_default!(point self);
+                    check_last_for_default!(point self, need_rerender);
 
                     self.spawn_point(false);
                 }
