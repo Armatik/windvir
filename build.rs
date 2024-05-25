@@ -36,11 +36,23 @@ fn main() {
 
     let mut cfg = cc::Build::new();
     cfg.cuda(false);
-    cfg.include("./include")
-        .file("./src/ffi/trans.c")
-        .out_dir(dst.join("lib"))
-        .flag("-O3")
-        .compile("libwindvir.a");
+    #[cfg(unix)]
+    {
+        cfg.include("./include")
+            .file("./src/ffi/trans.c")
+            .out_dir(dst.join("lib"))
+            .flag("-O3")
+            .compile("libwindvir.a");
+    }
+
+    #[cfg(windows)]
+    {
+        cfg.include("./include")
+            .file("./src/ffi/trans.c")
+            .out_dir(dst.join("lib"))
+            .flag("-O3")
+            .compile("libwindvir.a");
+    }
 
     println!("cargo:root={}", dst.display());
     println!("cargo:include={}", dst.join("include").display());
