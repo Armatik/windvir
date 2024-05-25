@@ -161,6 +161,10 @@ impl App {
 
                     self.merge_buildings(display, positions, indices, false);
                 } else if !self.non_choosed_buildings.is_empty() {
+                    if !self.choosed_buildings.is_empty() {
+                        return need_rerender;
+                    }
+
                     self.merge_buildings(display, positions, indices, true);
                 } else {
                     check_last_for_default!(point self);
@@ -277,6 +281,10 @@ impl App {
 
                     self.merge_buildings(display, positions, indices, false);
                 } else if !self.non_choosed_buildings.is_empty() {
+                    if !self.choosed_buildings.is_empty() {
+                        return need_rerender;
+                    }
+
                     self.merge_buildings(display, positions, indices, true);
                 } else {
                     check_last_for_default!(point self);

@@ -1,6 +1,6 @@
 //#include <trans.h>
 //#include "../../include/trans.h"
-#include "../../include/collision detection.h"
+#include "../../include/collision_detection.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
