@@ -199,6 +199,5 @@ pub fn ffi_loop(norm_buildings: &mut Vec::<defs::Building>, p_g: &PersistentG) -
 
 extern "C" {
     fn changeVertex(_: BuildingsVec) -> BuildingsVec;
-    pub fn freeBuildings(_: BuildingsVec);
     pub fn merge_buildings(_: *mut BuildingsVec) -> *const BuildingC; 
 }

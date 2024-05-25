@@ -98,7 +98,13 @@ impl App {
                 match event {
                     glutin::event::DeviceEvent::Key(key) => {
                         let need_rerender = match key.virtual_keycode {
-                            Some(cap) => self.windows_keyboard_control(key, cap),
+                            Some(cap) => self.windows_keyboard_control(
+                                key,
+                                cap,
+                                &display,
+                                &mut positions,
+                                &mut indices,
+                            ),
                             None => return,
                         };
 
