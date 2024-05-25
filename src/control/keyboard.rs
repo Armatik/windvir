@@ -188,12 +188,15 @@ impl App {
 
                     let building = unsafe { *ffi::merge_buildings(building_vec).offset(0) };
                     let building = building.repr_rust();
+                    
+                    self.choosed_buildings.sort_by(
+                        |f, s| s.1.cmp(&f.1)
+                    );
 
                     for (_, building_index) in &self.choosed_buildings {
                         self.buildings.remove(*building_index);
                     }
 
-                    println!("{building:?}");
                     self.buildings.push(building);
 
                     self.set_positions(display, positions).expect("Ошибка! Не удалось задать позици для зданий!");

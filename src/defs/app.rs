@@ -84,6 +84,13 @@ impl App {
     pub fn set_positions(&self, display: &glium::Display, positions: &mut Positions) -> Result<(), Box<dyn std::error::Error>> {
         let shape = self.get_buildings_vertices();
         positions.change_positions = glium::VertexBuffer::new(display, &shape)?;
+        let default_buildings = Self::get_default_buildings_vertices(
+            &self.buildings,
+        );
+        positions.default_positions = glium::VertexBuffer::new(
+            display, &default_buildings,
+        )?;
+
 
         Ok(())
     }
