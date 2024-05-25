@@ -48,6 +48,8 @@ cargo run --release -- -r
 
 `M` - select building and then use `Enter` to merge selected buildings
 
+`N` - select building and then use `Enter` to make non convex hull
+
 ### Engine mode controls
 `+` – move the sight up
 

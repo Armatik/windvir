@@ -1,4 +1,8 @@
-use crate::{App, graphics, etc, defs::synthetic};
+use crate::{App, graphics, etc, defs::synthetic, ffi::{self, ReprRust}, collisions};
+use std::alloc::{alloc, Layout};
+
+
+const W: f64 = 0.5;
 
 
 pub struct FigureIndices<T> where T: glium::index::Index {
@@ -215,5 +219,108 @@ impl App {
         log::info!("{log_info}");
         
         self.synthetic_data.push_back(Box::new(figure));
+    }
+
+    pub fn push_into_convex(&mut self, is_non_convex_hull: bool) {
+        let (choosed_vec, color) = if is_non_convex_hull {
+            (&mut self.non_choosed_buildings, graphics::SELECTED_NON_CONVEX_BUILDING_COLOR)
+        } else {
+            (&mut self.choosed_buildings, graphics::SELECTED_CONVEX_BUILDING_COLOR)
+        };
+
+        for (index, building) in self.buildings.iter().enumerate() {
+            if collisions::test_if_point_inside_building(
+                &super::PositionVector::new(self.aim.x, self.aim.y),
+                &building,
+            ) {
+                let mut need_remove: Option<usize> = None;
+
+                for (vec_index, (_, building_index)) in 
+                choosed_vec.iter().enumerate() {
+                    if index == *building_index {
+                        need_remove = Some(vec_index);
+                    }
+                }
+
+                if let Some(index) = need_remove {
+                    choosed_vec.remove(index);
+                    break;
+                }
+
+                let mut points = Vec::<Vec<f64>>::with_capacity(
+                    building.sides.len()
+                );
+                
+                for point in &building.sides {
+                    points.push(vec![point.position.x, point.position.y]);
+                }
+
+                choosed_vec.push(
+                    (synthetic::Polygon::init(
+                        points,
+                        true,
+                        color,
+                    ),
+                    index),
+                );
+                
+                break;
+            }
+        }
+    }
+
+    pub fn merge_buildings(
+        &mut self,
+        display: &glium::Display,
+        positions: &mut Positions,
+        indices: &mut FigureIndices<u16>,
+        is_non_convex_hull: bool,
+    ) {
+        let choosed_vec = if is_non_convex_hull {
+            &mut self.non_choosed_buildings
+        } else {
+            &mut self.choosed_buildings
+        };
+
+        let mut buildings = Vec::with_capacity(choosed_vec.len());  
+        for (_, building_index) in choosed_vec.iter() {
+            buildings.push(self.buildings[*building_index].clone());
+        }
+
+        
+        let building = unsafe { ffi::BuildingsVec::new(buildings) };
+        let layout = Layout::new::<ffi::BuildingsVec>();
+        let building_vec = unsafe { alloc(layout).cast::<ffi::BuildingsVec>() };
+        
+        if building_vec.is_null() {
+            panic!("Произошло переполнение памяти!");
+        }
+
+        unsafe { building_vec.write(building); };
+
+        let building = if is_non_convex_hull {
+            unsafe { *ffi::nc_hull_maker(building_vec, W).offset(0) }
+        } else {
+            unsafe { *ffi::merge_buildings(building_vec).offset(0) }
+        };
+
+        let building = building.repr_rust();
+        
+        choosed_vec.sort_by(
+            |f, s| s.1.cmp(&f.1)
+        );
+
+        for (_, building_index) in choosed_vec.iter() {
+            self.buildings.remove(*building_index);
+        }
+
+        self.buildings.push(building);
+
+        *choosed_vec = Vec::new();
+
+        self.set_positions(display, positions)
+            .expect("Ошибка! Не удалось задать позици для зданий!");
+        self.set_indices(display, indices)
+            .expect("Ошибка! Не удалось задать индексы для позиций зданий!");
     }
 }

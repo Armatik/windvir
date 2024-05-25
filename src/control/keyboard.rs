@@ -1,6 +1,5 @@
-use crate::{App, graphics, defs::{self, synthetic, app}, collisions, ffi::{self, ReprRust}};
+use crate::{App, graphics, defs::{synthetic, app}};
 use glium::{self, glutin::{self, event}};
-use std::alloc::{alloc, Layout};
 
 
 macro_rules! check_last_for_default {
@@ -65,6 +64,7 @@ impl App {
         const X_KEY: u32 = 0x2d;
         const C_KEY: u32 = 0x2e;
         const V_KEY: u32 = 0x2f;
+        const N_KEY: u32 = 0x31;
         const M_KEY: u32 = 0x32;
         const DOT_KEY: u32 = 0x34;
         const ARROW_UP_KEY: u32 = 0x67;
@@ -141,32 +141,10 @@ impl App {
                 }
             },
             M_KEY => if input.state == glutin::event::ElementState::Released {
-                for (index, building) in self.buildings.iter().enumerate() {
-                    if collisions::test_if_point_inside_building(&defs::PositionVector::new(self.aim.x, self.aim.y), &building) {
-                        let mut need_remove: Option<usize> = None;
-
-                        for (vec_index, (_, building_index)) in self.choosed_buildings.iter().enumerate() {
-                            if index == *building_index {
-                                need_remove = Some(vec_index);
-                            }
-                        }
-
-                        if let Some(index) = need_remove {
-                            self.choosed_buildings.remove(index);
-                            break;
-                        }
-
-                        let mut points = Vec::<Vec<f64>>::with_capacity(building.sides.len());
-                        
-                        for point in &building.sides {
-                            points.push(vec![point.position.x, point.position.y]);
-                        }
-
-                        self.choosed_buildings.push((synthetic::Polygon::init(points, true, graphics::SELECTED_BUILDING_COLOR), index));
-                        
-                        break;
-                    }
-                }
+                self.push_into_convex(false);
+            },
+            N_KEY => if input.state == glutin::event::ElementState::Released {
+                self.push_into_convex(true);
             },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
             value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f64),
@@ -176,40 +154,14 @@ impl App {
             QUOTE_KEY => self.move_aim(super::MoveAim::Down),
             DOT_KEY => self.move_aim(super::MoveAim::Default),
             RETURN_KEY => if input.state == glutin::event::ElementState::Released {
-                if self.choosed_buildings.len() > 0 {
-                    let mut buildings = Vec::with_capacity(self.choosed_buildings.len());
-                    
-                    for (_, building_index) in &self.choosed_buildings {
-                        buildings.push(self.buildings[*building_index].clone());
+                if !self.choosed_buildings.is_empty() {
+                    if !self.non_choosed_buildings.is_empty() {
+                        return need_rerender;
                     }
 
-                    let building = unsafe { ffi::BuildingsVec::new(buildings) };
-                    let layout = Layout::new::<ffi::BuildingsVec>();
-                    let building_vec = unsafe { alloc(layout).cast::<ffi::BuildingsVec>() };
-                    
-                    if building_vec.is_null() {
-                        panic!("Произошло переполнение памяти!");
-                    }
-
-                    unsafe { building_vec.write(building); };
-
-                    let building = unsafe { *ffi::merge_buildings(building_vec).offset(0) };
-                    let building = building.repr_rust();
-                    
-                    self.choosed_buildings.sort_by(
-                        |f, s| s.1.cmp(&f.1)
-                    );
-
-                    for (_, building_index) in &self.choosed_buildings {
-                        self.buildings.remove(*building_index);
-                    }
-
-                    self.buildings.push(building);
-
-                    self.set_positions(display, positions).expect("Ошибка! Не удалось задать позици для зданий!");
-                    self.set_indices(display, indices).expect("Ошибка! Не удалось задать индексы для позиций зданий!");
-
-                    self.choosed_buildings = Vec::new();
+                    self.merge_buildings(display, positions, indices, false);
+                } else if !self.non_choosed_buildings.is_empty() {
+                    self.merge_buildings(display, positions, indices, true);
                 } else {
                     check_last_for_default!(point self);
 
@@ -300,32 +252,11 @@ impl App {
                 }
             },
             glutin::event::VirtualKeyCode::M => if key.state == glutin::event::ElementState::Released {
-                for (index, building) in self.buildings.iter().enumerate() {
-                    if collisions::test_if_point_inside_building(&defs::PositionVector::new(self.aim.x, self.aim.y), &building) {
-                        let mut need_remove: Option<usize> = None;
-
-                        for (vec_index, (_, building_index)) in self.choosed_buildings.iter().enumerate() {
-                            if index == *building_index {
-                                need_remove = Some(vec_index);
-                            }
-                        }
-
-                        if let Some(index) = need_remove {
-                            self.choosed_buildings.remove(index);
-                            break;
-                        }
-
-                        let mut points = Vec::<Vec<f64>>::with_capacity(building.sides.len());
-                        
-                        for point in &building.sides {
-                            points.push(vec![point.position.x, point.position.y]);
-                        }
-
-                        self.choosed_buildings.push((synthetic::Polygon::init(points, true, graphics::SELECTED_BUILDING_COLOR), index));
-                        
-                        break;
-                    }
-                }
+                self.push_into_convex(false);
+            },
+            glutin::event::VirtualKeyCode::N => if key.state ==
+                glutin::event::ElementState::Released {
+                    self.push_into_convex(true);
             },
             glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
             value @ (glutin::event::VirtualKeyCode::Key1 | glutin::event::VirtualKeyCode::Key2 | 
@@ -339,48 +270,14 @@ impl App {
             glutin::event::VirtualKeyCode::Apostrophe => self.move_aim(super::MoveAim::Down),
             glutin::event::VirtualKeyCode::Period => self.move_aim(super::MoveAim::Default),
             glutin::event::VirtualKeyCode::Return => if key.state == glutin::event::ElementState::Released {
-                if self.choosed_buildings.len() > 0 {
-                    let mut buildings = Vec::with_capacity(
-                        self.choosed_buildings.len(),
-                    );
-                    
-                    for (_, building_index) in &self.choosed_buildings {
-                        buildings.push(self.buildings[*building_index].clone());
+                if !self.choosed_buildings.is_empty() {
+                    if !self.non_choosed_buildings.is_empty() {
+                        return need_rerender;
                     }
 
-                    let building = unsafe { ffi::BuildingsVec::new(buildings) };
-                    let layout = Layout::new::<ffi::BuildingsVec>();
-                    let building_vec = unsafe {
-                        alloc(layout).cast::<ffi::BuildingsVec>()
-                    };
-                    
-                    if building_vec.is_null() {
-                        panic!("Произошло переполнение памяти!");
-                    }
-
-                    unsafe { building_vec.write(building); };
-
-                    let building = unsafe {
-                        *ffi::merge_buildings(building_vec).offset(0)
-                    };
-                    let building = building.repr_rust();
-                    
-                    self.choosed_buildings.sort_by(
-                        |f, s| s.1.cmp(&f.1)
-                    );
-
-                    for (_, building_index) in &self.choosed_buildings {
-                        self.buildings.remove(*building_index);
-                    }
-
-                    self.buildings.push(building);
-
-                    self.set_positions(display, positions)
-                        .expect("Ошибка! Не удалось задать позици для зданий!");
-                    self.set_indices(display, indices)
-                        .expect("Ошибка! Не удалось задать индексы для позиций зданий!");
-
-                    self.choosed_buildings = Vec::new();
+                    self.merge_buildings(display, positions, indices, false);
+                } else if !self.non_choosed_buildings.is_empty() {
+                    self.merge_buildings(display, positions, indices, true);
                 } else {
                     check_last_for_default!(point self);
 

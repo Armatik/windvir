@@ -31,7 +31,8 @@ pub const RANDOM_COLOR_SHADER_PATH: &str = "src/graphics/shaders/random_color_sh
 pub const FIELD_VERTEX_SHADER_PATH: &str = "src/graphics/shaders/field_vertex_shader.vert";
 pub const FIELD_COLOR_SHADER_PATH: &str = "src/graphics/shaders/field_color_shader.vert";
 const ICON_PATH: &str = "icons/icon.png";
-pub const SELECTED_BUILDING_COLOR: [f32; 3] = [0.2, 0., 0.8];
+pub const SELECTED_CONVEX_BUILDING_COLOR: [f32; 3] = [0.2, 0., 0.8];
+pub const SELECTED_NON_CONVEX_BUILDING_COLOR: [f32; 3] = [0.8, 0., 0.2];
 
 
 pub struct Camera {

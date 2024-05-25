@@ -194,14 +194,19 @@ impl App {
         // ---------------------------- Отрисовка синтетических фигур ----------------------------
         
         // ============================ Отрисовка выбранных зданий ============================
-        for (building, _) in &self.choosed_buildings {
+        let (choosed_vec, color) = if !self.choosed_buildings.is_empty() {
+            (&self.choosed_buildings, super::SELECTED_CONVEX_BUILDING_COLOR)
+        } else {
+            (&self.non_choosed_buildings, super::SELECTED_NON_CONVEX_BUILDING_COLOR)
+        };
+        for (building, _) in choosed_vec {
             let uniforms = uniform! {
                 matrix: self.cam.transform_matrix,
                 x_off: self.cam.offset_x,
                 y_off: self.cam.offset_y,
-                r_rand: super::SELECTED_BUILDING_COLOR[0],
-                g_rand: super::SELECTED_BUILDING_COLOR[1],
-                b_rand: super::SELECTED_BUILDING_COLOR[2],
+                r_rand: color[0],
+                g_rand: color[1],
+                b_rand: color[2],
             };
             
             let (positions, indices) = building.get_vertices_and_indices();
