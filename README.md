@@ -68,7 +68,7 @@ cargo run --release -- -r
 
 `L` - define a line segment and then use `Enter` to specify the points
 
-`F` - define a polygon and then use `Enter` to specify the poits
+`F` - define a polygon and then use `Enter` to specify the poits. It is important to build the points in the correct order!
 
 ## Settings
 You can change default settings in file `default_settings.json`
