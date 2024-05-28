@@ -268,6 +268,10 @@ impl<T> PositionVector<T> where T: num::Float + Default {
         }
     }
 
+    pub fn angular_tangent(&self) -> T {
+        self.y/(self.get_magnitude() + self.x)
+    }
+
     pub fn multiply_by_scalar(&self, multiplier: f64) -> Self {
         let multiplier = num::cast::<f64, T>(multiplier).unwrap();
 

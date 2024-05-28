@@ -1,3 +1,5 @@
+use std::iter;
+
 use crate::defs::{Building, PositionVector, Vector};
 
 
@@ -31,18 +33,40 @@ fn test_if_positive_infinity_vector_crosses_side(point: &PositionVector<f64>, si
     0isize
 }
 
-fn concave_interpolation(building: &Building) -> Building {
+fn concave_interpolation(building: &Building, t: f64) -> Building {
     let mut interpolated_building = Building::clone(building);
     let mut leftmost_point_index = 0usize;
     let mut leftmost_point_x = interpolated_building.sides[0usize].position.x;
-    let mut sides = interpolated_building.sides.iter_mut();
-    for (index,side) in sides.enumerate() {
+    // Поиск точки которая 100% будет принадлежать выпуклой оболочке
+    for (index,side) in interpolated_building.sides.iter_mut().enumerate() {
         if side.position.x < leftmost_point_x {
             leftmost_point_index = index;
             leftmost_point_x = side.position.x;
         }
     }
+    // Перенос всех элементов таким образом, что здание начинается с самой левой точки
     interpolated_building.sides.rotate_left(leftmost_point_index);
+    // Проверка, того в какую сторону идёт обход
+    let mut iterator = interpolated_building.sides.iter_mut();
+    if  (&interpolated_building.sides[1].position - &interpolated_building.sides[0].position).angular_tangent() < (&interpolated_building.sides.last().unwrap().position - &interpolated_building.sides[0].position).angular_tangent() {
+        // Против часовой стрелки
+        // ОК
+    } else {
+        // По часовой стрелке
+
+    }
+    
+    // Поиск следующей точки
+    // let mut next_point_index = 1usize;
+    // let mut tangent = f64::INFINITY;
+    // for index in 1usize..interpolated_building.sides.len() {
+    //     let temp_diff = &interpolated_building.sides[index].position - &interpolated_building.sides[0usize].position;
+    //     let temp_tangent = temp_diff.y/temp_diff.x;
+    //     if temp_tangent < tangent {
+    //         next_point_index = index;
+    //         tangent = temp_tangent;
+    //     }
+    // }
 
 
     interpolated_building
