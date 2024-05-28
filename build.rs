@@ -35,9 +35,7 @@ fn main() {
     let dst = Path::new(".");
 
     let mut cfg = cc::Build::new();
-    cfg.cuda(false);
     cfg.cpp(false);
-    cfg.compiler("gcc");
 
     #[cfg(unix)]
     {
@@ -49,17 +47,20 @@ fn main() {
     }
 
     #[cfg(windows)]
-    {    
+    {
+        cfg.compiler("g++");
+
         cfg.include("./include")
             .file("./src/ffi/trans.c")
             .out_dir(dst.join("lib"))
             .flag("-O3")
+            .flag("-fpermissive")
             .compile("libwindvir.dll");
     }
 
     println!("cargo:root={}", dst.display());
     println!("cargo:include={}", dst.join("include").display());
-    
+
     let mut c_files = Vec::<String>::new();
 
     run_above_dir("./", &mut c_files);
