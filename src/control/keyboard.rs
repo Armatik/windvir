@@ -231,24 +231,24 @@ impl App {
             glutin::event::VirtualKeyCode::Z => self.transform_map(graphics::TransformAction::Increase),
             glutin::event::VirtualKeyCode::X => self.transform_map(graphics::TransformAction::Reduce),
             glutin::event::VirtualKeyCode::C => {
-                check_last_for_default!(self);
+                check_last_for_default!(self, need_rerender);
                 self.define_figure(synthetic::Circle::new(), "Выберите размер для окружности, используя цифры 1..=9");
 
                 need_rerender = false;
             },
             glutin::event::VirtualKeyCode::R => if key.state == glutin::event::ElementState::Released {
-                check_last_for_default!(self);
+                check_last_for_default!(self, need_rerender);
                 self.define_figure(synthetic::Rectangle::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать прямоугольник");
                 self.spawn_point(false);
             },
             glutin::event::VirtualKeyCode::L => if key.state == glutin::event::ElementState::Released {
-                check_last_for_default!(self);
+                check_last_for_default!(self, need_rerender);
                 self.define_figure(synthetic::Segment::new(), "Отметьте 2 точки, используя <Enter>, чтобы создать отрезок");
                 self.spawn_point(false);
             },
             glutin::event::VirtualKeyCode::F => if key.state == glutin::event::ElementState::Released {
                 if self.is_start_polygon() {
-                    check_last_for_default!(self);
+                    check_last_for_default!(self, need_rerender);
                     self.define_figure(synthetic::Polygon::new(), "Отмечайте точки, используя <Enter>, чтобы создать многоугольник");
                     self.spawn_point(false);
                 } else if self.is_polygon() {
@@ -287,7 +287,7 @@ impl App {
 
                     self.merge_buildings(display, positions, indices, true);
                 } else {
-                    check_last_for_default!(point self);
+                    check_last_for_default!(point self, need_rerender);
 
                     self.spawn_point(false);
                 }
