@@ -140,11 +140,13 @@ impl App {
                     self.spawn_point(true);
                 }
             },
-            M_KEY => if input.state == glutin::event::ElementState::Released {
-                self.push_into_convex(false);
+            M_KEY => if input.state == glutin::event::ElementState::Released &&
+                self.non_choosed_buildings.is_empty() {
+                    self.push_into_convex(false);
             },
-            N_KEY => if input.state == glutin::event::ElementState::Released {
-                self.push_into_convex(true);
+            N_KEY => if input.state == glutin::event::ElementState::Released &&
+                self.choosed_buildings.is_empty() {
+                    self.push_into_convex(true);
             },
             NUM0_KEY => self.transform_map(graphics::TransformAction::Default),
             value @ (NUM1_KEY | NUM2_KEY | NUM3_KEY | NUM4_KEY | NUM5_KEY | NUM6_KEY | NUM7_KEY | NUM8_KEY | NUM9_KEY) => self.spawn_circle(value as f64),
@@ -255,11 +257,12 @@ impl App {
                     self.spawn_point(true);
                 }
             },
-            glutin::event::VirtualKeyCode::M => if key.state == glutin::event::ElementState::Released {
-                self.push_into_convex(false);
+            glutin::event::VirtualKeyCode::M => if key.state == 
+                glutin::event::ElementState::Released && self.non_choosed_buildings.is_empty() {
+                    self.push_into_convex(false);
             },
             glutin::event::VirtualKeyCode::N => if key.state ==
-                glutin::event::ElementState::Released {
+                glutin::event::ElementState::Released && self.choosed_buildings.is_empty() {
                     self.push_into_convex(true);
             },
             glutin::event::VirtualKeyCode::Key0 => self.transform_map(graphics::TransformAction::Default),
