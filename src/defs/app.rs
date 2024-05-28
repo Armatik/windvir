@@ -3,6 +3,7 @@ use std::alloc::{alloc, Layout};
 
 
 const W: f64 = 0.5;
+const DELTA: f64 = 0.5;
 
 
 pub struct FigureIndices<T> where T: glium::index::Index {
@@ -236,10 +237,10 @@ impl App {
                 let mut need_remove: Option<usize> = None;
 
                 for (vec_index, (_, building_index)) in 
-                choosed_vec.iter().enumerate() {
-                    if index == *building_index {
-                        need_remove = Some(vec_index);
-                    }
+                    choosed_vec.iter().enumerate() {
+                        if index == *building_index {
+                            need_remove = Some(vec_index);
+                        }
                 }
 
                 if let Some(index) = need_remove {
@@ -276,10 +277,10 @@ impl App {
         indices: &mut FigureIndices<u16>,
         is_non_convex_hull: bool,
     ) {
-        let choosed_vec = if is_non_convex_hull {
-            &mut self.non_choosed_buildings
+        let (choosed_vec, color) = if is_non_convex_hull {
+            (&mut self.non_choosed_buildings, graphics::SELECTED_NON_CONVEX_BUILDING_COLOR)
         } else {
-            &mut self.choosed_buildings
+            (&mut self.choosed_buildings, graphics::SELECTED_CONVEX_BUILDING_COLOR)
         };
 
         let mut buildings = Vec::with_capacity(choosed_vec.len());  
@@ -314,13 +315,55 @@ impl App {
             self.buildings.remove(*building_index);
         }
 
+        *choosed_vec = Vec::new();
+
+        let mut choosed_building = Vec::<Vec<f64>>::with_capacity(
+            building.sides.len()
+        );
+
         self.buildings.push(building);
 
-        *choosed_vec = Vec::new();
+        let building = self.buildings.last()
+            .expect("Ошибка! Не удалось получить последнее здание из списка!");
+
+        for point in &building.sides {
+            choosed_building.push(vec![point.position.x, point.position.y]);
+        }
+
+        choosed_vec.push((
+            synthetic::Polygon::init(choosed_building, true, color),
+            self.buildings.len() - 1,
+        ));
+
+        for (index, building_from_map) in self.buildings.iter().enumerate() {
+            if collisions::test_building_intersection(&building, building_from_map) {
+                let mut points = Vec::<Vec<f64>>::with_capacity(
+                    building_from_map.sides.len()
+                );
+
+                for point in &building_from_map.sides {
+                    points.push(vec![point.position.x, point.position.y]);
+                }
+
+                // if collisions::
+                choosed_vec.push(
+                    (synthetic::Polygon::init(points, true, color), index)
+                );
+            }
+        }
+
+        println!("{}", choosed_vec.len());
+        // if choosed_vec.len() > 1 {
+        //     return self.merge_buildings(display, positions, indices, is_non_convex_hull);
+        // } else {
+        //     *choosed_vec = Vec::new();
+        // }
 
         self.set_positions(display, positions)
             .expect("Ошибка! Не удалось задать позици для зданий!");
         self.set_indices(display, indices)
             .expect("Ошибка! Не удалось задать индексы для позиций зданий!");
+
+        
     }
 }
