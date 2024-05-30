@@ -193,7 +193,6 @@ impl App {
                 matrix: self.cam.transform_matrix,
                 x_off: self.cam.offset_x,
                 y_off: self.cam.offset_y,
-                pos_light: [0.0_f32, 0., 1.],
             };
             target.draw(
                 positions_buildings,

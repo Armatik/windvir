@@ -22,6 +22,6 @@ main()
 	}
 	else
 	{
-		color = vec4(.3, .3, .3, 1.);
+		color = vec4(1., .0, .0, 1.);
 	}
 }

@@ -17,7 +17,7 @@ main()
 	pos.x += x_off;
 	pos.y += y_off;
 
-	position_color = position.z;
+	position_color = pos.z;
 	// v_normal = transpose(inverse(mat3(matrix))) * vec3(pos.x, pos.y, pos.z);  
 	gl_Position = matrix * vec4(pos, 1.);
 }
