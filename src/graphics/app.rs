@@ -39,17 +39,26 @@ impl App {
     }
 
     pub fn transform_map(&mut self, action: super::TransformAction) {
-        let transform = |mat: &mut [[f32; 4]; 4], theta: f32, scale: f32| {
+        let transform =
+        |mat: &mut [[f32; 4]; 4], theta: f32, theta_z: f32, scale: f32| {
             mat[0][0] = f32::cos(theta) * scale * self.window_size.1 / self.window_size.0;
             mat[0][1] = -f32::sin(theta) * scale;
             mat[1][0] = f32::sin(theta) * scale * self.window_size.1 / self.window_size.0;
-            mat[1][1] = f32::cos(theta) * scale;
+            mat[1][1] = f32::cos(theta * theta_z) * scale;
+            mat[1][2] = -f32::sin(theta * theta_z) * scale;
+            mat[2][1] = f32::sin(theta_z) * scale;
+            mat[2][2] = f32::cos(theta_z) * scale;
         };
 
         match action {
             super::TransformAction::Increase => {
                 self.cam.scale += self.p_j.movement.scale;
-                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
             },
             super::TransformAction::Reduce => {
                 if self.cam.scale - self.p_j.movement.scale < 0. {
@@ -57,7 +66,12 @@ impl App {
                 }
 
                 self.cam.scale -= self.p_j.movement.scale;
-                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
             },
             super::TransformAction::MoveUp => {
                 self.cam.offset_x += self.p_j.movement.x*f32::sin(self.cam.theta)*self.window_size.1 / self.window_size.0;
@@ -77,19 +91,57 @@ impl App {
             },
             super::TransformAction::RotateLeft => {
                 self.cam.theta += self.p_j.movement.theta;
-                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
             },
             super::TransformAction::RotateRight => {
                 self.cam.theta -= self.p_j.movement.theta;
-                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
             },
-            super::TransformAction::Resize => transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale),
+            super::TransformAction::Resize => transform(
+                &mut self.cam.transform_matrix,
+                self.cam.theta,
+                self.cam.theta_z,
+                self.cam.scale,
+            ),
             super::TransformAction::Default => {
                 self.cam.offset_x = self.p_j.map_offset.x;
                 self.cam.offset_y = self.p_j.map_offset.y;
                 self.cam.theta = self.p_j.theta;
                 self.cam.scale = self.p_j.scale;
-                transform(&mut self.cam.transform_matrix, self.cam.theta, self.cam.scale);
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
+            },
+            super::TransformAction::LayDown => {
+                self.cam.theta_z += self.p_j.movement.theta;
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
+            },
+            super::TransformAction::StandUp => {
+                self.cam.theta_z -= self.p_j.movement.theta;
+                transform(
+                    &mut self.cam.transform_matrix,
+                    self.cam.theta,
+                    self.cam.theta_z,
+                    self.cam.scale,
+                );
             },
         }
     }
@@ -141,9 +193,15 @@ impl App {
                 matrix: self.cam.transform_matrix,
                 x_off: self.cam.offset_x,
                 y_off: self.cam.offset_y,
+                pos_light: [0.0_f32, 0., 1.],
             };
-            target.draw(positions_buildings, indices_buildings, &shaders.default_shader, &buildings_uniforms, &params)
-                .expect("Ошибка! Не удалось отрисовать объект(ы)!");
+            target.draw(
+                positions_buildings,
+                indices_buildings,
+                &shaders.default_shader,
+                &buildings_uniforms,
+                &params,
+            ).expect("Ошибка! Не удалось отрисовать объект(ы)!");
             // ---------------------------- Отрисовка зданий ----------------------------
         }
 
@@ -255,7 +313,7 @@ impl App {
 
         for point in &self.synthetic_datas_points {
             let figure_points = glium::VertexBuffer::new(display, &[
-                super::Vertex { position: [point.x as f32, point.y as f32] },
+                super::Vertex { position: [point.x as f32, point.y as f32, 0.] },
             ]).expect("Ошибка! Не удалось задать позицию для прицела!");
             target.draw(
                 &figure_points,
@@ -277,8 +335,10 @@ impl App {
             b_rand: 0.0_f32,
         };
 
-        let aim_position = glium::VertexBuffer::new(display, &[super::Vertex { position: [self.aim.x as f32, self.aim.y as f32] }])
-            .expect("Ошибка! Не удалось задать позицию для прицела!");
+        let aim_position = glium::VertexBuffer::new(
+            display,
+            &[super::Vertex { position: [self.aim.x as f32, self.aim.y as f32, 0.] }]
+        ).expect("Ошибка! Не удалось задать позицию для прицела!");
         target.draw(
             &aim_position,
             &glium::index::NoIndices(glium::index::PrimitiveType::Points),

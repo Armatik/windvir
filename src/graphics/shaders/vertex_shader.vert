@@ -1,17 +1,23 @@
-#version 140
+#version 150
 
 
-in vec2 position;
+in vec3 position;
 uniform mat4 matrix;
 uniform float x_off;
 uniform float y_off;
+
+// out vec3 v_normal;
+out float position_color;
 
 
 void
 main()
 {
-	vec2 pos = position;
+	vec3 pos = position;
 	pos.x += x_off;
 	pos.y += y_off;
-	gl_Position = matrix * vec4(pos, .0, 1.);
+
+	position_color = position.z;
+	// v_normal = transpose(inverse(mat3(matrix))) * vec3(pos.x, pos.y, pos.z);  
+	gl_Position = matrix * vec4(pos, 1.);
 }

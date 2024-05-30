@@ -55,7 +55,15 @@ impl App {
 
         for building in &self.buildings {
             for side in &building.sides {
-                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x as f32, side.position.y as f32]) });
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 3>(
+                    vec![side.position.x as f32, side.position.y as f32, 0.]
+                ) });
+            }
+
+            for side in &building.sides {
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 3>(
+                    vec![side.position.x as f32, side.position.y as f32, 0.0005]
+                ) });
             }
         }
 
@@ -67,7 +75,9 @@ impl App {
 
         for building in default_buildings {
             for side in &building.sides {
-                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 2>(vec![side.position.x as f32, side.position.y as f32]) });
+                shape.push(graphics::Vertex { position: etc::vec_to_arr::<f32, 3>(
+                    vec![side.position.x as f32, side.position.y as f32, 0.]
+                ) });
             }
         }
 
@@ -117,10 +127,22 @@ impl App {
         };
 
         glium::VertexBuffer::new(display, &vec![
-            graphics::ShaderVertex { position: [-1. / field_size * default_width, 1. / field_size * default_height], color: rgb[0] },
-            graphics::ShaderVertex { position: [1. / field_size * default_width, 1. / field_size * default_height], color: rgb[1] },
-            graphics::ShaderVertex { position: [1. / field_size * default_width, -1. / field_size * default_height], color: rgb[2] },
-            graphics::ShaderVertex { position: [-1. / field_size * default_width, -1. / field_size * default_height], color: rgb[3] },
+            graphics::ShaderVertex {
+                position: [-1. / field_size * default_width, 1. / field_size * default_height, 0.],
+                color: rgb[0],
+            },
+            graphics::ShaderVertex {
+                position: [1. / field_size * default_width, 1. / field_size * default_height, 0.],
+                color: rgb[1],
+            },
+            graphics::ShaderVertex {
+                position: [1. / field_size * default_width, -1. / field_size * default_height, 0.],
+                color: rgb[2],
+            },
+            graphics::ShaderVertex {
+                position: [-1. / field_size * default_width, -1. / field_size * default_height, 0.],
+                color: rgb[3],
+            },
         ])
     }
 

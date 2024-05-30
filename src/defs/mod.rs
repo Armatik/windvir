@@ -92,11 +92,39 @@ impl Building {
     }
 
     pub fn triangulate(&self) -> Vec<usize> {
-        let mut points = Vec::<f64>::with_capacity(self.sides.len()*2usize);
+        let mut top_layer_points = Vec::<f64>::with_capacity(self.sides.len() * 2usize);
         for vertex in &self.sides {
-            points.append(&mut vec![vertex.position.x, vertex.position.y]);
+            top_layer_points.append(&mut vec![vertex.position.x, vertex.position.y]);
         }
-        earcutr::earcut(&points, &[], 2).unwrap()
+
+        let top_layer = earcutr::earcut(
+            &top_layer_points,
+            &[],
+            2,
+        ).unwrap();
+        let mut object = top_layer.clone();
+
+        let mut max = usize::MIN;
+        top_layer.iter().for_each(|x| if max < *x { max = *x });
+
+        let down_layer = top_layer.iter()
+            .map(|x| x + max + 1)
+            .collect::<Vec<usize>>();
+        object.append(&mut down_layer.clone());
+
+        object.iter().for_each(|x| if max < *x { max = *x });
+
+        for index in 0..top_layer.len() - 1 {
+            object.append(&mut vec![
+                top_layer[index], top_layer[index + 1], down_layer[index + 1],
+                down_layer[index + 1], down_layer[index], top_layer[index],
+            ]);
+        }
+
+        max = usize::MIN;
+        object.iter().for_each(|x| if max < *x { max = *x });
+
+        object
     }
 
     pub fn get_square(&self) -> f64 {

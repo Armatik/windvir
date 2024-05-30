@@ -7,17 +7,16 @@ use image::io::Reader;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Vertex {
-    pub position: [f32; 2],
+    pub position: [f32; 3],
 }
 
 
 implement_vertex!(Vertex, position);
 
 
-
 #[derive(Clone, Copy)]
 pub struct ShaderVertex {
-    pub position: [f32; 2],
+    pub position: [f32; 3],
     pub color: [f32; 3],
 }
 
@@ -39,7 +38,9 @@ pub struct Camera {
     pub scale: f32,
     pub offset_x: f32,
     pub offset_y: f32,
+    pub offset_z: f32,
     pub theta: f32,
+    pub theta_z: f32,
     pub transform_matrix: [[f32; 4]; 4],
     pub display_type: DisplayType,
 }
@@ -53,11 +54,30 @@ impl Default for Camera {
             scale: p_j.scale,
             offset_x: p_j.map_offset.x,
             offset_y: p_j.map_offset.y,
+            offset_z: 1.,
             theta: p_j.theta,
+            theta_z: p_j.theta,
             transform_matrix: [
-                [f32::cos(p_j.theta) * p_j.scale * p_j.resolution.height as f32 / p_j.resolution.width as f32, -f32::sin(p_j.theta) * p_j.scale , 0., 0.],
-                [f32::sin(p_j.theta) * p_j.scale * p_j.resolution.height as f32 / p_j.resolution.width as f32, f32::cos(p_j.theta) * p_j.scale, 0., 0.],
-                [0., 0., 1., 0.],
+                [
+                    f32::cos(p_j.theta) 
+                        * p_j.scale * p_j.resolution.height as f32 / p_j.resolution.width as f32,
+                    -f32::sin(p_j.theta) * p_j.scale,
+                    0.,
+                    0.,
+                ],
+                [
+                    f32::sin(p_j.theta)
+                        * p_j.scale * p_j.resolution.height as f32 / p_j.resolution.width as f32,
+                    f32::cos(p_j.theta * p_j.theta) * p_j.scale,
+                    -f32::sin(p_j.theta * p_j.theta) * p_j.scale,
+                    0.,
+                ],
+                [
+                    0.,
+                    f32::sin(p_j.theta * p_j.theta) * p_j.scale,
+                    f32::cos(p_j.theta * p_j.theta) * p_j.scale,
+                    0.,
+                ],
                 [0., 0., 0., 1.],
             ],
             display_type: DisplayType::TrianglesFill,
@@ -76,6 +96,8 @@ pub enum TransformAction {
     RotateLeft,
     Resize,
     Default,
+    LayDown,
+    StandUp,
 }
 
 
@@ -142,19 +164,18 @@ pub fn get_triangulation_indices(buildings: &Vec<Building>) -> Vec<u16> {
     let mut sum = 0;
     
     for building in buildings {
-        
         let mut min = usize::MAX;
         let mut max = usize::MIN;
         
         let mut result_building = building.triangulate().iter().map(|x| {
-                if *x < min {
-                    min = *x;
-                } else if *x > max {
-                    max = *x;
-                }
+            if *x < min {
+                min = *x;
+            } else if *x > max {
+                max = *x;
+            }
 
-                (*x + sum) as u16
-            }).collect::<Vec<u16>>();
+            (*x + sum) as u16
+        }).collect::<Vec<u16>>();
         result.append(&mut result_building);
 
         sum += max - min + 1;

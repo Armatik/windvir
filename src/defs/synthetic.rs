@@ -120,13 +120,13 @@ impl SyntheticData for Circle {
         let y = self.center.y;
         let r = self.radius;
         
-        vertices.push(graphics::Vertex { position: [x as f32, y as f32] });
+        vertices.push(graphics::Vertex { position: [x as f32, y as f32, 0.] });
 
         while phi < 2. * std::f64::consts::PI + DELTA_PHI {
             let x = x + r * f64::cos(phi);
             let y = y + r * f64::sin(phi);
 
-            vertices.push(graphics::Vertex { position: [x as f32, y as f32] });
+            vertices.push(graphics::Vertex { position: [x as f32, y as f32, 0.] });
 
             phi += DELTA_PHI;
         }
@@ -240,10 +240,12 @@ impl SyntheticData for Rectangle {
         let rd_x = self.right_down_point.x;
         let rd_y = self.right_down_point.y;
 
-        let vertices = vec![graphics::Vertex { position: [lu_x as f32, lu_y as f32] },
-            graphics::Vertex { position: [rd_x as f32, lu_y as f32] },
-            graphics::Vertex { position: [rd_x as f32, rd_y as f32] },
-            graphics::Vertex { position: [lu_x as f32, rd_y as f32] }];
+        let vertices = vec![
+            graphics::Vertex { position: [lu_x as f32, lu_y as f32, 0.] },
+            graphics::Vertex { position: [rd_x as f32, lu_y as f32, 0.] },
+            graphics::Vertex { position: [rd_x as f32, rd_y as f32, 0.] },
+            graphics::Vertex { position: [lu_x as f32, rd_y as f32, 0.] },
+        ];
 
         return if self.is_fill {
             (vertices, Some(vec![0, 1, 2, 0, 3, 2]))
@@ -344,7 +346,10 @@ impl SyntheticData for Segment {
         let p1_x = self.p1.x;
         let p1_y = self.p1.y;
 
-        (vec![graphics::Vertex { position: [p0_x as f32, p0_y as f32] }, graphics::Vertex { position: [p1_x as f32, p1_y as f32] }], None)
+        (vec![
+            graphics::Vertex {position: [p0_x as f32, p0_y as f32, 0.] },
+            graphics::Vertex { position: [p1_x as f32, p1_y as f32, 0.] },
+        ], None)
     }
 
     fn get_primitive(&self) -> glium::index::PrimitiveType {
@@ -376,7 +381,9 @@ impl Polygon {
     }
 
     pub fn init(points: Vec<Vec<f64>>, is_fill: bool, rgb: [f32; 3]) -> Self {
-        let points = points.iter().map(|x| graphics::Vertex { position: [x[0] as f32, x[1] as f32] }).collect::<Vec<graphics::Vertex>>();
+        let points = points.iter().map(|x| 
+            graphics::Vertex { position: [x[0] as f32, x[1] as f32, 0.]
+        }).collect::<Vec<graphics::Vertex>>();
 
         Self {
             points,
@@ -441,7 +448,9 @@ impl SyntheticData for Polygon {
     }
 
     fn set_points(&mut self, points: Vec<super::Point>) -> error::Result<()> {
-        self.points = points.iter().map(|x| graphics::Vertex { position: [x.x as f32, x.y as f32] }).collect::<Vec<graphics::Vertex>>();
+        self.points = points.iter().map(|x| 
+            graphics::Vertex { position: [x.x as f32, x.y as f32, 0.]
+        }).collect::<Vec<graphics::Vertex>>();
 
         Ok(())
     }

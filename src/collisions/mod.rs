@@ -42,6 +42,7 @@ fn _test_vector_intersection(first: &Vector, second: &Vector) -> bool {
 
 
 // На базе скалярного произведения
+#[allow(dead_code)]
 fn get_distance_for_parallel_segments(first: &Vector, second: &Vector) -> f64 {
     let position_difference = &first.position - &second.position;
     let second_squared_magnitude = second.offset.get_squared_magnitude();
@@ -71,6 +72,8 @@ fn get_distance_for_parallel_segments(first: &Vector, second: &Vector) -> f64 {
     }
 }
 
+
+#[allow(dead_code)]
 fn get_distance_for_crossing_segments(first: &Vector, second: &Vector) -> f64 {
     let position_difference = &first.position - &second.position;
     let first_squared_magnitude = first.offset.get_squared_magnitude();
@@ -128,6 +131,8 @@ fn get_distance_for_crossing_segments(first: &Vector, second: &Vector) -> f64 {
 
 }
 
+
+#[allow(dead_code)]
 fn test_vector_intersection(first: &Vector, second: &Vector) -> bool {
     let position_difference = &second.position - &first.position;
     let cross_product = Vector::cross(first,second);
@@ -158,7 +163,9 @@ pub fn test_if_point_inside_building(point: &PositionVector, building: &Building
     count != 0isize
 }
 
+
 #[inline]
+#[allow(dead_code)]
 fn get_segment_division_parameter(first: &Vector, second: &Vector) -> f64 {
     (&second.position - &first.position).cross(&second.offset)/Vector::cross(first,second)
 }
@@ -173,6 +180,7 @@ fn _test_bounding_box_intersection(first: &Building, second: &Building) -> bool 
 }
 
 
+#[allow(dead_code)]
 #[inline]
 fn test_bounding_box_intersection(first: &Building, second: &Building) -> bool {
     first.start_point.x < second.end_point.x
@@ -207,6 +215,7 @@ fn _optimize_map(sorted_map: &Vec<Building>) -> () {
 }
 
 
+#[allow(dead_code)]
 pub fn test_building_intersection(first: &Building, second: &Building) -> bool {
     if test_bounding_box_intersection(first, second) {
         for first_building_side in first.sides.iter() {
@@ -223,6 +232,7 @@ pub fn test_building_intersection(first: &Building, second: &Building) -> bool {
 
 
 // Оптимизировано
+#[allow(dead_code)]
 fn optimize_map(sorted_map: &Vec<Building>) -> () {
     if sorted_map.len() < 2usize { return; }
     for i in 0usize..sorted_map.len() - 1usize {

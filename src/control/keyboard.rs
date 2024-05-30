@@ -50,6 +50,7 @@ impl App {
         const W_KEY: u32 = 0x11;
         const E_KEY: u32 = 0x12;
         const R_KEY: u32 = 0x13;
+        const I_KEY: u32 = 0x17;
         const P_KEY: u32 = 0x19;
         const LEFT_BRACKET: u32 = 0x1a;
         const RIGHT_BRACKET: u32 = 0x1b;
@@ -58,6 +59,7 @@ impl App {
         const S_KEY: u32 = 0x1f;
         const D_KEY: u32 = 0x20;
         const F_KEY: u32 = 0x21;
+        const K_KEY: u32 = 0x25;
         const L_KEY: u32 = 0x26;
         const QUOTE_KEY: u32 = 0x28;
         const Z_KEY: u32 = 0x2c;
@@ -77,7 +79,7 @@ impl App {
         }
 
         let mut need_rerender = true;
-
+        
         match input.scancode {
             V_KEY => if input.state == glutin::event::ElementState::Released {
                 if self.cam.display_type == graphics::DisplayType::ObjectSpawn {
@@ -174,6 +176,8 @@ impl App {
                     self.spawn_point(false);
                 }
             },
+            I_KEY => self.transform_map(graphics::TransformAction::StandUp),
+            K_KEY => self.transform_map(graphics::TransformAction::LayDown),
             _ => {},
         }
         
