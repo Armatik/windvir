@@ -171,8 +171,13 @@ impl App {
                 x_off: self.cam.offset_x - self.p_j.map_offset.x,
                 y_off: self.cam.offset_y - self.p_j.map_offset.y,
             };
-            target.draw(&positions.field_positions, &indices.field_indices, &shaders.field_shader, &field_uniforms, &params)
-                .expect("Ошибка! Не удлаось отрисовать поле!");
+            target.draw(
+                &positions.field_positions,
+                &indices.field_indices,
+                &shaders.field_shader,
+                &field_uniforms,
+                params,
+            ).expect("Ошибка! Не удлаось отрисовать поле!");
             // ---------------------------- Отрисовка поля ----------------------------
             // ============================ Отрисовка зданий ============================
             params.polygon_mode = match self.cam.display_type {
@@ -199,7 +204,7 @@ impl App {
                 indices_buildings,
                 &shaders.default_shader,
                 &buildings_uniforms,
-                &params,
+                params,
             ).expect("Ошибка! Не удалось отрисовать объект(ы)!");
             // ---------------------------- Отрисовка зданий ----------------------------
         }
@@ -236,15 +241,20 @@ impl App {
                     primitive,
                     &indices,
                 ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
-                target.draw(&positions, &indices, &shaders.random_shader, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
+                target.draw(
+                    &positions,
+                    &indices,
+                    &shaders.random_shader,
+                    &uniforms,
+                    params,
+                ).expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
             } else {
                 target.draw(
                     &positions,
                     &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
                     &shaders.random_shader,
                     &uniforms,
-                    &params,
+                    params,
                 ).expect("Ошибка! Не удалось отрисовать синтетическую фигуру!");
             }
         }
@@ -283,15 +293,20 @@ impl App {
                     primitive,
                     &indices,
                 ).expect("Ошибка! Не удалось создать буффер индексов для объекта!");
-                target.draw(&positions, &indices, &shaders.random_shader, &uniforms, &params)
-                    .expect("Ошибка! Не удалось отрисовать выделенное здание!");
+                target.draw(
+                    &positions,
+                    &indices,
+                    &shaders.random_shader,
+                    &uniforms,
+                    params
+                ).expect("Ошибка! Не удалось отрисовать выделенное здание!");
             } else {
                 target.draw(
                     &positions,
                     &glium::index::NoIndices(glium::index::PrimitiveType::LinesList),
                     &shaders.random_shader,
                     &uniforms,
-                    &params,
+                    params,
                 ).expect("Ошибка! Не удалось отрисовать выделенное здание!");
             }
         }
@@ -319,7 +334,7 @@ impl App {
                 &glium::index::NoIndices(glium::index::PrimitiveType::Points),
                 &shaders.random_shader,
                 &figure_point_uniforms,
-                &params,
+                params,
             ).expect("Ошибка! Не удалось отрисовать точку для задания фигуры!");
         }
         // ---------------------------- Отрисовка синтетических точек ----------------------------
